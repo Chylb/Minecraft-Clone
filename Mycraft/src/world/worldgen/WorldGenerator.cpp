@@ -1,5 +1,7 @@
 #include "WorldGenerator.h"
 
+#include <numbers>
+
 WorldGenerator::WorldGenerator(World* world)
 	: m_world(world)
 {
@@ -12,7 +14,7 @@ void WorldGenerator::GenerateChunk(Chunk& chunk) const
 
 	for (int x = 0; x < Chunk::CHUNK_WIDTH; x++)
 		for (int z = 0; z < Chunk::CHUNK_WIDTH; z++) {
-			int h = 80 + 10 * sin((x + offsetX) / 16.0) + 10 * sin((z + offsetZ) / 16.0);
+			int h = 80 + 10 * sin((x + offsetX) * std::numbers::pi / Chunk::CHUNK_WIDTH) + 10 * sin((z + offsetZ) * std::numbers::pi / Chunk::CHUNK_WIDTH);
 
 			uint16_t blockId = Blocks::stone->GetId();
 			for (int y = 0; y < h - 5; y++) {

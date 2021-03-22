@@ -6,19 +6,34 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <iostream>
+#include <mutex>
+#include <condition_variable>
+#include <thread>
+#include <queue>
 
 #include "Gui.h"
 #include "Camera.h"
 #include "world/block/Blocks.h"
 #include "world/World.h"
+#include "world/chunk/Chunk.h"
 #include "Resources.h"
 
 #include "renderer/Shader.h"
 #include "renderer/Renderer.h"
 
-void processInput(GLFWwindow* window, float deltaTime);
+#define NUM_OF_THREADS 4
 
 Camera g_camera(glm::vec3(0, 100, 40));
+int g_renderDistance = 8;
+World* world;
+
+std::queue<Chunk*> g_chunkLoad_job_queue;
+std::queue<Chunk*> g_chunkLoad_completed_job_queue;
+std::mutex g_job_mutex, g_completed_job_mutex;
+std::condition_variable g_cv;
+
+void processInput(GLFWwindow* window, float deltaTime);
+void loadChunksLoop();
 
 int main()
 {
@@ -29,10 +44,14 @@ int main()
 	Resources::LoadTextures();
 	Blocks::Initialize();
 
-	World* world = new World();
+	world = new World();
 
 	Shader basicShader("res/basic.vs", "res/basic.fs");
 	basicShader.use();
+
+	for (int i = 0; i < NUM_OF_THREADS; i++) {
+		std::thread(loadChunksLoop).detach();
+	}
 
 	while (!glfwWindowShouldClose(Renderer::window)) {
 		float dt = Renderer::BeginRendering();
@@ -45,6 +64,7 @@ int main()
 		glm::mat4 view = g_camera.GetViewMatrix();
 		basicShader.setMat4("view", view);
 
+		world->Update();
 		world->Render();
 
 		Gui::RenderWindow(Renderer::window, g_camera.position);
@@ -78,4 +98,21 @@ void processInput(GLFWwindow* window, float deltaTime)
 		g_camera.ProcessMovement(CameraMovement::up, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
 		g_camera.ProcessMovement(CameraMovement::down, deltaTime);
+}
+
+void loadChunksLoop()
+{
+	while (true) {
+		std::unique_lock<std::mutex> g1(g_job_mutex);
+		g_cv.wait(g1, [] {return !g_chunkLoad_job_queue.empty(); });
+
+		Chunk* chunk = g_chunkLoad_job_queue.front();
+		g_chunkLoad_job_queue.pop();
+		g1.unlock();
+
+		world->PopulateChunk(*chunk);
+
+		std::lock_guard<std::mutex> g2(g_completed_job_mutex);
+		g_chunkLoad_completed_job_queue.push(chunk);
+	}
 }

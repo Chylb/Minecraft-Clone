@@ -1,5 +1,20 @@
 #include "World.h"
 
+#include <iostream>
+#include <mutex>
+#include <condition_variable>
+#include <thread>
+#include <queue>
+
+#include "../Camera.h"
+extern Camera g_camera;
+extern int g_renderDistance;
+
+extern std::queue<Chunk*> g_chunkLoad_job_queue;
+extern std::queue<Chunk*> g_chunkLoad_completed_job_queue;
+extern std::mutex g_job_mutex, g_completed_job_mutex;
+extern std::condition_variable g_cv;
+
 std::pair<int, int> spiral(int n)
 {
 	int k = ceil((sqrt(n) - 1) / 2);
@@ -25,25 +40,22 @@ std::pair<int, int> spiral(int n)
 World::World() :
 	m_worldGenerator(this)
 {
-	int renderDistance = 4;
-	int chunkCount = renderDistance * renderDistance * 4;
-	//int chunkCount = 1;
-
-	m_chunks.resize(chunkCount);
-
-	for (Chunk& chunk : m_chunks)
-		chunk.SetWorld(this);
-
-	for (int i = 0; i < chunkCount; i++)
-		m_freeChunks.insert(&m_chunks[i]);
+	int chunkCount = g_renderDistance * g_renderDistance * 4;
 
 	for (int i = 0; i < chunkCount; i++) {
-		auto pos = spiral(i + 1);
-		LoadChunk(pos.first, pos.second);
+		m_nearbyChunksPositions.push_back(spiral(i + 1));
+	}
+
+	m_chunks.resize(2 * chunkCount);
+	std::cout << "Chunk buffer size " << m_chunks.size() << std::endl;
+
+	for (Chunk& chunk : m_chunks) {
+		m_freeChunks.insert(&chunk);
+		chunk.SetWorld(this);
 	}
 }
 
-void World::LoadChunk(int x, int z)
+Chunk* World::LoadChunk(int x, int z)
 {
 	auto chunkIt = m_freeChunks.begin();
 	Chunk* chunk = *chunkIt;
@@ -53,10 +65,22 @@ void World::LoadChunk(int x, int z)
 	m_chunkMap[{x, z}] = chunk;
 
 	chunk->SetPos(x, z);
+	return chunk;
+}
 
-	m_worldGenerator.GenerateChunk(*chunk);
-	chunk->GenerateMesh();
-	chunk->InitializeBuffers();
+void World::PopulateChunk(Chunk& chunk)
+{
+	m_worldGenerator.GenerateChunk(chunk);
+	chunk.GenerateMesh();
+}
+
+void World::UnloadChunk(Chunk& chunk)
+{
+	auto chunkIt = m_chunkMap.find({ chunk.GetPos().x, chunk.GetPos().z });
+	m_chunkMap.erase(chunkIt);
+	m_occupiedChunks.erase(&chunk);
+	m_freeChunks.insert(&chunk);
+	chunk.Clear();
 }
 
 Chunk* World::GetChunk(int x, int z)
@@ -82,6 +106,40 @@ void World::SetBlock(BlockPos pos, uint16_t blockId)
 	Chunk* chunk = GetChunkAt(pos);
 	if (chunk)
 		chunk->SetBlock(pos, blockId);
+}
+
+void World::Update()
+{
+	std::vector<Chunk*> chunksToUnload;
+	for (Chunk* chunk : m_occupiedChunks) {
+		float distance = std::max(abs(g_camera.position.x + 16 - chunk->GetPos().x * Chunk::CHUNK_WIDTH), abs(g_camera.position.z + 16 - chunk->GetPos().z * Chunk::CHUNK_WIDTH));
+		if (distance > (g_renderDistance + 2) * Chunk::CHUNK_WIDTH)
+			chunksToUnload.push_back(chunk);
+	}
+	for (Chunk* chunk : chunksToUnload)
+		UnloadChunk(*chunk);
+
+	std::unique_lock<std::mutex> g1(g_completed_job_mutex);
+	while (g_chunkLoad_completed_job_queue.size() > 0) {
+		Chunk* chunk = g_chunkLoad_completed_job_queue.front();
+		g_chunkLoad_completed_job_queue.pop();
+		chunk->InitializeBuffers();
+	}
+	g1.unlock();
+
+	int cameraChunkX = (int)g_camera.position.x >> 5;
+	int cameraChunkZ = (int)g_camera.position.z >> 5;
+
+	std::lock_guard<std::mutex> g2(g_job_mutex);
+	for (auto chunkPos : m_nearbyChunksPositions) {
+		chunkPos.first += cameraChunkX;
+		chunkPos.second += cameraChunkZ;
+		if (m_chunkMap[chunkPos] == nullptr) {
+			Chunk* chunk = LoadChunk(chunkPos.first, chunkPos.second);
+			g_chunkLoad_job_queue.push(chunk);
+			g_cv.notify_one();
+		}
+	}
 }
 
 void World::Render()

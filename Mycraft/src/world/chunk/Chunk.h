@@ -19,6 +19,7 @@ public:
 	~Chunk();
 
 	Block* LocalGetBlock(BlockPos pos) const;
+	Block* SafeLocalGetBlock(BlockPos pos) const;
 	Block* GetBlock(BlockPos pos) const;
 	void LocalSetBlock(BlockPos pos, uint16_t blockId);
 	void SetBlock(BlockPos pos, uint16_t blockId);
@@ -27,8 +28,9 @@ public:
 	ChunkPos GetPos() const;
 	void SetPos(int x, int z);
 
-	std::vector<float> GenerateMesh() const;
+	void GenerateMesh();
 	void InitializeBuffers();
+	void Clear();
 	void Render() const;
 
 	static const int CHUNK_HEIGHT = 256;
@@ -41,6 +43,7 @@ private:
 
 	uint16_t m_data[CHUNK_WIDTH][CHUNK_WIDTH][CHUNK_HEIGHT];
 
+	std::vector<float> m_mesh;
 	GLuint m_VBO, m_VAO;
 	unsigned int m_polygonCount;
 	bool m_ready;
