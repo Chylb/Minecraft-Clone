@@ -19,7 +19,7 @@ void Gui::Terminate()
 	ImGui::DestroyContext();
 }
 
-void Gui::RenderWindow(GLFWwindow* window, glm::vec3 camPos)
+void Gui::RenderWindow(GLFWwindow* window, glm::vec3 camPos, int occupiedChunks, int freeChunks, int jobs, int polygons)
 {
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
@@ -44,6 +44,8 @@ void Gui::RenderWindow(GLFWwindow* window, glm::vec3 camPos)
 		ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
 
 		ImGui::Text("XYZ: %.1f / %.1f / %.1f", camPos.x, camPos.y, camPos.z);
+		ImGui::Text("Chunks used %d / free %d", occupiedChunks, freeChunks);
+		ImGui::Text("Polygons %d Jobs %d ", polygons, jobs);
 
 		//ImGui::Checkbox("ImGui demo window", &show_demo_window);
 

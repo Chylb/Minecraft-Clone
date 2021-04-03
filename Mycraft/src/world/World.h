@@ -34,6 +34,8 @@ public:
 	void Update();
 	void Render();
 
+	int FreeChunkCount();
+	int OccupiedChunkCount();
 private:
 	std::vector<Chunk> m_chunks;
 	std::unordered_map<std::pair<int, int>, Chunk*, pair_hash> m_chunkMap;

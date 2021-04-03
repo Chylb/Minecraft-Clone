@@ -5,6 +5,8 @@
 #include <vector>
 #include <unordered_map>
 
+#include "BlockPos.h"
+
 class Block
 {
 public:
@@ -16,12 +18,12 @@ public:
 
 	bool IsOpaque() const;
 
-	void WriteTopFace(std::vector<float>& target, int world_x, int world_y, int world_z) const;
-	void WriteNorthFace(std::vector<float>& target, int world_x, int world_y, int world_z) const;
-	void WriteEastFace(std::vector<float>& target, int world_x, int world_y, int world_z) const;
-	void WriteSouthFace(std::vector<float>& target, int world_x, int world_y, int world_z) const;
-	void WriteWestFace(std::vector<float>& target, int world_x, int world_y, int world_z) const;
-	void WriteBottomFace(std::vector<float>& target, int world_x, int world_y, int world_z) const;
+	void WriteTopFace(std::vector<float>& target, BlockPos pos) const;
+	void WriteNorthFace(std::vector<float>& target, BlockPos pos) const;
+	void WriteEastFace(std::vector<float>& target, BlockPos pos) const;
+	void WriteSouthFace(std::vector<float>& target, BlockPos pos) const;
+	void WriteWestFace(std::vector<float>& target, BlockPos pos) const;
+	void WriteBottomFace(std::vector<float>& target, BlockPos pos) const;
 
 private:
 	uint16_t m_id;

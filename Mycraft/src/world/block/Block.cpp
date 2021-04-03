@@ -17,7 +17,7 @@ Block::Block(GLuint tex, bool opaque) :
 }
 
 Block::Block() :
-	m_opaque(true)
+	m_opaque(false)
 {
 }
 
@@ -34,80 +34,80 @@ bool Block::IsOpaque() const
 #pragma warning(disable:4838)
 #pragma warning(disable:4244)
 
-void Block::WriteTopFace(std::vector<float>& target, int world_x, int world_y, int world_z) const
+void Block::WriteTopFace(std::vector<float>& target, BlockPos pos) const
 {
 	float vertices[] = {
-		world_x + 0, world_y + 1, world_z + 0, 0, 1, m_texTopIx,
-		world_x + 1, world_y + 1, world_z + 0, 1, 1, m_texTopIx,
-		world_x + 1, world_y + 1, world_z + 1, 1, 0, m_texTopIx,
-		world_x + 1, world_y + 1, world_z + 1, 1, 0, m_texTopIx,
-		world_x + 0, world_y + 1, world_z + 1, 0, 0, m_texTopIx,
-		world_x + 0, world_y + 1, world_z + 0, 0, 1, m_texTopIx
+		pos.x + 0, pos.y + 1, pos.z + 0, 0, 1, m_texTopIx,
+		pos.x + 1, pos.y + 1, pos.z + 0, 1, 1, m_texTopIx,
+		pos.x + 1, pos.y + 1, pos.z + 1, 1, 0, m_texTopIx,
+		pos.x + 1, pos.y + 1, pos.z + 1, 1, 0, m_texTopIx,
+		pos.x + 0, pos.y + 1, pos.z + 1, 0, 0, m_texTopIx,
+		pos.x + 0, pos.y + 1, pos.z + 0, 0, 1, m_texTopIx
 	};
 	target.insert(target.end(), vertices, vertices + sizeof(vertices) / sizeof(float));
 }
 
-void Block::WriteNorthFace(std::vector<float>& target, int world_x, int world_y, int world_z) const
+void Block::WriteNorthFace(std::vector<float>& target, BlockPos pos) const
 {
 	float vertices[] = {
-		world_x + 0, world_y + 0, world_z + 0, 1, 0, m_texSideIx,
-		world_x + 1, world_y + 0, world_z + 0, 0, 0, m_texSideIx,
-		world_x + 1, world_y + 1, world_z + 0, 0, 1, m_texSideIx,
-		world_x + 1, world_y + 1, world_z + 0, 0, 1, m_texSideIx,
-		world_x + 0, world_y + 1, world_z + 0, 1, 1, m_texSideIx,
-		world_x + 0, world_y + 0, world_z + 0, 1, 0, m_texSideIx
+		pos.x + 0, pos.y + 0, pos.z + 0, 1, 0, m_texSideIx,
+		pos.x + 1, pos.y + 0, pos.z + 0, 0, 0, m_texSideIx,
+		pos.x + 1, pos.y + 1, pos.z + 0, 0, 1, m_texSideIx,
+		pos.x + 1, pos.y + 1, pos.z + 0, 0, 1, m_texSideIx,
+		pos.x + 0, pos.y + 1, pos.z + 0, 1, 1, m_texSideIx,
+		pos.x + 0, pos.y + 0, pos.z + 0, 1, 0, m_texSideIx
 	};
 	target.insert(target.end(), vertices, vertices + sizeof(vertices) / sizeof(float));
 }
 
-void Block::WriteEastFace(std::vector<float>& target, int world_x, int world_y, int world_z) const
+void Block::WriteEastFace(std::vector<float>& target, BlockPos pos) const
 {
 	float vertices[] = {
-		world_x + 1, world_y + 1, world_z + 1, 0, 1, m_texSideIx,
-		world_x + 1, world_y + 1, world_z + 0, 1, 1, m_texSideIx,
-		world_x + 1, world_y + 0, world_z + 0, 1, 0, m_texSideIx,
-		world_x + 1, world_y + 0, world_z + 0, 1, 0, m_texSideIx,
-		world_x + 1, world_y + 0, world_z + 1, 0, 0, m_texSideIx,
-		world_x + 1, world_y + 1, world_z + 1, 0, 1, m_texSideIx
+		pos.x + 1, pos.y + 1, pos.z + 1, 0, 1, m_texSideIx,
+		pos.x + 1, pos.y + 1, pos.z + 0, 1, 1, m_texSideIx,
+		pos.x + 1, pos.y + 0, pos.z + 0, 1, 0, m_texSideIx,
+		pos.x + 1, pos.y + 0, pos.z + 0, 1, 0, m_texSideIx,
+		pos.x + 1, pos.y + 0, pos.z + 1, 0, 0, m_texSideIx,
+		pos.x + 1, pos.y + 1, pos.z + 1, 0, 1, m_texSideIx
 	};
 	target.insert(target.end(), vertices, vertices + sizeof(vertices) / sizeof(float));
 }
 
-void Block::WriteSouthFace(std::vector<float>& target, int world_x, int world_y, int world_z) const
+void Block::WriteSouthFace(std::vector<float>& target, BlockPos pos) const
 {
 	float vertices[] = {
-		world_x + 0, world_y + 0, world_z + 1, 0, 0, m_texSideIx,
-		world_x + 1, world_y + 0, world_z + 1, 1, 0, m_texSideIx,
-		world_x + 1, world_y + 1, world_z + 1, 1, 1, m_texSideIx,
-		world_x + 1, world_y + 1, world_z + 1, 1, 1, m_texSideIx,
-		world_x + 0, world_y + 1, world_z + 1, 0, 1, m_texSideIx,
-		world_x + 0, world_y + 0, world_z + 1, 0, 0, m_texSideIx
+		pos.x + 0, pos.y + 0, pos.z + 1, 0, 0, m_texSideIx,
+		pos.x + 1, pos.y + 0, pos.z + 1, 1, 0, m_texSideIx,
+		pos.x + 1, pos.y + 1, pos.z + 1, 1, 1, m_texSideIx,
+		pos.x + 1, pos.y + 1, pos.z + 1, 1, 1, m_texSideIx,
+		pos.x + 0, pos.y + 1, pos.z + 1, 0, 1, m_texSideIx,
+		pos.x + 0, pos.y + 0, pos.z + 1, 0, 0, m_texSideIx
 	};
 	target.insert(target.end(), vertices, vertices + sizeof(vertices) / sizeof(float));
 }
 
-void Block::WriteWestFace(std::vector<float>& target, int world_x, int world_y, int world_z) const
+void Block::WriteWestFace(std::vector<float>& target, BlockPos pos) const
 {
 	float vertices[] = {
-		world_x + 0, world_y + 1, world_z + 1, 1, 1, m_texSideIx,
-		world_x + 0, world_y + 1, world_z + 0, 0, 1, m_texSideIx,
-		world_x + 0, world_y + 0, world_z + 0, 0, 0, m_texSideIx,
-		world_x + 0, world_y + 0, world_z + 0, 0, 0, m_texSideIx,
-		world_x + 0, world_y + 0, world_z + 1, 1, 0, m_texSideIx,
-		world_x + 0, world_y + 1, world_z + 1, 1, 1, m_texSideIx
+		pos.x + 0, pos.y + 1, pos.z + 1, 1, 1, m_texSideIx,
+		pos.x + 0, pos.y + 1, pos.z + 0, 0, 1, m_texSideIx,
+		pos.x + 0, pos.y + 0, pos.z + 0, 0, 0, m_texSideIx,
+		pos.x + 0, pos.y + 0, pos.z + 0, 0, 0, m_texSideIx,
+		pos.x + 0, pos.y + 0, pos.z + 1, 1, 0, m_texSideIx,
+		pos.x + 0, pos.y + 1, pos.z + 1, 1, 1, m_texSideIx
 	};
 	target.insert(target.end(), vertices, vertices + sizeof(vertices) / sizeof(float));
 }
 
-void Block::WriteBottomFace(std::vector<float>& target, int world_x, int world_y, int world_z) const
+void Block::WriteBottomFace(std::vector<float>& target, BlockPos pos) const
 {
 	float vertices[] = {
-		world_x + 0, world_y + 0, world_z + 0, 1, 0, m_texBottomIx,
-		world_x + 1, world_y + 0, world_z + 0, 0, 0, m_texBottomIx,
-		world_x + 1, world_y + 0, world_z + 1, 0, 1, m_texBottomIx,
-		world_x + 1, world_y + 0, world_z + 1, 0, 1, m_texBottomIx,
-		world_x + 0, world_y + 0, world_z + 1, 1, 1, m_texBottomIx,
-		world_x + 0, world_y + 0, world_z + 0, 1, 0, m_texBottomIx
+		pos.x + 0, pos.y + 0, pos.z + 0, 1, 0, m_texBottomIx,
+		pos.x + 1, pos.y + 0, pos.z + 0, 0, 0, m_texBottomIx,
+		pos.x + 1, pos.y + 0, pos.z + 1, 0, 1, m_texBottomIx,
+		pos.x + 1, pos.y + 0, pos.z + 1, 0, 1, m_texBottomIx,
+		pos.x + 0, pos.y + 0, pos.z + 1, 1, 1, m_texBottomIx,
+		pos.x + 0, pos.y + 0, pos.z + 0, 1, 0, m_texBottomIx
 	};
 	target.insert(target.end(), vertices, vertices + sizeof(vertices) / sizeof(float));
 }

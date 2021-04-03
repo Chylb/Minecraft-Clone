@@ -12,7 +12,7 @@ class Gui
 public:
 	static void Init(GLFWwindow* window);
 	static void Terminate();
-	static void RenderWindow(GLFWwindow* window, glm::vec3 camPos);
+	static void RenderWindow(GLFWwindow* window, glm::vec3 camPos, int occupiedChunks, int freeChunks, int jobs, int polygons);
 
 	inline static bool cursorCaptured = true;
 

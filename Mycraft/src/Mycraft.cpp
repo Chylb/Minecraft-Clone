@@ -21,7 +21,7 @@
 #include "renderer/Shader.h"
 #include "renderer/Renderer.h"
 
-#define NUM_OF_THREADS 4
+#define NUM_OF_THREADS 3
 
 Camera g_camera(glm::vec3(0, 100, 40));
 int g_renderDistance = 8;
@@ -34,6 +34,8 @@ std::condition_variable g_cv;
 
 void processInput(GLFWwindow* window, float deltaTime);
 void loadChunksLoop();
+
+unsigned int g_polygons = 0;
 
 int main()
 {
@@ -67,7 +69,7 @@ int main()
 		world->Update();
 		world->Render();
 
-		Gui::RenderWindow(Renderer::window, g_camera.position);
+		Gui::RenderWindow(Renderer::window, g_camera.position, world->OccupiedChunkCount(), world->FreeChunkCount(), g_chunkLoad_job_queue.size(), g_polygons);
 
 		Renderer::EndRendering();
 	}
@@ -110,7 +112,19 @@ void loadChunksLoop()
 		g_chunkLoad_job_queue.pop();
 		g1.unlock();
 
-		world->PopulateChunk(*chunk);
+		switch (chunk->loadingState) {
+		case Chunk::LoadingState::loading_blocks:
+		{
+			world->PopulateChunk(*chunk);
+		}
+		break;
+
+		case Chunk::LoadingState::generating_mesh:
+		{
+			chunk->GenerateMesh();
+		}
+		break;
+		}
 
 		std::lock_guard<std::mutex> g2(g_completed_job_mutex);
 		g_chunkLoad_completed_job_queue.push(chunk);

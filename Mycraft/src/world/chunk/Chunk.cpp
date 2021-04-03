@@ -3,7 +3,8 @@
 #include "../World.h"
 
 Chunk::Chunk() :
-	m_ready(false)
+	loadingState(LoadingState::loading_blocks),
+	northChunk(nullptr), eastChunk(nullptr), southChunk(nullptr), westChunk(nullptr)
 {
 }
 
@@ -20,11 +21,19 @@ Block* Chunk::LocalGetBlock(BlockPos pos) const
 	return Blocks::GetBlock(m_data[pos.x][pos.z][pos.y]);
 }
 
-Block* Chunk::SafeLocalGetBlock(BlockPos pos) const
+Block* Chunk::GetNearbyBlock(BlockPos pos)
 {
-	if (pos.x < 0 || pos.x >= CHUNK_WIDTH || pos.y < 0 || pos.y >= CHUNK_HEIGHT || pos.z < 0 || pos.z >= CHUNK_WIDTH)
-		return Blocks::air;
-	return Blocks::GetBlock(m_data[pos.x][pos.z][pos.y]);
+	if (pos.x >= m_offsetX && pos.x < m_offsetX + CHUNK_WIDTH && pos.z >= m_offsetZ && pos.z < m_offsetZ + CHUNK_WIDTH)
+		return GetBlock(pos);
+
+	if (pos.x < m_offsetX)
+		return westChunk->GetBlock(pos);
+	if (pos.x >= m_offsetX + CHUNK_WIDTH)
+		return eastChunk->GetBlock(pos);
+	if (pos.z < m_offsetZ)
+		return northChunk->GetBlock(pos);
+
+	return southChunk->GetBlock(pos);
 }
 
 Block* Chunk::GetBlock(BlockPos pos) const
@@ -64,40 +73,26 @@ void Chunk::SetPos(int x, int z)
 	m_offsetZ = z * CHUNK_WIDTH;
 }
 
+bool Chunk::CanGenerateMesh()
+{
+	return loadingState == LoadingState::loaded_blocks && northChunk && eastChunk && southChunk && westChunk;
+}
+
 void Chunk::GenerateMesh()
 {
 	m_mesh.clear();
 
-	for (int x = 0; x < Chunk::CHUNK_WIDTH; x++)
-		for (int z = 0; z < Chunk::CHUNK_WIDTH; z++)
-			for (int y = 0; y < CHUNK_HEIGHT; y++) {
-				Block* block = SafeLocalGetBlock({ x,y,z });
-				if (block == Blocks::air)
-					continue;
+	for (int x = m_offsetX + 1; x < m_offsetX + CHUNK_WIDTH - 1; x++)
+		for (int z = m_offsetZ + 1; z < m_offsetZ + CHUNK_WIDTH - 1; z++)
+			GenerateColumnMesh(x, z);
 
-				Block* topBlock = SafeLocalGetBlock({ x,y + 1,z });
-				Block* northBlock = SafeLocalGetBlock({ x,y,z - 1 });
-				Block* eastBlock = SafeLocalGetBlock({ x + 1,y,z });
-				Block* southBlock = SafeLocalGetBlock({ x,y,z + 1 });
-				Block* westBlock = SafeLocalGetBlock({ x - 1,y,z });
-				Block* bottomBlock = SafeLocalGetBlock({ x,y - 1,z });
+	for (int z : {m_offsetZ, m_offsetZ + CHUNK_WIDTH - 1})
+		for (int x = m_offsetX; x < m_offsetX + CHUNK_WIDTH; x++)
+			GenerateBorderColumnMesh(x, z);
 
-				int gx = x + m_offsetX;
-				int gz = z + m_offsetZ;
-
-				if (topBlock->IsOpaque())
-					block->WriteTopFace(m_mesh, gx, y, gz);
-				if (northBlock->IsOpaque())
-					block->WriteNorthFace(m_mesh, gx, y, gz);
-				if (eastBlock->IsOpaque())
-					block->WriteEastFace(m_mesh, gx, y, gz);
-				if (southBlock->IsOpaque())
-					block->WriteSouthFace(m_mesh, gx, y, gz);
-				if (westBlock->IsOpaque())
-					block->WriteWestFace(m_mesh, gx, y, gz);
-				if (bottomBlock->IsOpaque())
-					block->WriteBottomFace(m_mesh, gx, y, gz);
-			}
+	for (int z = m_offsetZ + 1; z < m_offsetZ + CHUNK_WIDTH - 1; z++)
+		for (int x : {m_offsetX, m_offsetX + CHUNK_WIDTH - 1})
+			GenerateBorderColumnMesh(x, z);
 }
 
 void Chunk::InitializeBuffers()
@@ -119,21 +114,88 @@ void Chunk::InitializeBuffers()
 
 	glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(5 * sizeof(float)));
 	glEnableVertexAttribArray(2);
-
-	m_ready = true;
 }
 
 void Chunk::Clear()
 {
 	glDeleteVertexArrays(1, &m_VAO);
 	glDeleteBuffers(1, &m_VBO);
-	m_ready = false;
+	m_VAO = -1;
+	m_VBO = -1;
+	m_polygonCount = 0;
+
+	northChunk = nullptr;
+	eastChunk = nullptr;
+	southChunk = nullptr;
+	westChunk = nullptr;
+
+	loadingState = LoadingState::loading_blocks;
 }
 
 void Chunk::Render() const
 {
-	if (!m_ready)
-		return;
-	glBindVertexArray(m_VAO);
-	glDrawArrays(GL_TRIANGLES, 0, m_polygonCount);
+	if (loadingState == LoadingState::completed) {
+		glBindVertexArray(m_VAO);
+		glDrawArrays(GL_TRIANGLES, 0, m_polygonCount);
+	}
+}
+
+inline void Chunk::GenerateColumnMesh(int x, int z)
+{
+	for (int y = 0; y <= 101; y++) {
+		BlockPos pos = { x,y,z };
+		Block* block = GetBlock(pos);
+		if (block->IsOpaque())
+			continue;
+
+		Block* topBlock = GetBlock(pos.Top());
+		Block* northBlock = GetBlock(pos.North());
+		Block* eastBlock = GetBlock(pos.East());
+		Block* southBlock = GetBlock(pos.South());
+		Block* westBlock = GetBlock(pos.West());
+		Block* bottomBlock = GetBlock(pos.Bottom());
+
+		if (topBlock->IsOpaque())
+			topBlock->WriteBottomFace(m_mesh, pos.Top());
+		if (northBlock->IsOpaque())
+			northBlock->WriteSouthFace(m_mesh, pos.North());
+		if (eastBlock->IsOpaque())
+			eastBlock->WriteWestFace(m_mesh, pos.East());
+		if (southBlock->IsOpaque())
+			southBlock->WriteNorthFace(m_mesh, pos.South());
+		if (westBlock->IsOpaque())
+			westBlock->WriteEastFace(m_mesh, pos.West());
+		if (bottomBlock->IsOpaque())
+			bottomBlock->WriteTopFace(m_mesh, pos.Bottom());
+	}
+}
+
+inline void Chunk::GenerateBorderColumnMesh(int x, int z)
+{
+	for (int y = 0; y <= 101; y++) {
+		BlockPos pos = { x,y,z };
+		Block* block = GetBlock(pos);
+		if (block->IsOpaque())
+			continue;
+
+		Block* topBlock = GetBlock(pos.Top());
+		Block* northBlock = GetNearbyBlock(pos.North());
+		Block* eastBlock = GetNearbyBlock(pos.East());
+		Block* southBlock = GetNearbyBlock(pos.South());
+		Block* westBlock = GetNearbyBlock(pos.West());
+		Block* bottomBlock = GetBlock(pos.Bottom());
+
+		if (topBlock->IsOpaque())
+			topBlock->WriteBottomFace(m_mesh, pos.Top());
+		if (northBlock->IsOpaque())
+			northBlock->WriteSouthFace(m_mesh, pos.North());
+		if (eastBlock->IsOpaque())
+			eastBlock->WriteWestFace(m_mesh, pos.East());
+		if (southBlock->IsOpaque())
+			southBlock->WriteNorthFace(m_mesh, pos.South());
+		if (westBlock->IsOpaque())
+			westBlock->WriteEastFace(m_mesh, pos.West());
+		if (bottomBlock->IsOpaque())
+			bottomBlock->WriteTopFace(m_mesh, pos.Bottom());
+	}
 }

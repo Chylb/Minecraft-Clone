@@ -15,6 +15,8 @@ extern std::queue<Chunk*> g_chunkLoad_completed_job_queue;
 extern std::mutex g_job_mutex, g_completed_job_mutex;
 extern std::condition_variable g_cv;
 
+extern unsigned int g_polygons;
+
 std::pair<int, int> spiral(int n)
 {
 	int k = ceil((sqrt(n) - 1) / 2);
@@ -46,8 +48,7 @@ World::World() :
 		m_nearbyChunksPositions.push_back(spiral(i + 1));
 	}
 
-	m_chunks.resize(2 * chunkCount);
-	std::cout << "Chunk buffer size " << m_chunks.size() << std::endl;
+	m_chunks.resize(1.5 * chunkCount);
 
 	for (Chunk& chunk : m_chunks) {
 		m_freeChunks.insert(&chunk);
@@ -71,15 +72,17 @@ Chunk* World::LoadChunk(int x, int z)
 void World::PopulateChunk(Chunk& chunk)
 {
 	m_worldGenerator.GenerateChunk(chunk);
-	chunk.GenerateMesh();
+	chunk.loadingState = Chunk::LoadingState::loaded_blocks;
 }
 
 void World::UnloadChunk(Chunk& chunk)
 {
 	auto chunkIt = m_chunkMap.find({ chunk.GetPos().x, chunk.GetPos().z });
 	m_chunkMap.erase(chunkIt);
+
 	m_occupiedChunks.erase(&chunk);
 	m_freeChunks.insert(&chunk);
+
 	chunk.Clear();
 }
 
@@ -116,14 +119,70 @@ void World::Update()
 		if (distance > (g_renderDistance + 2) * Chunk::CHUNK_WIDTH)
 			chunksToUnload.push_back(chunk);
 	}
-	for (Chunk* chunk : chunksToUnload)
+	for (Chunk* chunk : chunksToUnload) {
+		g_polygons -= chunk->m_polygonCount;
 		UnloadChunk(*chunk);
+	}
 
 	std::unique_lock<std::mutex> g1(g_completed_job_mutex);
 	while (g_chunkLoad_completed_job_queue.size() > 0) {
 		Chunk* chunk = g_chunkLoad_completed_job_queue.front();
 		g_chunkLoad_completed_job_queue.pop();
-		chunk->InitializeBuffers();
+
+		switch (chunk->loadingState) {
+		case Chunk::LoadingState::loaded_blocks:
+		{
+			auto northChunk = m_chunkMap[{chunk->GetPos().x, chunk->GetPos().z - 1}];
+			auto eastChunk = m_chunkMap[{chunk->GetPos().x + 1, chunk->GetPos().z}];
+			auto southChunk = m_chunkMap[{chunk->GetPos().x, chunk->GetPos().z + 1}];
+			auto westChunk = m_chunkMap[{chunk->GetPos().x - 1, chunk->GetPos().z}];
+
+			if (northChunk && northChunk->loadingState >= Chunk::LoadingState::loaded_blocks) {
+				northChunk->southChunk = chunk;
+				chunk->northChunk = northChunk;
+				if (northChunk->CanGenerateMesh()) {
+					northChunk->loadingState = Chunk::LoadingState::generating_mesh;
+					g_chunkLoad_job_queue.push(northChunk);
+				}
+			}
+			if (eastChunk && eastChunk->loadingState >= Chunk::LoadingState::loaded_blocks) {
+				eastChunk->westChunk = chunk;
+				chunk->eastChunk = eastChunk;
+				if (eastChunk->CanGenerateMesh()) {
+					eastChunk->loadingState = Chunk::LoadingState::generating_mesh;
+					g_chunkLoad_job_queue.push(eastChunk);
+				}
+			}
+			if (southChunk && southChunk->loadingState >= Chunk::LoadingState::loaded_blocks) {
+				southChunk->northChunk = chunk;
+				chunk->southChunk = southChunk;
+				if (southChunk->CanGenerateMesh()) {
+					southChunk->loadingState = Chunk::LoadingState::generating_mesh;
+					g_chunkLoad_job_queue.push(southChunk);
+				}
+			}
+			if (westChunk && westChunk->loadingState >= Chunk::LoadingState::loaded_blocks) {
+				westChunk->eastChunk = chunk;
+				chunk->westChunk = westChunk;
+				if (westChunk->CanGenerateMesh()) {
+					westChunk->loadingState = Chunk::LoadingState::generating_mesh;
+					g_chunkLoad_job_queue.push(westChunk);
+				}
+			}
+
+			if (chunk->CanGenerateMesh()) {
+				chunk->loadingState = Chunk::LoadingState::generating_mesh;
+				g_chunkLoad_job_queue.push(chunk);
+			}
+		}
+		break;
+
+		case Chunk::LoadingState::generating_mesh:
+			chunk->InitializeBuffers();
+			chunk->loadingState = Chunk::LoadingState::completed;
+			g_polygons += chunk->m_polygonCount;
+			break;
+		}
 	}
 	g1.unlock();
 
@@ -137,13 +196,25 @@ void World::Update()
 		if (m_chunkMap[chunkPos] == nullptr) {
 			Chunk* chunk = LoadChunk(chunkPos.first, chunkPos.second);
 			g_chunkLoad_job_queue.push(chunk);
-			g_cv.notify_one();
 		}
 	}
+
+	if (!g_chunkLoad_job_queue.empty())
+		g_cv.notify_all();
 }
 
 void World::Render()
 {
 	for (const Chunk& chunk : m_chunks)
 		chunk.Render();
+}
+
+int World::FreeChunkCount()
+{
+	return m_freeChunks.size();
+}
+
+int World::OccupiedChunkCount()
+{
+	return m_occupiedChunks.size();
 }
