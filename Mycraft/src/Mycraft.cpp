@@ -21,10 +21,13 @@
 #include "renderer/Shader.h"
 #include "renderer/Renderer.h"
 
+#include "utils/Timer.h"
+
 #define NUM_OF_THREADS 3
 
-Camera g_camera(glm::vec3(0, 100, 40));
-int g_renderDistance = 8;
+Camera g_camera(glm::vec3(0, 2000, 40), 0, -90);
+//Camera g_camera(glm::vec3(0, 100, 40));
+int g_renderDistance = 20;
 World* world;
 
 std::queue<Chunk*> g_chunkLoad_job_queue;
@@ -55,12 +58,14 @@ int main()
 		std::thread(loadChunksLoop).detach();
 	}
 
+	static Timer timer("Emptying job queue");
+
 	while (!glfwWindowShouldClose(Renderer::window)) {
 		float dt = Renderer::BeginRendering();
 
 		processInput(Renderer::window, dt);
 
-		glm::mat4 projection = glm::perspective(glm::radians(g_camera.zoom), (float)Renderer::SCR_WIDTH / (float)Renderer::SCR_HEIGHT, 0.1f, 2000.0f);
+		glm::mat4 projection = glm::perspective(glm::radians(g_camera.zoom), (float)Renderer::SCR_WIDTH / (float)Renderer::SCR_HEIGHT, 0.1f, 3000.0f);
 		basicShader.setMat4("projection", projection);
 
 		glm::mat4 view = g_camera.GetViewMatrix();
@@ -72,6 +77,11 @@ int main()
 		Gui::RenderWindow(Renderer::window, g_camera.position, world->OccupiedChunkCount(), world->FreeChunkCount(), g_chunkLoad_job_queue.size(), g_polygons);
 
 		Renderer::EndRendering();
+
+		if (g_chunkLoad_job_queue.size() && !timer.ticking) 
+			timer.begin();
+		if (!g_chunkLoad_job_queue.size() && timer.ticking) 
+			timer.finish();
 	}
 
 	Gui::Terminate();
@@ -87,6 +97,11 @@ void processInput(GLFWwindow* window, float deltaTime)
 		Gui::cursorCaptured = false;
 	}
 	g_camera.sprint = (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS);
+
+	static bool prevC;
+	if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS && !prevC)
+		world->DEV_UnloadWorld();
+	prevC = glfwGetKey(window, GLFW_KEY_C);
 
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		g_camera.ProcessMovement(CameraMovement::forward, deltaTime);

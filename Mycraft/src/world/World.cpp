@@ -115,6 +115,9 @@ void World::Update()
 {
 	std::vector<Chunk*> chunksToUnload;
 	for (Chunk* chunk : m_occupiedChunks) {
+		if (!chunk->CanBeUnloaded())
+			continue;
+
 		float distance = std::max(abs(g_camera.position.x + 16 - chunk->GetPos().x * Chunk::CHUNK_WIDTH), abs(g_camera.position.z + 16 - chunk->GetPos().z * Chunk::CHUNK_WIDTH));
 		if (distance > (g_renderDistance + 2) * Chunk::CHUNK_WIDTH)
 			chunksToUnload.push_back(chunk);
@@ -217,4 +220,16 @@ int World::FreeChunkCount()
 int World::OccupiedChunkCount()
 {
 	return m_occupiedChunks.size();
+}
+
+void World::DEV_UnloadWorld()
+{
+	std::vector occupiedChunks(m_occupiedChunks.begin(), m_occupiedChunks.end());
+
+	for (Chunk* chunk : occupiedChunks) {
+		if (chunk->CanBeUnloaded()) {
+			g_polygons -= chunk->m_polygonCount;
+			UnloadChunk(*chunk);
+		}
+	}
 }

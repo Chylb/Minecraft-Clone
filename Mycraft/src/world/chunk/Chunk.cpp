@@ -2,10 +2,9 @@
 
 #include "../World.h"
 
-Chunk::Chunk() :
-	loadingState(LoadingState::loading_blocks),
-	northChunk(nullptr), eastChunk(nullptr), southChunk(nullptr), westChunk(nullptr)
+Chunk::Chunk() 
 {
+	Clear();
 }
 
 Chunk::~Chunk()
@@ -114,6 +113,11 @@ void Chunk::InitializeBuffers()
 
 	glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(5 * sizeof(float)));
 	glEnableVertexAttribArray(2);
+}
+
+bool Chunk::CanBeUnloaded()
+{
+	return !(loadingState == LoadingState::loading_blocks || loadingState == LoadingState::generating_mesh);
 }
 
 void Chunk::Clear()
