@@ -8,21 +8,12 @@
 #include "block/BlockPos.h"
 #include "worldgen/WorldGenerator.h"
 
-struct pair_hash
-{
-	template <class T1, class T2>
-	size_t operator()(const std::pair<T1, T2>& pair) const
-	{
-		return std::hash<T1>()(pair.first) ^ std::hash<T2>()(pair.second);
-	}
-};
-
 class World
 {
 public:
 	World();
 
-	Chunk* LoadChunk(int x, int z);
+	Chunk* LoadChunk(ChunkPos pos);
 	void PopulateChunk(Chunk& chunk);
 	void UnloadChunk(Chunk& chunk);
 	Chunk* GetChunk(int x, int z);
@@ -40,10 +31,10 @@ public:
 	void DEV_UnloadWorld();
 private:
 	std::vector<Chunk> m_chunks;
-	std::unordered_map<std::pair<int, int>, Chunk*, pair_hash> m_chunkMap;
+	std::unordered_map<ChunkPos, Chunk*, ChunkPos::HashFunction> m_chunkMap;
 	std::unordered_set<Chunk*> m_occupiedChunks, m_freeChunks;
 
 	WorldGenerator m_worldGenerator;
 
-	std::vector<std::pair<int, int>> m_nearbyChunksPositions;
+	std::vector<ChunkPos> m_nearbyChunksPositions;
 };

@@ -18,12 +18,8 @@ public:
 
 	bool IsOpaque() const;
 
-	void WriteTopFace(std::vector<float>& target, BlockPos pos) const;
-	void WriteNorthFace(std::vector<float>& target, BlockPos pos) const;
-	void WriteEastFace(std::vector<float>& target, BlockPos pos) const;
-	void WriteSouthFace(std::vector<float>& target, BlockPos pos) const;
-	void WriteWestFace(std::vector<float>& target, BlockPos pos) const;
-	void WriteBottomFace(std::vector<float>& target, BlockPos pos) const;
+	template<Direction::Direction dir>
+	void WriteFace(std::vector<float>& target, BlockPos pos) const;
 
 private:
 	uint16_t m_id;

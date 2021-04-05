@@ -2,9 +2,10 @@
 
 #include "../World.h"
 
-Chunk::Chunk() 
+Chunk::Chunk()
 {
 	Clear();
+	m_mesh.reserve(32 * 32 * 6 * sizeof(float) * 2);
 }
 
 Chunk::~Chunk()
@@ -20,20 +21,29 @@ Block* Chunk::LocalGetBlock(BlockPos pos) const
 	return Blocks::GetBlock(m_data[pos.x][pos.z][pos.y]);
 }
 
-Block* Chunk::GetNearbyBlock(BlockPos pos)
+template<Direction::Direction dir>
+Block* Chunk::GetNearbyBlock(BlockPos pos) const
 {
-	if (pos.x >= m_offsetX && pos.x < m_offsetX + CHUNK_WIDTH && pos.z >= m_offsetZ && pos.z < m_offsetZ + CHUNK_WIDTH)
-		return GetBlock(pos);
+	if constexpr (dir == Direction::north) {
+		if (pos.z < m_offsetZ)
+			return adjacentChunks[dir]->GetBlock(pos);
+	}
+	if constexpr (dir == Direction::east) {
+		if (pos.x >= m_offsetX + CHUNK_WIDTH)
+			return adjacentChunks[dir]->GetBlock(pos);
+	}
+	if constexpr (dir == Direction::south) {
+		if (pos.z >= m_offsetZ + CHUNK_WIDTH)
+			return adjacentChunks[dir]->GetBlock(pos);
+	}
+	if constexpr (dir == Direction::west) {
+		if (pos.x < m_offsetX)
+			return adjacentChunks[dir]->GetBlock(pos);
+	}
 
-	if (pos.x < m_offsetX)
-		return westChunk->GetBlock(pos);
-	if (pos.x >= m_offsetX + CHUNK_WIDTH)
-		return eastChunk->GetBlock(pos);
-	if (pos.z < m_offsetZ)
-		return northChunk->GetBlock(pos);
-
-	return southChunk->GetBlock(pos);
+	return GetBlock(pos);
 }
+
 
 Block* Chunk::GetBlock(BlockPos pos) const
 {
@@ -61,20 +71,19 @@ void Chunk::SetWorld(World* world)
 
 ChunkPos Chunk::GetPos() const
 {
-	return { m_x, m_z };
+	return m_pos;
 }
 
-void Chunk::SetPos(int x, int z)
+void Chunk::SetPos(ChunkPos pos)
 {
-	m_x = x;
-	m_z = z;
-	m_offsetX = x * CHUNK_WIDTH;
-	m_offsetZ = z * CHUNK_WIDTH;
+	m_pos = pos;
+	m_offsetX = pos.x * CHUNK_WIDTH;
+	m_offsetZ = pos.z * CHUNK_WIDTH;
 }
 
 bool Chunk::CanGenerateMesh()
 {
-	return loadingState == LoadingState::loaded_blocks && northChunk && eastChunk && southChunk && westChunk;
+	return loadingState == LoadingState::loaded_blocks && adjacentChunks[Direction::north] && adjacentChunks[Direction::east] && adjacentChunks[Direction::south] && adjacentChunks[Direction::west];
 }
 
 void Chunk::GenerateMesh()
@@ -82,9 +91,9 @@ void Chunk::GenerateMesh()
 	m_mesh.clear();
 
 	for (int x = m_offsetX + 1; x < m_offsetX + CHUNK_WIDTH - 1; x++)
-		for (int z = m_offsetZ + 1; z < m_offsetZ + CHUNK_WIDTH - 1; z++)
+		for (int z = m_offsetZ + 1; z < m_offsetZ + CHUNK_WIDTH - 1; z++) {
 			GenerateColumnMesh(x, z);
-
+		}
 	for (int z : {m_offsetZ, m_offsetZ + CHUNK_WIDTH - 1})
 		for (int x = m_offsetX; x < m_offsetX + CHUNK_WIDTH; x++)
 			GenerateBorderColumnMesh(x, z);
@@ -128,10 +137,9 @@ void Chunk::Clear()
 	m_VBO = -1;
 	m_polygonCount = 0;
 
-	northChunk = nullptr;
-	eastChunk = nullptr;
-	southChunk = nullptr;
-	westChunk = nullptr;
+	FOREACH_CARDINAL_DIRECTION(auto direction, {
+		adjacentChunks[direction] = nullptr;
+		});
 
 	loadingState = LoadingState::loading_blocks;
 }
@@ -152,25 +160,13 @@ inline void Chunk::GenerateColumnMesh(int x, int z)
 		if (block->IsOpaque())
 			continue;
 
-		Block* topBlock = GetBlock(pos.Top());
-		Block* northBlock = GetBlock(pos.North());
-		Block* eastBlock = GetBlock(pos.East());
-		Block* southBlock = GetBlock(pos.South());
-		Block* westBlock = GetBlock(pos.West());
-		Block* bottomBlock = GetBlock(pos.Bottom());
+		FOREACH_DIRECTION(constexpr auto direction,
+			{
+				Block * neighbour = GetBlock(pos.Adjacent<direction>());
 
-		if (topBlock->IsOpaque())
-			topBlock->WriteBottomFace(m_mesh, pos.Top());
-		if (northBlock->IsOpaque())
-			northBlock->WriteSouthFace(m_mesh, pos.North());
-		if (eastBlock->IsOpaque())
-			eastBlock->WriteWestFace(m_mesh, pos.East());
-		if (southBlock->IsOpaque())
-			southBlock->WriteNorthFace(m_mesh, pos.South());
-		if (westBlock->IsOpaque())
-			westBlock->WriteEastFace(m_mesh, pos.West());
-		if (bottomBlock->IsOpaque())
-			bottomBlock->WriteTopFace(m_mesh, pos.Bottom());
+				if (neighbour->IsOpaque())
+					neighbour->WriteFace<Direction::Opposite<direction>()>(m_mesh, pos.Adjacent<direction>());
+			});
 	}
 }
 
@@ -182,24 +178,16 @@ inline void Chunk::GenerateBorderColumnMesh(int x, int z)
 		if (block->IsOpaque())
 			continue;
 
-		Block* topBlock = GetBlock(pos.Top());
-		Block* northBlock = GetNearbyBlock(pos.North());
-		Block* eastBlock = GetNearbyBlock(pos.East());
-		Block* southBlock = GetNearbyBlock(pos.South());
-		Block* westBlock = GetNearbyBlock(pos.West());
-		Block* bottomBlock = GetBlock(pos.Bottom());
+		FOREACH_DIRECTION(constexpr auto direction,
+			{
+				Block * neighbour;
+				if constexpr (Direction::IsCardinal<direction>())
+					neighbour = GetNearbyBlock<direction>(pos.Adjacent<direction>());
+				else
+					neighbour = GetBlock(pos.Adjacent<direction>());
 
-		if (topBlock->IsOpaque())
-			topBlock->WriteBottomFace(m_mesh, pos.Top());
-		if (northBlock->IsOpaque())
-			northBlock->WriteSouthFace(m_mesh, pos.North());
-		if (eastBlock->IsOpaque())
-			eastBlock->WriteWestFace(m_mesh, pos.East());
-		if (southBlock->IsOpaque())
-			southBlock->WriteNorthFace(m_mesh, pos.South());
-		if (westBlock->IsOpaque())
-			westBlock->WriteEastFace(m_mesh, pos.West());
-		if (bottomBlock->IsOpaque())
-			bottomBlock->WriteTopFace(m_mesh, pos.Bottom());
+				if (neighbour->IsOpaque())
+					neighbour->WriteFace<Direction::Opposite<direction>()>(m_mesh, pos.Adjacent<direction>());
+			});
 	}
 }

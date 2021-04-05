@@ -78,9 +78,9 @@ int main()
 
 		Renderer::EndRendering();
 
-		if (g_chunkLoad_job_queue.size() && !timer.ticking) 
+		if (g_chunkLoad_job_queue.size() && !timer.ticking)
 			timer.begin();
-		if (!g_chunkLoad_job_queue.size() && timer.ticking) 
+		if (!g_chunkLoad_job_queue.size() && timer.ticking)
 			timer.finish();
 	}
 

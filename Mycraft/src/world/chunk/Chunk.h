@@ -25,14 +25,15 @@ public:
 	};
 
 	Block* LocalGetBlock(BlockPos pos) const;
-	Block* GetNearbyBlock(BlockPos pos);
+	template<Direction::Direction dir>
+	Block* GetNearbyBlock(BlockPos pos) const;
 	Block* GetBlock(BlockPos pos) const;
 	void LocalSetBlock(BlockPos pos, uint16_t blockId);
 	void SetBlock(BlockPos pos, uint16_t blockId);
 
 	void SetWorld(World* world);
 	ChunkPos GetPos() const;
-	void SetPos(int x, int z);
+	void SetPos(ChunkPos pos);
 
 	bool CanGenerateMesh();
 	void GenerateMesh();
@@ -42,7 +43,7 @@ public:
 	void Render() const;
 
 	LoadingState loadingState;
-	Chunk* northChunk, * eastChunk, * southChunk, * westChunk;
+	Chunk* adjacentChunks[4];
 	unsigned int m_polygonCount;
 
 	static const int CHUNK_HEIGHT = 256;
@@ -50,10 +51,10 @@ public:
 
 private:
 	void GenerateColumnMesh(int x, int z); //can template these functions but dunno how
-	void GenerateBorderColumnMesh(int x, int z); 
+	void GenerateBorderColumnMesh(int x, int z);
 
 	World* m_world;
-	int m_x, m_z;
+	ChunkPos m_pos;
 	int m_offsetX, m_offsetZ;
 
 	uint16_t m_data[CHUNK_WIDTH][CHUNK_WIDTH][CHUNK_HEIGHT];

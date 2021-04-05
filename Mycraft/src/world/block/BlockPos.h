@@ -1,38 +1,32 @@
 #pragma once
 
+#include "../../Direction.h"
+
 struct BlockPos
 {
 	int x;
 	int y;
 	int z;
 
-	BlockPos Top()
+	template<Direction::Direction dir> constexpr BlockPos Adjacent()
 	{
-		return BlockPos{ x,y + 1,z };
-	}
-
-	BlockPos North()
-	{
-		return BlockPos{ x,y,z - 1 };
-	}
-
-	BlockPos East()
-	{
-		return BlockPos{ x + 1,y,z };
-	}
-
-	BlockPos South()
-	{
-		return BlockPos{ x,y,z + 1 };
-	}
-
-	BlockPos West()
-	{
-		return BlockPos{ x - 1,y,z };
-	}
-
-	BlockPos Bottom()
-	{
-		return BlockPos{ x,y - 1,z };
+		if constexpr (dir == Direction::north) {
+			return { x,y,z - 1 };
+		}
+		if constexpr (dir == Direction::east) {
+			return { x + 1,y,z };
+		}
+		if constexpr (dir == Direction::south) {
+			return { x,y,z + 1 };
+		}
+		if constexpr (dir == Direction::west) {
+			return { x - 1,y,z };
+		}
+		if constexpr (dir == Direction::top) {
+			return { x + 1,y,z };
+		}
+		if constexpr (dir == Direction::bottom) {
+			return { x,y - 1,z };
+		}
 	}
 };

@@ -45,7 +45,7 @@ World::World() :
 	int chunkCount = g_renderDistance * g_renderDistance * 4;
 
 	for (int i = 0; i < chunkCount; i++) {
-		m_nearbyChunksPositions.push_back(spiral(i + 1));
+		m_nearbyChunksPositions.push_back({ spiral(i + 1).first,spiral(i + 1).second });
 	}
 
 	m_chunks.resize(1.5 * chunkCount);
@@ -56,16 +56,16 @@ World::World() :
 	}
 }
 
-Chunk* World::LoadChunk(int x, int z)
+Chunk* World::LoadChunk(ChunkPos pos)
 {
 	auto chunkIt = m_freeChunks.begin();
 	Chunk* chunk = *chunkIt;
 
 	m_freeChunks.erase(chunkIt);
 	m_occupiedChunks.insert(chunk);
-	m_chunkMap[{x, z}] = chunk;
+	m_chunkMap[pos] = chunk;
 
-	chunk->SetPos(x, z);
+	chunk->SetPos(pos);
 	return chunk;
 }
 
@@ -135,43 +135,22 @@ void World::Update()
 		switch (chunk->loadingState) {
 		case Chunk::LoadingState::loaded_blocks:
 		{
-			auto northChunk = m_chunkMap[{chunk->GetPos().x, chunk->GetPos().z - 1}];
-			auto eastChunk = m_chunkMap[{chunk->GetPos().x + 1, chunk->GetPos().z}];
-			auto southChunk = m_chunkMap[{chunk->GetPos().x, chunk->GetPos().z + 1}];
-			auto westChunk = m_chunkMap[{chunk->GetPos().x - 1, chunk->GetPos().z}];
+			Chunk* adjacentChunks[4];
+			FOREACH_CARDINAL_DIRECTION(auto constexpr direction, {
+				adjacentChunks[direction] = m_chunkMap[chunk->GetPos().Adjacent<direction>()];
+				});
 
-			if (northChunk && northChunk->loadingState >= Chunk::LoadingState::loaded_blocks) {
-				northChunk->southChunk = chunk;
-				chunk->northChunk = northChunk;
-				if (northChunk->CanGenerateMesh()) {
-					northChunk->loadingState = Chunk::LoadingState::generating_mesh;
-					g_chunkLoad_job_queue.push(northChunk);
+			FOREACH_CARDINAL_DIRECTION(auto constexpr direction, {
+				if (adjacentChunks[direction] && adjacentChunks[direction]->loadingState >= Chunk::LoadingState::loaded_blocks) {
+					adjacentChunks[direction]->adjacentChunks[Direction::Opposite<direction>()] = chunk;
+					chunk->adjacentChunks[direction] = adjacentChunks[direction];
+
+					if (adjacentChunks[direction]->CanGenerateMesh()) {
+						adjacentChunks[direction]->loadingState = Chunk::LoadingState::generating_mesh;
+						g_chunkLoad_job_queue.push(adjacentChunks[direction]);
+					}
 				}
-			}
-			if (eastChunk && eastChunk->loadingState >= Chunk::LoadingState::loaded_blocks) {
-				eastChunk->westChunk = chunk;
-				chunk->eastChunk = eastChunk;
-				if (eastChunk->CanGenerateMesh()) {
-					eastChunk->loadingState = Chunk::LoadingState::generating_mesh;
-					g_chunkLoad_job_queue.push(eastChunk);
-				}
-			}
-			if (southChunk && southChunk->loadingState >= Chunk::LoadingState::loaded_blocks) {
-				southChunk->northChunk = chunk;
-				chunk->southChunk = southChunk;
-				if (southChunk->CanGenerateMesh()) {
-					southChunk->loadingState = Chunk::LoadingState::generating_mesh;
-					g_chunkLoad_job_queue.push(southChunk);
-				}
-			}
-			if (westChunk && westChunk->loadingState >= Chunk::LoadingState::loaded_blocks) {
-				westChunk->eastChunk = chunk;
-				chunk->westChunk = westChunk;
-				if (westChunk->CanGenerateMesh()) {
-					westChunk->loadingState = Chunk::LoadingState::generating_mesh;
-					g_chunkLoad_job_queue.push(westChunk);
-				}
-			}
+				});
 
 			if (chunk->CanGenerateMesh()) {
 				chunk->loadingState = Chunk::LoadingState::generating_mesh;
@@ -194,10 +173,10 @@ void World::Update()
 
 	std::lock_guard<std::mutex> g2(g_job_mutex);
 	for (auto chunkPos : m_nearbyChunksPositions) {
-		chunkPos.first += cameraChunkX;
-		chunkPos.second += cameraChunkZ;
+		chunkPos.x += cameraChunkX;
+		chunkPos.z += cameraChunkZ;
 		if (m_chunkMap[chunkPos] == nullptr) {
-			Chunk* chunk = LoadChunk(chunkPos.first, chunkPos.second);
+			Chunk* chunk = LoadChunk(chunkPos);
 			g_chunkLoad_job_queue.push(chunk);
 		}
 	}
