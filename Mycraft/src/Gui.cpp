@@ -1,5 +1,7 @@
 #include "Gui.h"
 
+//#include "world/chunk/Chunk.h"
+
 void Gui::Init(GLFWwindow* window)
 {
 	IMGUI_CHECKVERSION();
@@ -19,7 +21,7 @@ void Gui::Terminate()
 	ImGui::DestroyContext();
 }
 
-void Gui::RenderWindow(GLFWwindow* window, glm::vec3 camPos, int occupiedChunks, int freeChunks, int jobs, int polygons)
+void Gui::RenderWindow(GLFWwindow* window, glm::vec3 camPos, int occupiedChunks, int freeChunks, int jobs, int polygons, const std::array<int, 4>& chunksLoadingStates)
 {
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
@@ -41,11 +43,24 @@ void Gui::RenderWindow(GLFWwindow* window, glm::vec3 camPos, int occupiedChunks,
 		}
 
 		ImGui::SameLine();
+		if (ImGui::Button("CLS"))
+			s_showChunksLoadingStates = !s_showChunksLoadingStates;
+
+		ImGui::SameLine();
 		ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
 
 		ImGui::Text("XYZ: %.1f / %.1f / %.1f", camPos.x, camPos.y, camPos.z);
 		ImGui::Text("Chunks used %d / free %d", occupiedChunks, freeChunks);
 		ImGui::Text("Polygons %d Jobs %d ", polygons, jobs);
+
+		if (s_showChunksLoadingStates) {
+			ImGui::NewLine();
+			ImGui::Text("Chunks loading states:");
+			ImGui::Text("Loading blocks %d ", chunksLoadingStates[0]);
+			ImGui::Text("Loaded blocks %d ", chunksLoadingStates[1]);
+			ImGui::Text("Generating mesh %d ", chunksLoadingStates[2]);
+			ImGui::Text("Completed %d ", chunksLoadingStates[3]);
+		}
 
 		//ImGui::Checkbox("ImGui demo window", &show_demo_window);
 

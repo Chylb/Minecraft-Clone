@@ -5,6 +5,7 @@
 #include <condition_variable>
 #include <thread>
 #include <queue>
+#include <array>
 
 #include "../Camera.h"
 extern Camera g_camera;
@@ -212,3 +213,14 @@ void World::DEV_UnloadWorld()
 		}
 	}
 }
+
+std::array<int, 4> World::DEV_ChunksLoadingStates()
+{
+	std::array<int, 4> stateCount{ 0 };
+
+	for (const Chunk* chunk : m_occupiedChunks)
+		stateCount[static_cast<int>(chunk->loadingState)]++;
+
+	return stateCount;
+}
+

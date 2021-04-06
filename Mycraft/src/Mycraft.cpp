@@ -10,6 +10,7 @@
 #include <condition_variable>
 #include <thread>
 #include <queue>
+#include <array>
 
 #include "Gui.h"
 #include "Camera.h"
@@ -74,7 +75,8 @@ int main()
 		world->Update();
 		world->Render();
 
-		Gui::RenderWindow(Renderer::window, g_camera.position, world->OccupiedChunkCount(), world->FreeChunkCount(), g_chunkLoad_job_queue.size(), g_polygons);
+		std::array<int, 4> chunksLoadingStates = world->DEV_ChunksLoadingStates();
+		Gui::RenderWindow(Renderer::window, g_camera.position, world->OccupiedChunkCount(), world->FreeChunkCount(), g_chunkLoad_job_queue.size(), g_polygons, chunksLoadingStates);
 
 		Renderer::EndRendering();
 

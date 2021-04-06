@@ -29,6 +29,7 @@ public:
 	int OccupiedChunkCount();
 
 	void DEV_UnloadWorld();
+	std::array<int, 4> DEV_ChunksLoadingStates();
 private:
 	std::vector<Chunk> m_chunks;
 	std::unordered_map<ChunkPos, Chunk*, ChunkPos::HashFunction> m_chunkMap;
