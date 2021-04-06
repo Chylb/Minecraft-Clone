@@ -23,7 +23,7 @@ struct BlockPos
 			return { x - 1,y,z };
 		}
 		if constexpr (dir == Direction::top) {
-			return { x + 1,y,z };
+			return { x,y + 1,z };
 		}
 		if constexpr (dir == Direction::bottom) {
 			return { x,y - 1,z };
