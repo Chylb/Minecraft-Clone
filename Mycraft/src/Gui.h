@@ -14,7 +14,7 @@ class Gui
 public:
 	static void Init(GLFWwindow* window);
 	static void Terminate();
-	static void RenderWindow(GLFWwindow* window, glm::vec3 camPos, int occupiedChunks, int freeChunks, int jobs, int polygons, const std::array<int, 4>& chunksLoadingStates);
+	static void RenderWindow(GLFWwindow* window, glm::vec3 camPos, int occupiedChunks, int freeChunks, int jobs, int polygons, const std::array<int, 5>& chunksLoadingStates);
 
 	inline static bool cursorCaptured = true;
 

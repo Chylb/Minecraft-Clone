@@ -1,6 +1,9 @@
 #include "Chunk.h"
 
+#include <array>
+
 #include "../World.h"
+#include "ChunkPointers.h"
 
 Chunk::Chunk()
 {
@@ -22,7 +25,7 @@ Block* Chunk::LocalGetBlock(BlockPos pos) const
 }
 
 template<Direction::Direction dir>
-Block* Chunk::GetNearbyBlock(BlockPos pos) const
+Block* Chunk::GetNearbyBlock(BlockPos pos, std::array<ChunkReadPtr, 4>& adjacentChunks) const
 {
 	if constexpr (dir == Direction::north) {
 		if (pos.z < m_offsetZ)
@@ -81,12 +84,12 @@ void Chunk::SetPos(ChunkPos pos)
 	m_offsetZ = pos.z * CHUNK_WIDTH;
 }
 
-bool Chunk::CanGenerateMesh()
-{
-	return loadingState == LoadingState::loaded_blocks && adjacentChunks[Direction::north] && adjacentChunks[Direction::east] && adjacentChunks[Direction::south] && adjacentChunks[Direction::west];
-}
+//bool Chunk::CanGenerateMesh()
+//{
+//	return loadingState == LoadingState::loaded_blocks && adjacentChunks[Direction::north] && adjacentChunks[Direction::east] && adjacentChunks[Direction::south] && adjacentChunks[Direction::west];
+//}
 
-void Chunk::GenerateMesh()
+void Chunk::GenerateMesh(std::array<ChunkReadPtr, 4>& adjacentChunks)
 {
 	m_mesh.clear();
 
@@ -96,11 +99,11 @@ void Chunk::GenerateMesh()
 		}
 	for (int z : {m_offsetZ, m_offsetZ + CHUNK_WIDTH - 1})
 		for (int x = m_offsetX; x < m_offsetX + CHUNK_WIDTH; x++)
-			GenerateBorderColumnMesh(x, z);
+			GenerateBorderColumnMesh(x, z, adjacentChunks);
 
 	for (int z = m_offsetZ + 1; z < m_offsetZ + CHUNK_WIDTH - 1; z++)
 		for (int x : {m_offsetX, m_offsetX + CHUNK_WIDTH - 1})
-			GenerateBorderColumnMesh(x, z);
+			GenerateBorderColumnMesh(x, z, adjacentChunks);
 }
 
 void Chunk::InitializeBuffers()
@@ -137,18 +140,77 @@ void Chunk::Clear()
 	m_VBO = -1;
 	m_polygonCount = 0;
 
-	FOREACH_CARDINAL_DIRECTION(auto direction, {
-		adjacentChunks[direction] = nullptr;
-		});
+	//FOREACH_CARDINAL_DIRECTION(auto direction, {
+	//	adjacentChunks[direction] = nullptr;
+	//	});
 
 	loadingState = LoadingState::loading_blocks;
 }
 
 void Chunk::Render() const
 {
-	if (loadingState == LoadingState::completed) {
+	if (loadingState.load() == LoadingState::completed) {
 		glBindVertexArray(m_VAO);
 		glDrawArrays(GL_TRIANGLES, 0, m_polygonCount);
+	}
+}
+
+void freeChunkReadPtr(Chunk* chunk)
+{
+	if (chunk)
+		chunk->accessMutex.unlock_shared();
+}
+
+void freeChunkWritePtr(Chunk* chunk)
+{
+	if(chunk)
+		chunk->accessMutex.unlock();
+}
+
+//void FreeChunkWritePtr::operator()(Chunk* chunk)
+//{
+//	if(chunk)
+//		chunk->accessMutex.unlock();
+//};
+
+ChunkReadPtr ChunkWrapper::GetReadPtr(bool blocking)
+{
+	if(!blocking)
+	{
+		if (!accessMutex.try_lock_shared())
+		{
+			return ChunkReadPtr(nullptr);
+		}
+		else
+		{
+			return std::move(ChunkReadPtr(static_cast<Chunk*>(this), freeChunkReadPtr));
+		}
+	}
+	else
+	{
+		accessMutex.lock_shared();
+		return std::move(ChunkReadPtr(static_cast<Chunk*>(this), freeChunkReadPtr));
+	}
+}
+
+
+ChunkWritePtr ChunkWrapper::GetWritePtr(bool blocking)
+{
+	if (!blocking)
+	{
+		if (!accessMutex.try_lock())
+		{
+			return ChunkWritePtr(nullptr);
+		}
+		else
+		{
+			return std::move(ChunkWritePtr(static_cast<Chunk*>(this), freeChunkWritePtr));
+		}
+	}
+	else
+	{
+		accessMutex.lock();
+		return std::move(ChunkWritePtr(static_cast<Chunk*>(this), freeChunkWritePtr));
 	}
 }
 
@@ -170,7 +232,7 @@ inline void Chunk::GenerateColumnMesh(int x, int z)
 	}
 }
 
-inline void Chunk::GenerateBorderColumnMesh(int x, int z)
+inline void Chunk::GenerateBorderColumnMesh(int x, int z, std::array<ChunkReadPtr, 4> &adjacentChunks)
 {
 	for (int y = 0; y <= 101; y++) {
 		BlockPos pos = { x,y,z };
@@ -182,7 +244,7 @@ inline void Chunk::GenerateBorderColumnMesh(int x, int z)
 			{
 				Block * neighbour;
 				if constexpr (Direction::IsCardinal<direction>())
-					neighbour = GetNearbyBlock<direction>(pos.Adjacent<direction>());
+					neighbour = GetNearbyBlock<direction>(pos.Adjacent<direction>(), adjacentChunks);
 				else
 					neighbour = GetBlock(pos.Adjacent<direction>());
 

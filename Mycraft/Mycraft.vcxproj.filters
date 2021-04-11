@@ -78,6 +78,9 @@
     <ClCompile Include="src\Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\world\chunk_worker\ChunkWorker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\vendor\stb_image\stb_image.h">
@@ -996,6 +999,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Direction.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\world\chunk_worker\ChunkWorker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\world\chunk\ChunkPointers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

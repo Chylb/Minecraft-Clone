@@ -24,25 +24,28 @@
 
 #include "utils/Timer.h"
 
-#define NUM_OF_THREADS 3
+#include "world/chunk_worker/ChunkWorker.h"
+
+#define NUM_OF_THREADS 6
 
 Camera g_camera(glm::vec3(0, 2000, 40), 0, -90);
 //Camera g_camera(glm::vec3(0, 100, 40));
 int g_renderDistance = 20;
 World* world;
 
-std::queue<Chunk*> g_chunkLoad_job_queue;
-std::queue<Chunk*> g_chunkLoad_completed_job_queue;
-std::mutex g_job_mutex, g_completed_job_mutex;
+//std::queue<Chunk*> g_chunkLoad_job_queue;
+std::queue<ChunkWrapper*> g_chunks_requiring_buffer_update_queue;
+std::mutex g_job_mutex, g_chunks_requiring_buffer_update_queue_mutex;
 std::condition_variable g_cv;
 
 void processInput(GLFWwindow* window, float deltaTime);
-void loadChunksLoop();
 
 unsigned int g_polygons = 0;
 
 int main()
 {
+	std::cout << "Starting!\n";
+	
 	if (Renderer::Init() != 0)
 		return -1;
 
@@ -50,17 +53,34 @@ int main()
 	Resources::LoadTextures();
 	Blocks::Initialize();
 
+	std::cout << "Initializing world... " << std::flush;
 	world = new World();
-
+	std::cout << "Done.\n";
+	
 	Shader basicShader("res/basic.vs", "res/basic.fs");
 	basicShader.use();
 
-	for (int i = 0; i < NUM_OF_THREADS; i++) {
+	/*for (int i = 0; i < NUM_OF_THREADS; i++) {
 		std::thread(loadChunksLoop).detach();
-	}
+	}*/
 
+	ChunkWorker cw1;
+	cw1.name = "cw1";
+	ChunkWorker cw2;
+	cw2.name = "cw2";
+
+	std::thread t1([&] {cw1.Apply4NeighbourhoodJob(ChunkWorker::GenerateBlocks); });
+	std::thread t2([&] {cw2.Apply4NeighbourhoodJob(ChunkWorker::GenerateMesh); });
+	std::cout << "t1 id: " << t1.get_id() << "\n";
+	std::cout << "t1 id: " << t2.get_id() << "\n";
+	/*t1.detach();
+	t2.detach();
+	*/
 	static Timer timer("Emptying job queue");
-
+	bool tempQueueWasNotEmpty = false;
+	if (!timer.ticking)
+		timer.begin();
+	
 	while (!glfwWindowShouldClose(Renderer::window)) {
 		float dt = Renderer::BeginRendering();
 
@@ -72,21 +92,39 @@ int main()
 		glm::mat4 view = g_camera.GetViewMatrix();
 		basicShader.setMat4("view", view);
 
+		//std::cout << "Updating... " << std::flush;
 		world->Update();
-		world->Render();
+		//std::cout << "Done\n";
 
-		std::array<int, 4> chunksLoadingStates = world->DEV_ChunksLoadingStates();
-		Gui::RenderWindow(Renderer::window, g_camera.position, world->OccupiedChunkCount(), world->FreeChunkCount(), g_chunkLoad_job_queue.size(), g_polygons, chunksLoadingStates);
+		//std::cout << "Rendering... " << std::flush;
+		world->Render();
+		//std::cout << "Done\n";
+
+		std::array<int, 5> chunksLoadingStates = world->DEV_ChunksLoadingStates();
+		auto lock = std::unique_lock<std::mutex>(g_chunks_requiring_buffer_update_queue_mutex);
+		Gui::RenderWindow(Renderer::window, g_camera.position, world->OccupiedChunkCount(), world->FreeChunkCount(), g_chunks_requiring_buffer_update_queue.size(), g_polygons, chunksLoadingStates);
+		lock.unlock();
 
 		Renderer::EndRendering();
 
-		if (g_chunkLoad_job_queue.size() && !timer.ticking)
-			timer.begin();
-		if (!g_chunkLoad_job_queue.size() && timer.ticking)
+		//if (g_chunks_requiring_buffer_update_queue.size() && !timer.ticking)
+		tempQueueWasNotEmpty |= !g_chunks_requiring_buffer_update_queue.empty();
+		if (!g_chunks_requiring_buffer_update_queue.empty() && tempQueueWasNotEmpty)
 			timer.finish();
+
+		//std::cout << "Notifying all... ";
+		//std::cout.flush();
+		g_cv.notify_all();
+		//std::cout << "Done!\n";
 	}
 
 	Gui::Terminate();
+
+	cw1.done.exchange(true);
+	cw2.done.exchange(true);
+	g_cv.notify_all();
+	t1.join();
+	t2.join();
 
 	glfwTerminate();
 	return 0;
@@ -117,33 +155,4 @@ void processInput(GLFWwindow* window, float deltaTime)
 		g_camera.ProcessMovement(CameraMovement::up, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
 		g_camera.ProcessMovement(CameraMovement::down, deltaTime);
-}
-
-void loadChunksLoop()
-{
-	while (true) {
-		std::unique_lock<std::mutex> g1(g_job_mutex);
-		g_cv.wait(g1, [] {return !g_chunkLoad_job_queue.empty(); });
-
-		Chunk* chunk = g_chunkLoad_job_queue.front();
-		g_chunkLoad_job_queue.pop();
-		g1.unlock();
-
-		switch (chunk->loadingState) {
-		case Chunk::LoadingState::loading_blocks:
-		{
-			world->PopulateChunk(*chunk);
-		}
-		break;
-
-		case Chunk::LoadingState::generating_mesh:
-		{
-			chunk->GenerateMesh();
-		}
-		break;
-		}
-
-		std::lock_guard<std::mutex> g2(g_completed_job_mutex);
-		g_chunkLoad_completed_job_queue.push(chunk);
-	}
 }

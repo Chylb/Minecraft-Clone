@@ -8,13 +8,14 @@
 #include <array>
 
 #include "../Camera.h"
+#include "chunk_worker/ChunkWorker.h"
 extern Camera g_camera;
 extern int g_renderDistance;
 
-extern std::queue<Chunk*> g_chunkLoad_job_queue;
-extern std::queue<Chunk*> g_chunkLoad_completed_job_queue;
-extern std::mutex g_job_mutex, g_completed_job_mutex;
-extern std::condition_variable g_cv;
+//extern std::queue<Chunk*> g_chunkLoad_job_queue;
+extern std::queue<ChunkWrapper*> g_chunks_requiring_buffer_update_queue;
+extern std::mutex g_job_mutex, g_chunks_requiring_buffer_update_queue_mutex;
+//extern std::condition_variable g_cv;
 
 extern unsigned int g_polygons;
 
@@ -49,25 +50,35 @@ World::World() :
 		m_nearbyChunksPositions.push_back({ spiral(i + 1).first,spiral(i + 1).second });
 	}
 
-	m_chunks.resize(1.5 * chunkCount);
+	std::unique_lock lock(m_chunksAccessMutex);
+	
+	std::vector<ChunkWrapper> list(1.5 * chunkCount);
+	m_chunks.swap(list);
 
-	for (Chunk& chunk : m_chunks) {
+	for (auto& chunk : m_chunks) {
 		m_freeChunks.insert(&chunk);
 		chunk.SetWorld(this);
 	}
+
+	lock.unlock();
 }
 
-Chunk* World::LoadChunk(ChunkPos pos)
+ChunkWrapper* World::LoadChunk(ChunkPos pos)
 {
+	std::lock_guard lock(m_chunksAccessMutex);
+	
 	auto chunkIt = m_freeChunks.begin();
-	Chunk* chunk = *chunkIt;
-
+	ChunkWrapper* chunkWrapper = *chunkIt;
+	
 	m_freeChunks.erase(chunkIt);
-	m_occupiedChunks.insert(chunk);
-	m_chunkMap[pos] = chunk;
+	m_occupiedChunks.insert(chunkWrapper);
+	
+	chunkWrapper->SetPos(pos);
+	auto chunk = chunkWrapper->GetWritePtr(true);
+	chunk->loadingState = Chunk::LoadingState::loading_blocks;
+	m_chunkMap[pos] = chunkWrapper;
 
-	chunk->SetPos(pos);
-	return chunk;
+	return chunkWrapper;
 }
 
 void World::PopulateChunk(Chunk& chunk)
@@ -76,120 +87,138 @@ void World::PopulateChunk(Chunk& chunk)
 	chunk.loadingState = Chunk::LoadingState::loaded_blocks;
 }
 
-void World::UnloadChunk(Chunk& chunk)
+void World::UnloadChunk(ChunkWrapper& chunkWrapper)
 {
-	auto chunkIt = m_chunkMap.find({ chunk.GetPos().x, chunk.GetPos().z });
+	auto chunk = chunkWrapper.GetWritePtr(true);
+
+	std::lock_guard lock(m_chunksAccessMutex);
+	auto chunkIt = m_chunkMap.find({ chunk->GetPos().x, chunk->GetPos().z });
 	m_chunkMap.erase(chunkIt);
 
-	m_occupiedChunks.erase(&chunk);
-	m_freeChunks.insert(&chunk);
+	m_occupiedChunks.erase(&chunkWrapper);
+	m_freeChunks.insert(&chunkWrapper);
 
-	chunk.Clear();
+	chunk->Clear();
 }
 
-Chunk* World::GetChunk(int x, int z)
+ChunkWrapper* World::GetChunk(int x, int z)
 {
+	//std::lock_guard lock(m_chunksAccessMutex);
 	return m_chunkMap[{x, z}];
 }
 
-Chunk* World::GetChunkAt(BlockPos pos)
+ChunkWrapper* World::GetChunkAt(BlockPos pos)
 {
+	//std::lock_guard lock(m_chunksAccessMutex);
 	return m_chunkMap[{pos.x >> 5, pos.z >> 5}];
 }
 
+
+//This might be dangerous to use
 Block* World::GetBlock(BlockPos pos)
 {
-	Chunk* chunk = GetChunkAt(pos);
-	if (chunk)
-		return chunk->GetBlock(pos);
-	return Blocks::air;
+	ChunkWrapper* chunkWrapper = GetChunkAt(pos);
+	if (!chunkWrapper)
+		return Blocks::air;
+	return chunkWrapper->GetReadPtr(true)->GetBlock(pos);
 }
 
 void World::SetBlock(BlockPos pos, uint16_t blockId)
 {
-	Chunk* chunk = GetChunkAt(pos);
-	if (chunk)
-		chunk->SetBlock(pos, blockId);
+	ChunkWrapper* chunkWrapper = GetChunkAt(pos);
+	if (!chunkWrapper)
+		return;
+	chunkWrapper->GetReadPtr(true)->SetBlock(pos, blockId);
 }
 
 void World::Update()
 {
-	std::vector<Chunk*> chunksToUnload;
-	for (Chunk* chunk : m_occupiedChunks) {
-		if (!chunk->CanBeUnloaded())
+	//make this once on heap
+	std::vector<ChunkWrapper*> chunksToUnload;
+	std::unique_lock<std::mutex> g0(g_chunks_requiring_buffer_update_queue_mutex);
+	for (ChunkWrapper* chunkWrapper : m_occupiedChunks) {
+		if (!chunkWrapper->CanBeUnloaded())
 			continue;
 
-		float distance = std::max(abs(g_camera.position.x + 16 - chunk->GetPos().x * Chunk::CHUNK_WIDTH), abs(g_camera.position.z + 16 - chunk->GetPos().z * Chunk::CHUNK_WIDTH));
+		float distance = std::max(abs(g_camera.position.x + 16 - chunkWrapper->GetPos().x * Chunk::CHUNK_WIDTH), abs(g_camera.position.z + 16 - chunkWrapper->GetPos().z * Chunk::CHUNK_WIDTH));
 		if (distance > (g_renderDistance + 2) * Chunk::CHUNK_WIDTH)
-			chunksToUnload.push_back(chunk);
+			chunksToUnload.push_back(chunkWrapper);
 	}
-	for (Chunk* chunk : chunksToUnload) {
-		g_polygons -= chunk->m_polygonCount;
-		UnloadChunk(*chunk);
-	}
-
-	std::unique_lock<std::mutex> g1(g_completed_job_mutex);
-	while (g_chunkLoad_completed_job_queue.size() > 0) {
-		Chunk* chunk = g_chunkLoad_completed_job_queue.front();
-		g_chunkLoad_completed_job_queue.pop();
-
-		switch (chunk->loadingState) {
-		case Chunk::LoadingState::loaded_blocks:
+	g0.unlock();
+	
+	for (auto chunkWrapper : chunksToUnload) {
+		//scope so that chunk is released before it's unloaded
 		{
-			Chunk* adjacentChunks[4];
-			FOREACH_CARDINAL_DIRECTION(auto constexpr direction, {
-				adjacentChunks[direction] = m_chunkMap[chunk->GetPos().Adjacent<direction>()];
-				});
-
-			FOREACH_CARDINAL_DIRECTION(auto constexpr direction, {
-				if (adjacentChunks[direction] && adjacentChunks[direction]->loadingState >= Chunk::LoadingState::loaded_blocks) {
-					adjacentChunks[direction]->adjacentChunks[Direction::Opposite<direction>()] = chunk;
-					chunk->adjacentChunks[direction] = adjacentChunks[direction];
-
-					if (adjacentChunks[direction]->CanGenerateMesh()) {
-						adjacentChunks[direction]->loadingState = Chunk::LoadingState::generating_mesh;
-						g_chunkLoad_job_queue.push(adjacentChunks[direction]);
-					}
-				}
-				});
-
-			if (chunk->CanGenerateMesh()) {
-				chunk->loadingState = Chunk::LoadingState::generating_mesh;
-				g_chunkLoad_job_queue.push(chunk);
-			}
+			auto chunk = chunkWrapper->GetReadPtr(true);
+			g_polygons -= chunk->m_polygonCount;
 		}
-		break;
+		UnloadChunk(*chunkWrapper);
+	}
 
-		case Chunk::LoadingState::generating_mesh:
-			chunk->InitializeBuffers();
-			chunk->loadingState = Chunk::LoadingState::completed;
-			g_polygons += chunk->m_polygonCount;
-			break;
-		}
+	std::unique_lock<std::mutex> g1(g_chunks_requiring_buffer_update_queue_mutex);
+	auto queue = g_chunks_requiring_buffer_update_queue;
+	g1.unlock();
+
+	
+	//danger zone
+	int popped_items = 0;
+	
+	while (!queue.empty()) {
+		auto chunkWrapper = queue.front();
+		queue.pop();
+		popped_items++;
+
+		assert(chunkWrapper->loadingState.load() == Chunk::LoadingState::generated_mesh);
+
+		auto chunk = chunkWrapper->GetWritePtr(true);
+		chunk->InitializeBuffers();
+		chunk->loadingState = Chunk::LoadingState::completed;
+		g_polygons += chunk->m_polygonCount;
+	}
+
+	g1.lock();
+	for(int i = 0; i < popped_items; i++)
+	{
+		g_chunks_requiring_buffer_update_queue.pop();
 	}
 	g1.unlock();
 
 	int cameraChunkX = (int)g_camera.position.x >> 5;
 	int cameraChunkZ = (int)g_camera.position.z >> 5;
 
-	std::lock_guard<std::mutex> g2(g_job_mutex);
+	//powinno byæ na swoim w¹tku???
+	//std::lock_guard g2(g_job_mutex);
+	std::lock_guard lock(m_chunksAccessMutex);
 	for (auto chunkPos : m_nearbyChunksPositions) {
 		chunkPos.x += cameraChunkX;
 		chunkPos.z += cameraChunkZ;
 		if (m_chunkMap[chunkPos] == nullptr) {
-			Chunk* chunk = LoadChunk(chunkPos);
-			g_chunkLoad_job_queue.push(chunk);
+			LoadChunk(chunkPos);
+			//g_chunkLoad_job_queue.push(chunk);
 		}
 	}
 
-	if (!g_chunkLoad_job_queue.empty())
-		g_cv.notify_all();
+	/*if (!g_chunkLoad_job_queue.empty())
+		g_cv.notify_all();*/
 }
 
 void World::Render()
 {
-	for (const Chunk& chunk : m_chunks)
-		chunk.Render();
+	std::unique_lock lock(m_chunksAccessMutex);
+	auto set = m_occupiedChunks;
+	lock.unlock();
+
+	for (ChunkWrapper* chunkWrapper : set)
+	{
+		//std::cout << "Unlocking chunk " << chunkWrapper->GetPos().x << " x " << chunkWrapper->GetPos().z << "... ";
+		ChunkPos pos = chunkWrapper->GetPos();
+		chunkWrapper->GetReadPtr(true);
+		//std::cout << "Done!\n";
+	}
+	
+	for (ChunkWrapper *chunkWrapper : set)
+		chunkWrapper->GetReadPtr(true)->Render();
+	//std::cout << "Frame rendered!\n";
 }
 
 int World::FreeChunkCount()
@@ -206,21 +235,36 @@ void World::DEV_UnloadWorld()
 {
 	std::vector occupiedChunks(m_occupiedChunks.begin(), m_occupiedChunks.end());
 
-	for (Chunk* chunk : occupiedChunks) {
-		if (chunk->CanBeUnloaded()) {
-			g_polygons -= chunk->m_polygonCount;
-			UnloadChunk(*chunk);
+	for (ChunkWrapper* chunkWrapper : occupiedChunks) {
+		if (chunkWrapper->CanBeUnloaded()) {
+			g_polygons -= chunkWrapper->GetReadPtr(true)->m_polygonCount;
+			UnloadChunk(*chunkWrapper);
 		}
 	}
 }
 
-std::array<int, 4> World::DEV_ChunksLoadingStates()
+std::array<int, 5> World::DEV_ChunksLoadingStates()
 {
-	std::array<int, 4> stateCount{ 0 };
-
-	for (const Chunk* chunk : m_occupiedChunks)
-		stateCount[static_cast<int>(chunk->loadingState)]++;
+	std::array<int, 5> stateCount{ 0 };
+	std::lock_guard lock(m_chunksAccessMutex);
+	for (ChunkWrapper* chunkWrapper : m_occupiedChunks)
+	{
+		auto state = chunkWrapper->GetReadPtr(true)->loadingState.load();
+		stateCount[static_cast<int>(state)]++;
+	}
 
 	return stateCount;
 }
+
+std::unordered_map<ChunkPos, ChunkWrapper*, ChunkPos::HashFunction> World::GetChunksMap()
+{
+	std::lock_guard lock(m_chunksAccessMutex);
+	return m_chunkMap;
+}
+
+/*std::unordered_set<ChunkWrapper*> World::GetOccupiedChunks()
+{
+	std::lock_guard();
+	return m_occupiedChunks;
+}*/
 

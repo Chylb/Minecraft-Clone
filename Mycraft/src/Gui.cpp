@@ -21,7 +21,7 @@ void Gui::Terminate()
 	ImGui::DestroyContext();
 }
 
-void Gui::RenderWindow(GLFWwindow* window, glm::vec3 camPos, int occupiedChunks, int freeChunks, int jobs, int polygons, const std::array<int, 4>& chunksLoadingStates)
+void Gui::RenderWindow(GLFWwindow* window, glm::vec3 camPos, int occupiedChunks, int freeChunks, int jobs, int polygons, const std::array<int, 5>& chunksLoadingStates)
 {
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
