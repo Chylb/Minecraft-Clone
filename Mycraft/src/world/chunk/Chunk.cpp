@@ -129,6 +129,17 @@ bool Chunk::CanBeUnloaded()
 	return !(loadingState == LoadingState::loading_blocks || loadingState == LoadingState::generating_mesh);
 }
 
+void Chunk::ClearMesh()
+{
+	glDeleteVertexArrays(1, &m_VAO);
+	glDeleteBuffers(1, &m_VBO);
+	m_VAO = -1;
+	m_VBO = -1;
+	m_polygonCount = 0;
+
+	loadingState = LoadingState::generating_mesh;
+}
+
 void Chunk::Clear()
 {
 	glDeleteVertexArrays(1, &m_VAO);

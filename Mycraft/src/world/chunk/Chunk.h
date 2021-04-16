@@ -39,6 +39,7 @@ public:
 	void GenerateMesh();
 	void InitializeBuffers();
 	bool CanBeUnloaded();
+	void ClearMesh();
 	void Clear();
 	void Render() const;
 

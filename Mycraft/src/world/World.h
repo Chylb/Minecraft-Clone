@@ -1,5 +1,7 @@
 #pragma once
 
+#include <glm/glm.hpp>
+
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
@@ -27,6 +29,8 @@ public:
 
 	int FreeChunkCount();
 	int OccupiedChunkCount();
+
+	std::tuple<bool, BlockPos, Direction::Direction> DoBlockRayTrace(glm::vec3 start, glm::vec3 end);
 
 	void DEV_UnloadWorld();
 	std::array<int, 4> DEV_ChunksLoadingStates();

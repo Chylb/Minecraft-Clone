@@ -29,4 +29,27 @@ struct BlockPos
 			return { x,y - 1,z };
 		}
 	}
+
+	BlockPos Adjacent(Direction::Direction dir)
+	{
+		switch (dir) {
+		case Direction::north:
+			return { x,y,z - 1 };
+
+		case Direction::east:
+			return { x + 1,y,z };
+
+		case Direction::south:
+			return { x,y,z + 1 };
+
+		case Direction::west:
+			return { x - 1,y,z };
+
+		case Direction::top:
+			return { x,y + 1,z };
+
+		case Direction::bottom:
+			return { x,y - 1,z };
+		}
+	}
 };

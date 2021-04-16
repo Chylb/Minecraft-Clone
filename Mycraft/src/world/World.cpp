@@ -7,6 +7,8 @@
 #include <queue>
 #include <array>
 
+#include "../utils/MathUtils.h"
+
 #include "../Camera.h"
 extern Camera g_camera;
 extern int g_renderDistance;
@@ -200,6 +202,78 @@ int World::FreeChunkCount()
 int World::OccupiedChunkCount()
 {
 	return m_occupiedChunks.size();
+}
+
+std::tuple<bool, BlockPos, Direction::Direction> World::DoBlockRayTrace(glm::vec3 start, glm::vec3 end)
+{
+	int i = floor(start.x);
+	int j = floor(start.y);
+	int k = floor(start.z);
+
+	auto diff = end - start;
+
+	float dirX = MathUtils::signum(diff.x);
+	float dirY = MathUtils::signum(diff.y);
+	float dirZ = MathUtils::signum(diff.z);
+
+	float stepX = dirX == 0 ? std::numeric_limits<float>::max() : dirX / diff.x;
+	float stepY = dirY == 0 ? std::numeric_limits<float>::max() : dirY / diff.y;
+	float stepZ = dirZ == 0 ? std::numeric_limits<float>::max() : dirZ / diff.z;
+
+	float traveledX = stepX * (dirX > 0 ? 1.0 - MathUtils::frac(start.x) : MathUtils::frac(start.x));
+	float traveledY = stepY * (dirY > 0 ? 1.0 - MathUtils::frac(start.y) : MathUtils::frac(start.y));
+	float traveledZ = stepZ * (dirZ > 0 ? 1.0 - MathUtils::frac(start.z) : MathUtils::frac(start.z));
+
+	enum class Axis
+	{
+		x, y, z
+	};
+	Axis lastAxis;
+	Direction::Direction hitFace;
+	bool hit = false;
+
+	while (traveledX <= 1.0 || traveledY <= 1.0 || traveledZ <= 1.0) {
+		if (traveledX < traveledY) {
+			if (traveledX < traveledZ) {
+				i += dirX;
+				traveledX += stepX;
+				lastAxis = Axis::x;
+			}
+			else {
+				k += dirZ;
+				traveledZ += stepZ;
+				lastAxis = Axis::z;
+			}
+		}
+		else if (traveledY < traveledZ) {
+			j += dirY;
+			traveledY += stepY;
+			lastAxis = Axis::y;
+		}
+		else {
+			k += dirZ;
+			traveledZ += stepZ;
+			lastAxis = Axis::z;
+		}
+
+		if (GetBlock({ i,j,k })->IsOpaque()) {
+			hit = true;
+			switch (lastAxis) {
+			case Axis::x:
+				dirX > 0 ? hitFace = Direction::west : hitFace = Direction::east;
+				break;
+			case Axis::y:
+				dirY > 0 ? hitFace = Direction::bottom : hitFace = Direction::top;
+				break;
+			default:
+				dirZ > 0 ? hitFace = Direction::north : hitFace = Direction::south;
+				break;
+			}
+
+			break;
+		}
+	}
+	return { hit, {i,j,k}, hitFace };
 }
 
 void World::DEV_UnloadWorld()

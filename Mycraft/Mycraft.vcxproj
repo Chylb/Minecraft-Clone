@@ -189,6 +189,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Direction.h" />
+    <ClInclude Include="src\utils\MathUtils.h" />
     <ClInclude Include="src\utils\Timer.h" />
     <ClInclude Include="src\world\block\Block.h" />
     <ClInclude Include="src\world\block\BlockPos.h" />

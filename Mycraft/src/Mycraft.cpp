@@ -105,6 +105,47 @@ void processInput(GLFWwindow* window, float deltaTime)
 		world->DEV_UnloadWorld();
 	prevC = glfwGetKey(window, GLFW_KEY_C);
 
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+		const float reach = 10.0f;
+		auto end = g_camera.position + g_camera.facingDirection * reach;
+
+		auto [hit, hitPos, hitFace] = world->DoBlockRayTrace(g_camera.position, end);
+
+		if (hit) {
+			world->SetBlock(hitPos, 0);
+			auto chunk = world->GetChunkAt(hitPos);
+			if (chunk->loadingState == Chunk::LoadingState::completed) {
+				g_polygons -= chunk->m_polygonCount;
+				chunk->ClearMesh();
+
+				std::lock_guard<std::mutex> g(g_job_mutex);
+				g_chunkLoad_job_queue.push(chunk);
+			}
+		}
+	}
+
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
+		const float reach = 10.0f;
+		auto end = g_camera.position + g_camera.facingDirection * reach;
+
+		auto [hit, hitPos, hitFace] = world->DoBlockRayTrace(g_camera.position, end);
+
+		if (hit) {
+			auto blockPos = hitPos.Adjacent(hitFace);
+			if (!world->GetBlock(blockPos)->IsOpaque()) {
+				world->SetBlock(hitPos.Adjacent(hitFace), 1);
+				auto chunk = world->GetChunkAt(hitPos);
+				if (chunk->loadingState == Chunk::LoadingState::completed) {
+					g_polygons -= chunk->m_polygonCount;
+					chunk->ClearMesh();
+
+					std::lock_guard<std::mutex> g(g_job_mutex);
+					g_chunkLoad_job_queue.push(chunk);
+				}
+			}
+		}
+	}
+
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		g_camera.ProcessMovement(CameraMovement::forward, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -147,3 +188,5 @@ void loadChunksLoop()
 		g_chunkLoad_completed_job_queue.push(chunk);
 	}
 }
+
+

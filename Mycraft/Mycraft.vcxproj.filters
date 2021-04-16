@@ -998,6 +998,9 @@
     <ClInclude Include="src\Direction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\utils\MathUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="src\vendor\glm\CMakeLists.txt" />
