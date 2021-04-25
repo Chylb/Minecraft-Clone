@@ -24,25 +24,19 @@
 
 #include "utils/Timer.h"
 
-#define NUM_OF_THREADS 3
-
-Camera g_camera(glm::vec3(0, 2000, 40), 0, -90);
-//Camera g_camera(glm::vec3(0, 100, 40));
-int g_renderDistance = 20;
+#include <time.h>
+//Camera g_camera(glm::vec3(0, 2000, 40), 0, -90);
+Camera g_camera(glm::vec3(0, 100, 40));
+int g_renderDistance = 8;
 World* world;
 
-std::queue<Chunk*> g_chunkLoad_job_queue;
-std::queue<Chunk*> g_chunkLoad_completed_job_queue;
-std::mutex g_job_mutex, g_completed_job_mutex;
-std::condition_variable g_cv;
-
 void processInput(GLFWwindow* window, float deltaTime);
-void loadChunksLoop();
 
 unsigned int g_polygons = 0;
 
 int main()
 {
+	srand(time(NULL));
 	if (Renderer::Init() != 0)
 		return -1;
 
@@ -55,11 +49,7 @@ int main()
 	Shader basicShader("res/basic.vs", "res/basic.fs");
 	basicShader.use();
 
-	for (int i = 0; i < NUM_OF_THREADS; i++) {
-		std::thread(loadChunksLoop).detach();
-	}
-
-	static Timer timer("Emptying job queue");
+	static Timer timer("Update", 100);
 
 	while (!glfwWindowShouldClose(Renderer::window)) {
 		float dt = Renderer::BeginRendering();
@@ -72,18 +62,17 @@ int main()
 		glm::mat4 view = g_camera.GetViewMatrix();
 		basicShader.setMat4("view", view);
 
+		timer.begin();
 		world->Update();
+		world->UpdateMeshes();
+		timer.finish();
+
 		world->Render();
 
 		std::array<int, 4> chunksLoadingStates = world->DEV_ChunksLoadingStates();
-		Gui::RenderWindow(Renderer::window, g_camera.position, world->OccupiedChunkCount(), world->FreeChunkCount(), g_chunkLoad_job_queue.size(), g_polygons, chunksLoadingStates);
+		Gui::RenderWindow(Renderer::window, g_camera.position, world->OccupiedChunkCount(), world->FreeChunkCount(), 0, g_polygons, chunksLoadingStates);
 
 		Renderer::EndRendering();
-
-		if (g_chunkLoad_job_queue.size() && !timer.ticking)
-			timer.begin();
-		if (!g_chunkLoad_job_queue.size() && timer.ticking)
-			timer.finish();
 	}
 
 	Gui::Terminate();
@@ -111,17 +100,8 @@ void processInput(GLFWwindow* window, float deltaTime)
 
 		auto [hit, hitPos, hitFace] = world->DoBlockRayTrace(g_camera.position, end);
 
-		if (hit) {
+		if (hit)
 			world->SetBlock(hitPos, 0);
-			auto chunk = world->GetChunkAt(hitPos);
-			if (chunk->loadingState == Chunk::LoadingState::completed) {
-				g_polygons -= chunk->m_polygonCount;
-				chunk->ClearMesh();
-
-				std::lock_guard<std::mutex> g(g_job_mutex);
-				g_chunkLoad_job_queue.push(chunk);
-			}
-		}
 	}
 
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
@@ -132,17 +112,8 @@ void processInput(GLFWwindow* window, float deltaTime)
 
 		if (hit) {
 			auto blockPos = hitPos.Adjacent(hitFace);
-			if (!world->GetBlock(blockPos)->IsOpaque()) {
-				world->SetBlock(hitPos.Adjacent(hitFace), 1);
-				auto chunk = world->GetChunkAt(hitPos);
-				if (chunk->loadingState == Chunk::LoadingState::completed) {
-					g_polygons -= chunk->m_polygonCount;
-					chunk->ClearMesh();
-
-					std::lock_guard<std::mutex> g(g_job_mutex);
-					g_chunkLoad_job_queue.push(chunk);
-				}
-			}
+			if (!world->GetBlock(blockPos)->IsOpaque())
+				world->SetBlock(hitPos.Adjacent(hitFace), Blocks::dirt->GetId());
 		}
 	}
 
@@ -158,35 +129,6 @@ void processInput(GLFWwindow* window, float deltaTime)
 		g_camera.ProcessMovement(CameraMovement::up, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
 		g_camera.ProcessMovement(CameraMovement::down, deltaTime);
-}
-
-void loadChunksLoop()
-{
-	while (true) {
-		std::unique_lock<std::mutex> g1(g_job_mutex);
-		g_cv.wait(g1, [] {return !g_chunkLoad_job_queue.empty(); });
-
-		Chunk* chunk = g_chunkLoad_job_queue.front();
-		g_chunkLoad_job_queue.pop();
-		g1.unlock();
-
-		switch (chunk->loadingState) {
-		case Chunk::LoadingState::loading_blocks:
-		{
-			world->PopulateChunk(*chunk);
-		}
-		break;
-
-		case Chunk::LoadingState::generating_mesh:
-		{
-			chunk->GenerateMesh();
-		}
-		break;
-		}
-
-		std::lock_guard<std::mutex> g2(g_completed_job_mutex);
-		g_chunkLoad_completed_job_queue.push(chunk);
-	}
 }
 
 

@@ -6,6 +6,8 @@
 #include "../../BlockRegistry.h"
 #include "../../Resources.h"
 
+#include "Dirt.h"
+
 class Blocks
 {
 public:

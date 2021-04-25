@@ -10,10 +10,12 @@ struct Timer
 	std::chrono::duration<float> duration;
 	std::string message;
 	bool ticking;
+	float threshold;
 
-	Timer(std::string message)
+	Timer(std::string message, float threshold = 0)
 	{
 		this->message = message;
+		this->threshold = threshold;
 		begin();
 	}
 
@@ -28,7 +30,9 @@ struct Timer
 		duration = end - start;
 
 		float ms = duration.count() * 1000.0f;
-		std::cout << message << ": " << ms << " ms" << std::endl;
+		if (ms > threshold)
+			std::cout << message << ": " << ms << " ms" << std::endl;
+
 		ticking = false;
 	}
 

@@ -7,6 +7,8 @@
 
 #include "BlockPos.h"
 
+class World;
+
 class Block
 {
 public:
@@ -20,6 +22,8 @@ public:
 
 	template<Direction::Direction dir>
 	void WriteFace(std::vector<float>& target, BlockPos pos) const;
+
+	virtual void Tick(World& world, BlockPos pos);
 
 private:
 	uint16_t m_id;

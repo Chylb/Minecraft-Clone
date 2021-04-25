@@ -5,6 +5,7 @@
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
+#include <queue>
 
 #include "chunk/Chunk.h"
 #include "block/BlockPos.h"
@@ -25,6 +26,7 @@ public:
 	void SetBlock(BlockPos pos, uint16_t blockId);
 
 	void Update();
+	void UpdateMeshes();
 	void Render();
 
 	int FreeChunkCount();
@@ -34,6 +36,7 @@ public:
 
 	void DEV_UnloadWorld();
 	std::array<int, 4> DEV_ChunksLoadingStates();
+
 private:
 	std::vector<Chunk> m_chunks;
 	std::unordered_map<ChunkPos, Chunk*, ChunkPos::HashFunction> m_chunkMap;

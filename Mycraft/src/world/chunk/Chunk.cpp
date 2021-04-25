@@ -55,11 +55,17 @@ Block* Chunk::GetBlock(BlockPos pos) const
 
 void Chunk::LocalSetBlock(BlockPos pos, uint16_t blockId)
 {
+	if (blockId != 0)
+		highestBlock = std::max(highestBlock, pos.y);
+
 	m_data[pos.x][pos.z][pos.y] = blockId;
 }
 
 void Chunk::SetBlock(BlockPos pos, uint16_t blockId)
 {
+	if (blockId != 0)
+		highestBlock = std::max(highestBlock, pos.y);
+
 	int x = pos.x & 31, z = pos.z & 31;
 	m_data[x][z][pos.y] = blockId;
 }
@@ -83,24 +89,26 @@ void Chunk::SetPos(ChunkPos pos)
 
 bool Chunk::CanGenerateMesh()
 {
-	return loadingState == LoadingState::loaded_blocks && adjacentChunks[Direction::north] && adjacentChunks[Direction::east] && adjacentChunks[Direction::south] && adjacentChunks[Direction::west];
+	return adjacentChunks[Direction::north] && adjacentChunks[Direction::east] && adjacentChunks[Direction::south] && adjacentChunks[Direction::west];
 }
 
 void Chunk::GenerateMesh()
 {
 	m_mesh.clear();
 
+	int h = std::max({ highestBlock, adjacentChunks[0]->highestBlock, adjacentChunks[1]->highestBlock, adjacentChunks[2]->highestBlock, adjacentChunks[3]->highestBlock }) + 1;
+
 	for (int x = m_offsetX + 1; x < m_offsetX + CHUNK_WIDTH - 1; x++)
 		for (int z = m_offsetZ + 1; z < m_offsetZ + CHUNK_WIDTH - 1; z++) {
-			GenerateColumnMesh(x, z);
+			GenerateColumnMesh(x, z, h);
 		}
 	for (int z : {m_offsetZ, m_offsetZ + CHUNK_WIDTH - 1})
 		for (int x = m_offsetX; x < m_offsetX + CHUNK_WIDTH; x++)
-			GenerateBorderColumnMesh(x, z);
+			GenerateBorderColumnMesh(x, z, h);
 
 	for (int z = m_offsetZ + 1; z < m_offsetZ + CHUNK_WIDTH - 1; z++)
 		for (int x : {m_offsetX, m_offsetX + CHUNK_WIDTH - 1})
-			GenerateBorderColumnMesh(x, z);
+			GenerateBorderColumnMesh(x, z, h);
 }
 
 void Chunk::InitializeBuffers()
@@ -138,6 +146,7 @@ void Chunk::ClearMesh()
 	m_polygonCount = 0;
 
 	loadingState = LoadingState::generating_mesh;
+	dirtyMesh = false;
 }
 
 void Chunk::Clear()
@@ -147,6 +156,7 @@ void Chunk::Clear()
 	m_VAO = -1;
 	m_VBO = -1;
 	m_polygonCount = 0;
+	dirtyMesh = false;
 
 	FOREACH_CARDINAL_DIRECTION(auto direction, {
 		adjacentChunks[direction] = nullptr;
@@ -163,9 +173,22 @@ void Chunk::Render() const
 	}
 }
 
-inline void Chunk::GenerateColumnMesh(int x, int z)
+void Chunk::Tick()
 {
-	for (int y = 0; y <= 101; y++) {
+	for (int i = 0; i < 48; i++) {
+		int x = rand() % Chunk::CHUNK_WIDTH + m_offsetX;
+		int y = rand() % Chunk::CHUNK_HEIGHT;
+		int z = rand() % Chunk::CHUNK_WIDTH + m_offsetZ;
+
+		BlockPos pos = { x,y,z };
+		auto block = GetBlock({ x,y,z });
+		block->Tick(*m_world, pos);
+	}
+}
+
+inline void Chunk::GenerateColumnMesh(int x, int z, int h)
+{
+	for (int y = 0; y <= h; y++) {
 		BlockPos pos = { x,y,z };
 		Block* block = GetBlock(pos);
 		if (block->IsOpaque())
@@ -181,9 +204,9 @@ inline void Chunk::GenerateColumnMesh(int x, int z)
 	}
 }
 
-inline void Chunk::GenerateBorderColumnMesh(int x, int z)
+inline void Chunk::GenerateBorderColumnMesh(int x, int z, int h)
 {
-	for (int y = 0; y <= 101; y++) {
+	for (int y = 0; y <= h; y++) {
 		BlockPos pos = { x,y,z };
 		Block* block = GetBlock(pos);
 		if (block->IsOpaque())

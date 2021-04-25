@@ -1,5 +1,7 @@
 #include "Block.h"
 
+#include "../World.h"
+
 Block::Block(GLuint topTex, GLuint sideTex, GLuint bottomTex, bool opaque) :
 	m_texTopIx(topTex),
 	m_texSideIx(sideTex),
@@ -29,6 +31,10 @@ uint16_t Block::GetId() const
 bool Block::IsOpaque() const
 {
 	return m_opaque;
+}
+
+void Block::Tick(World& world, BlockPos pos)
+{
 }
 
 #pragma warning(disable:4838)

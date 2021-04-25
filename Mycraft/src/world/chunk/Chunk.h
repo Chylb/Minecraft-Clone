@@ -43,16 +43,21 @@ public:
 	void Clear();
 	void Render() const;
 
+	void Tick();
+
 	LoadingState loadingState;
 	Chunk* adjacentChunks[4];
 	unsigned int m_polygonCount;
+
+	bool dirtyMesh;
+	int highestBlock = 0;
 
 	static const int CHUNK_HEIGHT = 256;
 	static const int CHUNK_WIDTH = 32;
 
 private:
-	void GenerateColumnMesh(int x, int z); //can template these functions but dunno how
-	void GenerateBorderColumnMesh(int x, int z);
+	void GenerateColumnMesh(int x, int z, int h); //can template these functions but dunno how
+	void GenerateBorderColumnMesh(int x, int z, int h);
 
 	World* m_world;
 	ChunkPos m_pos;

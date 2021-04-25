@@ -6,17 +6,13 @@
 #include <thread>
 #include <queue>
 #include <array>
+#include <set>
 
 #include "../utils/MathUtils.h"
 
 #include "../Camera.h"
 extern Camera g_camera;
 extern int g_renderDistance;
-
-extern std::queue<Chunk*> g_chunkLoad_job_queue;
-extern std::queue<Chunk*> g_chunkLoad_completed_job_queue;
-extern std::mutex g_job_mutex, g_completed_job_mutex;
-extern std::condition_variable g_cv;
 
 extern unsigned int g_polygons;
 
@@ -110,14 +106,23 @@ Block* World::GetBlock(BlockPos pos)
 void World::SetBlock(BlockPos pos, uint16_t blockId)
 {
 	Chunk* chunk = GetChunkAt(pos);
-	if (chunk)
+	if (chunk) {
 		chunk->SetBlock(pos, blockId);
+
+		chunk->dirtyMesh = true;
+		for (int i = 0; i < 4; i++)
+			chunk->adjacentChunks[i]->dirtyMesh = true;
+	}
 }
 
 void World::Update()
 {
 	std::vector<Chunk*> chunksToUnload;
 	for (Chunk* chunk : m_occupiedChunks) {
+		if (chunk->loadingState == Chunk::LoadingState::completed) {
+			chunk->Tick();
+		}
+
 		if (!chunk->CanBeUnloaded())
 			continue;
 
@@ -127,65 +132,59 @@ void World::Update()
 	}
 	for (Chunk* chunk : chunksToUnload) {
 		g_polygons -= chunk->m_polygonCount;
+		chunk->loadingState = Chunk::LoadingState::loading_blocks;
 		UnloadChunk(*chunk);
 	}
-
-	std::unique_lock<std::mutex> g1(g_completed_job_mutex);
-	while (g_chunkLoad_completed_job_queue.size() > 0) {
-		Chunk* chunk = g_chunkLoad_completed_job_queue.front();
-		g_chunkLoad_completed_job_queue.pop();
-
-		switch (chunk->loadingState) {
-		case Chunk::LoadingState::loaded_blocks:
-		{
-			Chunk* adjacentChunks[4];
-			FOREACH_CARDINAL_DIRECTION(auto constexpr direction, {
-				adjacentChunks[direction] = m_chunkMap[chunk->GetPos().Adjacent<direction>()];
-				});
-
-			FOREACH_CARDINAL_DIRECTION(auto constexpr direction, {
-				if (adjacentChunks[direction] && adjacentChunks[direction]->loadingState >= Chunk::LoadingState::loaded_blocks) {
-					adjacentChunks[direction]->adjacentChunks[Direction::Opposite<direction>()] = chunk;
-					chunk->adjacentChunks[direction] = adjacentChunks[direction];
-
-					if (adjacentChunks[direction]->CanGenerateMesh()) {
-						adjacentChunks[direction]->loadingState = Chunk::LoadingState::generating_mesh;
-						g_chunkLoad_job_queue.push(adjacentChunks[direction]);
-					}
-				}
-				});
-
-			if (chunk->CanGenerateMesh()) {
-				chunk->loadingState = Chunk::LoadingState::generating_mesh;
-				g_chunkLoad_job_queue.push(chunk);
-			}
-		}
-		break;
-
-		case Chunk::LoadingState::generating_mesh:
-			chunk->InitializeBuffers();
-			chunk->loadingState = Chunk::LoadingState::completed;
-			g_polygons += chunk->m_polygonCount;
-			break;
-		}
-	}
-	g1.unlock();
 
 	int cameraChunkX = (int)g_camera.position.x >> 5;
 	int cameraChunkZ = (int)g_camera.position.z >> 5;
 
-	std::lock_guard<std::mutex> g2(g_job_mutex);
+	std::queue<Chunk*> chunksToLoad;
 	for (auto chunkPos : m_nearbyChunksPositions) {
 		chunkPos.x += cameraChunkX;
 		chunkPos.z += cameraChunkZ;
 		if (m_chunkMap[chunkPos] == nullptr) {
 			Chunk* chunk = LoadChunk(chunkPos);
-			g_chunkLoad_job_queue.push(chunk);
+
+			chunksToLoad.push(chunk);
 		}
 	}
 
-	if (!g_chunkLoad_job_queue.empty())
-		g_cv.notify_all();
+	while (chunksToLoad.size()) {
+		Chunk* chunk = chunksToLoad.front();
+		chunksToLoad.pop();
+
+		this->PopulateChunk(*chunk);
+		chunk->loadingState = Chunk::LoadingState::loaded_blocks;
+		chunk->dirtyMesh = true;
+
+		Chunk* adjacentChunks[4];
+		FOREACH_CARDINAL_DIRECTION(auto constexpr direction, {
+			adjacentChunks[direction] = m_chunkMap[chunk->GetPos().Adjacent<direction>()];
+			});
+
+		FOREACH_CARDINAL_DIRECTION(auto constexpr direction, {
+			if (adjacentChunks[direction] && adjacentChunks[direction]->loadingState >= Chunk::LoadingState::loaded_blocks) {
+				adjacentChunks[direction]->adjacentChunks[Direction::Opposite<direction>()] = chunk;
+				chunk->adjacentChunks[direction] = adjacentChunks[direction];
+			}
+			});
+	}
+}
+
+void World::UpdateMeshes()
+{
+	for (Chunk* chunk : m_occupiedChunks) {
+		if (chunk->dirtyMesh && chunk->CanGenerateMesh()) {
+			g_polygons -= chunk->m_polygonCount;
+			chunk->ClearMesh();
+			chunk->GenerateMesh();
+			chunk->InitializeBuffers();
+			chunk->dirtyMesh = false;
+			chunk->loadingState = Chunk::LoadingState::completed;
+			g_polygons += chunk->m_polygonCount;
+		}
+	}
 }
 
 void World::Render()
