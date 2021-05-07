@@ -24,12 +24,12 @@ public:
 		completed
 	};
 
-	Block* LocalGetBlock(BlockPos pos) const;
+	BlockState* GetBlockState(BlockPos pos) const;
+	void SetBlock(BlockPos pos, BlockState* state);
+
+	//Block* LocalGetBlock(BlockPos pos) const;
 	template<Direction::Direction dir>
-	Block* GetNearbyBlock(BlockPos pos) const;
-	Block* GetBlock(BlockPos pos) const;
-	void LocalSetBlock(BlockPos pos, uint16_t blockId);
-	void SetBlock(BlockPos pos, uint16_t blockId);
+	BlockState* GetNearbyBlockState(BlockPos pos) const;
 
 	void SetWorld(World* world);
 	ChunkPos GetPos() const;

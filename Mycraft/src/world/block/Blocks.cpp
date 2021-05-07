@@ -10,12 +10,12 @@ void Blocks::Initialize()
 	dirt		= BlockRegistry::Register(new Dirt(TIX("dirt")));
 	cobblestone = BlockRegistry::Register(new Block(TIX("cobblestone"), true));
 	plank		= BlockRegistry::Register(new Block(TIX("oak_planks"), true));
-	wood		= BlockRegistry::Register(new Block(TIX("oak_log_top"), TIX("oak_log"), TIX("oak_log_top"), true));
+	wood		= BlockRegistry::Register(new Log(TIX("oak_log_top"), TIX("oak_log")));
 	leaves		= BlockRegistry::Register(new Block(TIX("leaves"), true));
 }
 
-Block* Blocks::GetBlock(uint16_t id)
+BlockState* Blocks::GetBlockState(uint16_t id)
 {
-	return BlockRegistry::GetBlock(id);
+	return BlockRegistry::GetBlockState(id);
 }
 

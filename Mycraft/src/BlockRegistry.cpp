@@ -2,16 +2,21 @@
 
 Block* BlockRegistry::Register(Block* block)
 {
-	static uint16_t blockId = 0;
+	static uint16_t blockStateId = 0;
 
-	block->m_id = blockId;
 	s_blocks.push_back(block);
-	blockId++;
+
+	const auto& states = block->GetStateDefinition().GetPossibleStates();
+	for (auto state : states) {
+		state->m_id = blockStateId;
+		s_blockStates.push_back(state);
+		blockStateId++;
+	}
 
 	return block;
 }
 
-Block* BlockRegistry::GetBlock(uint16_t id)
+BlockState* BlockRegistry::GetBlockState(uint16_t id)
 {
-	return s_blocks[id];
+	return s_blockStates[id];
 }

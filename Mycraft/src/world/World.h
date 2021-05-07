@@ -22,8 +22,8 @@ public:
 	Chunk* GetChunk(int x, int z);
 	Chunk* GetChunkAt(BlockPos pos);
 
-	Block* GetBlock(BlockPos pos);
-	void SetBlock(BlockPos pos, uint16_t blockId);
+	BlockState* GetBlockState(BlockPos pos);
+	void SetBlock(BlockPos pos, BlockState* state);
 
 	void Update();
 	void UpdateMeshes();

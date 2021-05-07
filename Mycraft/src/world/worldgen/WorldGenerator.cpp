@@ -12,29 +12,26 @@ void WorldGenerator::GenerateChunk(Chunk& chunk) const
 	int offsetX = chunk.GetPos().x * Chunk::CHUNK_WIDTH;
 	int offsetZ = chunk.GetPos().z * Chunk::CHUNK_WIDTH;
 
-	for (int x = 0; x < Chunk::CHUNK_WIDTH; x++)
-		for (int z = 0; z < Chunk::CHUNK_WIDTH; z++) {
-			int h = 80 + 10 * sin((x + offsetX) * std::numbers::pi / Chunk::CHUNK_WIDTH) + 10 * sin((z + offsetZ) * std::numbers::pi / Chunk::CHUNK_WIDTH);
+	for (int x = offsetX; x < Chunk::CHUNK_WIDTH + offsetX; x++)
+		for (int z = offsetZ; z < Chunk::CHUNK_WIDTH + offsetZ; z++) {
+			int h = 80 + 10 * sin(x * std::numbers::pi / Chunk::CHUNK_WIDTH) + 10 * sin(z * std::numbers::pi / Chunk::CHUNK_WIDTH);
 
-			uint16_t blockId = Blocks::stone->GetId();
 			for (int y = 0; y < h - 5; y++) {
-				chunk.LocalSetBlock({ x,y,z }, blockId);
+				chunk.SetBlock({ x,y,z }, Blocks::stone->DefaultBlockState());
 			}
 
-			blockId = Blocks::dirt->GetId();
 			for (int y = h - 5; y < h; y++) {
-				chunk.LocalSetBlock({ x,y,z }, blockId);
+				chunk.SetBlock({ x,y,z }, Blocks::dirt->DefaultBlockState());
 			}
 
-			blockId = Blocks::grass->GetId();
-			chunk.LocalSetBlock({ x,h,z }, blockId);
+			chunk.SetBlock({ x,h,z }, Blocks::grass->DefaultBlockState());
 
 			for (int y = h + 1; y < Chunk::CHUNK_HEIGHT; y++) {
-				chunk.LocalSetBlock({ x,y,z }, 0);
+				chunk.SetBlock({ x,y,z }, Blocks::air->DefaultBlockState());
 			}
 		}
 
-	for (int i = 0; i < 8; i++) {
-		chunk.LocalSetBlock({ i,90,0 }, i);
+	for (int i = 0; i < 10; i++) {
+		chunk.SetBlock({ i,90,0 }, Blocks::GetBlockState(i));
 	}
 }

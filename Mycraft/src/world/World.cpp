@@ -95,19 +95,19 @@ Chunk* World::GetChunkAt(BlockPos pos)
 	return m_chunkMap[{pos.x >> 5, pos.z >> 5}];
 }
 
-Block* World::GetBlock(BlockPos pos)
+BlockState* World::GetBlockState(BlockPos pos)
 {
 	Chunk* chunk = GetChunkAt(pos);
 	if (chunk)
-		return chunk->GetBlock(pos);
-	return Blocks::air;
+		return chunk->GetBlockState(pos);
+	return Blocks::air->DefaultBlockState();
 }
 
-void World::SetBlock(BlockPos pos, uint16_t blockId)
+void World::SetBlock(BlockPos pos, BlockState* state)
 {
 	Chunk* chunk = GetChunkAt(pos);
 	if (chunk) {
-		chunk->SetBlock(pos, blockId);
+		chunk->SetBlock(pos, state);
 
 		chunk->dirtyMesh = true;
 		for (int i = 0; i < 4; i++)
@@ -255,7 +255,7 @@ std::tuple<bool, BlockPos, Direction::Direction> World::DoBlockRayTrace(glm::vec
 			lastAxis = Axis::z;
 		}
 
-		if (GetBlock({ i,j,k })->IsOpaque()) {
+		if (GetBlockState({ i,j,k })->GetBlock().IsOpaque()) {
 			hit = true;
 			switch (lastAxis) {
 			case Axis::x:

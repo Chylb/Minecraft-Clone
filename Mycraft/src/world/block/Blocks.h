@@ -7,12 +7,14 @@
 #include "../../Resources.h"
 
 #include "Dirt.h"
+#include "Log.h"
 
 class Blocks
 {
 public:
 	static void Initialize();
 	static Block* GetBlock(uint16_t id);
+	static BlockState* GetBlockState(uint16_t id);
 
 	inline static Block* air;
 	inline static Block* stone;

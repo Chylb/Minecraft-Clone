@@ -2,30 +2,29 @@
 
 #include "../World.h"
 
-Block::Block(GLuint topTex, GLuint sideTex, GLuint bottomTex, bool opaque) :
+Block::Block(GLuint topTex, GLuint sideTex, GLuint bottomTex, bool opaque, StateContainer<Block, BlockState>::Builder builder) :
 	m_texTopIx(topTex),
 	m_texSideIx(sideTex),
 	m_texBottomIx(bottomTex),
 	m_opaque(opaque)
 {
+	m_stateDefinition = builder.Create();
+	m_defaultBlockState = m_stateDefinition.Any();
+}
+
+Block::Block(GLuint topTex, GLuint sideTex, GLuint bottomTex, bool opaque) :
+	Block::Block(topTex, sideTex, bottomTex, opaque, StateContainer<Block, BlockState>::Builder(this))
+{
 }
 
 Block::Block(GLuint tex, bool opaque) :
-	m_texTopIx(tex),
-	m_texSideIx(tex),
-	m_texBottomIx(tex),
-	m_opaque(opaque)
+	Block::Block(tex, tex, tex, opaque)
 {
 }
 
 Block::Block() :
-	m_opaque(false)
+	Block::Block(0, false)
 {
-}
-
-uint16_t Block::GetId() const
-{
-	return m_id;
 }
 
 bool Block::IsOpaque() const
@@ -33,7 +32,17 @@ bool Block::IsOpaque() const
 	return m_opaque;
 }
 
-void Block::Tick(World& world, BlockPos pos)
+const StateContainer<Block, BlockState>& Block::GetStateDefinition() const
+{
+	return m_stateDefinition;
+}
+
+BlockState* Block::DefaultBlockState() const
+{
+	return m_defaultBlockState;
+}
+
+void Block::Tick(World& world, BlockPos pos) const
 {
 }
 

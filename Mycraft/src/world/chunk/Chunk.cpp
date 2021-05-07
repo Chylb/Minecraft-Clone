@@ -14,60 +14,51 @@ Chunk::~Chunk()
 	glDeleteBuffers(1, &m_VBO);
 }
 
-Block* Chunk::LocalGetBlock(BlockPos pos) const
+BlockState* Chunk::GetBlockState(BlockPos pos) const
 {
+	int x = pos.x & 31, z = pos.z & 31;
 	if (pos.y < 0 || pos.y >= CHUNK_HEIGHT)
-		return Blocks::air;
-	return Blocks::GetBlock(m_data[pos.x][pos.z][pos.y]);
+		return Blocks::air->DefaultBlockState();
+	return Blocks::GetBlockState(m_data[x][z][pos.y]);
 }
 
+void Chunk::SetBlock(BlockPos pos, BlockState* state)
+{
+	if (state != Blocks::air->DefaultBlockState())
+		highestBlock = std::max(highestBlock, pos.y);
+
+	int x = pos.x & 31, z = pos.z & 31;
+	m_data[x][z][pos.y] = state->GetId();
+}
+
+//Block* Chunk::LocalGetBlock(BlockPos pos) const
+//{
+//	if (pos.y < 0 || pos.y >= CHUNK_HEIGHT)
+//		return Blocks::air;
+//	return Blocks::GetBlock(m_data[pos.x][pos.z][pos.y]);
+//}
+
 template<Direction::Direction dir>
-Block* Chunk::GetNearbyBlock(BlockPos pos) const
+BlockState* Chunk::GetNearbyBlockState(BlockPos pos) const
 {
 	if constexpr (dir == Direction::north) {
 		if (pos.z < m_offsetZ)
-			return adjacentChunks[dir]->GetBlock(pos);
+			return adjacentChunks[dir]->GetBlockState(pos);
 	}
 	if constexpr (dir == Direction::east) {
 		if (pos.x >= m_offsetX + CHUNK_WIDTH)
-			return adjacentChunks[dir]->GetBlock(pos);
+			return adjacentChunks[dir]->GetBlockState(pos);
 	}
 	if constexpr (dir == Direction::south) {
 		if (pos.z >= m_offsetZ + CHUNK_WIDTH)
-			return adjacentChunks[dir]->GetBlock(pos);
+			return adjacentChunks[dir]->GetBlockState(pos);
 	}
 	if constexpr (dir == Direction::west) {
 		if (pos.x < m_offsetX)
-			return adjacentChunks[dir]->GetBlock(pos);
+			return adjacentChunks[dir]->GetBlockState(pos);
 	}
 
-	return GetBlock(pos);
-}
-
-
-Block* Chunk::GetBlock(BlockPos pos) const
-{
-	int x = pos.x & 31, z = pos.z & 31;
-	if (pos.y < 0 || pos.y >= CHUNK_HEIGHT)
-		return Blocks::air;
-	return Blocks::GetBlock(m_data[x][z][pos.y]);
-}
-
-void Chunk::LocalSetBlock(BlockPos pos, uint16_t blockId)
-{
-	if (blockId != 0)
-		highestBlock = std::max(highestBlock, pos.y);
-
-	m_data[pos.x][pos.z][pos.y] = blockId;
-}
-
-void Chunk::SetBlock(BlockPos pos, uint16_t blockId)
-{
-	if (blockId != 0)
-		highestBlock = std::max(highestBlock, pos.y);
-
-	int x = pos.x & 31, z = pos.z & 31;
-	m_data[x][z][pos.y] = blockId;
+	return GetBlockState(pos);
 }
 
 void Chunk::SetWorld(World* world)
@@ -181,8 +172,8 @@ void Chunk::Tick()
 		int z = rand() % Chunk::CHUNK_WIDTH + m_offsetZ;
 
 		BlockPos pos = { x,y,z };
-		auto block = GetBlock({ x,y,z });
-		block->Tick(*m_world, pos);
+		auto state = GetBlockState({ x,y,z });
+		state->GetBlock().Tick(*m_world, pos);
 	}
 }
 
@@ -190,16 +181,16 @@ inline void Chunk::GenerateColumnMesh(int x, int z, int h)
 {
 	for (int y = 0; y <= h; y++) {
 		BlockPos pos = { x,y,z };
-		Block* block = GetBlock(pos);
-		if (block->IsOpaque())
+		BlockState* state = GetBlockState(pos);
+		if (state->GetBlock().IsOpaque())
 			continue;
 
 		FOREACH_DIRECTION(constexpr auto direction,
 			{
-				Block * neighbour = GetBlock(pos.Adjacent<direction>());
+				BlockState * neighbour = GetBlockState(pos.Adjacent<direction>());
 
-				if (neighbour->IsOpaque())
-					neighbour->WriteFace<Direction::Opposite<direction>()>(m_mesh, pos.Adjacent<direction>());
+				if (neighbour->GetBlock().IsOpaque())
+					neighbour->GetBlock().WriteFace<Direction::Opposite<direction>()>(m_mesh, pos.Adjacent<direction>());
 			});
 	}
 }
@@ -208,20 +199,20 @@ inline void Chunk::GenerateBorderColumnMesh(int x, int z, int h)
 {
 	for (int y = 0; y <= h; y++) {
 		BlockPos pos = { x,y,z };
-		Block* block = GetBlock(pos);
-		if (block->IsOpaque())
+		BlockState* state = GetBlockState(pos);
+		if (state->GetBlock().IsOpaque())
 			continue;
 
 		FOREACH_DIRECTION(constexpr auto direction,
 			{
-				Block * neighbour;
+				BlockState * neighbour;
 				if constexpr (Direction::IsCardinal<direction>())
-					neighbour = GetNearbyBlock<direction>(pos.Adjacent<direction>());
+					neighbour = GetNearbyBlockState<direction>(pos.Adjacent<direction>());
 				else
-					neighbour = GetBlock(pos.Adjacent<direction>());
+					neighbour = GetBlockState(pos.Adjacent<direction>());
 
-				if (neighbour->IsOpaque())
-					neighbour->WriteFace<Direction::Opposite<direction>()>(m_mesh, pos.Adjacent<direction>());
+				if (neighbour->GetBlock().IsOpaque())
+					neighbour->GetBlock().WriteFace<Direction::Opposite<direction>()>(m_mesh, pos.Adjacent<direction>());
 			});
 	}
 }

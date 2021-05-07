@@ -18,6 +18,9 @@
 #include "world/World.h"
 #include "world/chunk/Chunk.h"
 #include "Resources.h"
+#include "state/properties/BlockStateProperties.h"
+#include "state/StateContainer.h"
+#include "state/StateHolder.h"
 
 #include "renderer/Shader.h"
 #include "renderer/Renderer.h"
@@ -25,8 +28,10 @@
 #include "utils/Timer.h"
 
 #include <time.h>
+
 //Camera g_camera(glm::vec3(0, 2000, 40), 0, -90);
 Camera g_camera(glm::vec3(0, 100, 40));
+BlockState* placedBlockState;
 int g_renderDistance = 8;
 World* world;
 
@@ -42,7 +47,10 @@ int main()
 
 	Gui::Init(Renderer::window);
 	Resources::LoadTextures();
+	BlockStateProperties::Initialize();
 	Blocks::Initialize();
+
+	placedBlockState = Blocks::cobblestone->DefaultBlockState();
 
 	world = new World();
 
@@ -101,7 +109,7 @@ void processInput(GLFWwindow* window, float deltaTime)
 		auto [hit, hitPos, hitFace] = world->DoBlockRayTrace(g_camera.position, end);
 
 		if (hit)
-			world->SetBlock(hitPos, 0);
+			world->SetBlock(hitPos, Blocks::air->DefaultBlockState());
 	}
 
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
@@ -112,8 +120,8 @@ void processInput(GLFWwindow* window, float deltaTime)
 
 		if (hit) {
 			auto blockPos = hitPos.Adjacent(hitFace);
-			if (!world->GetBlock(blockPos)->IsOpaque())
-				world->SetBlock(hitPos.Adjacent(hitFace), Blocks::dirt->GetId());
+			if (!world->GetBlockState(blockPos)->GetBlock().IsOpaque())
+				world->SetBlock(hitPos.Adjacent(hitFace), placedBlockState);
 		}
 	}
 
@@ -129,6 +137,12 @@ void processInput(GLFWwindow* window, float deltaTime)
 		g_camera.ProcessMovement(CameraMovement::up, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
 		g_camera.ProcessMovement(CameraMovement::down, deltaTime);
+
+	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) placedBlockState = Blocks::cobblestone->DefaultBlockState();
+	if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) placedBlockState = Blocks::stone->DefaultBlockState();
+	if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) placedBlockState = Blocks::dirt->DefaultBlockState();
+	if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS) placedBlockState = Blocks::grass->DefaultBlockState();
+	if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS) placedBlockState = Blocks::wood->DefaultBlockState();
 }
 
 

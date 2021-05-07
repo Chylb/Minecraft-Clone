@@ -6,27 +6,33 @@
 #include <unordered_map>
 
 #include "BlockPos.h"
+#include "BlockState.h"
+#include "../../state/Property.h"
+#include "../state/StateContainer.h"
 
 class World;
 
 class Block
 {
 public:
+	Block(GLuint topTex, GLuint sideTex, GLuint bottomTex, bool opaque, StateContainer<Block, BlockState>::Builder builder);
 	Block(GLuint topTex, GLuint sideTex, GLuint bottomTex, bool opaque);
 	Block(GLuint tex, bool opaque);
 	Block();
-
-	uint16_t GetId() const;
 
 	bool IsOpaque() const;
 
 	template<Direction::Direction dir>
 	void WriteFace(std::vector<float>& target, BlockPos pos) const;
 
-	virtual void Tick(World& world, BlockPos pos);
+	const StateContainer<Block, BlockState>& GetStateDefinition() const;
+	BlockState* DefaultBlockState() const;
+	virtual void Tick(World& world, BlockPos pos) const;
+
 
 private:
-	uint16_t m_id;
+	StateContainer<Block, BlockState> m_stateDefinition;
+	BlockState* m_defaultBlockState;
 
 	bool m_opaque;
 

@@ -154,6 +154,7 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalIncludeDirectories>src\vendor;$(SolutionDir)dependencies\GLEW\include;$(SolutionDir)dependencies\GLFW\include</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <BrowseInformation>true</BrowseInformation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -163,13 +164,19 @@
       <AdditionalDependencies>glfw3.lib;glew32s.lib;opengl32.lib;User32.lib;Gdi32.lib;Shell32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)dependencies\GLFW\lib-vc2019;$(SolutionDir)dependencies\GLEW\lib\Release\x64</AdditionalLibraryDirectories>
     </Link>
+    <Bscmake>
+      <PreserveSbr>true</PreserveSbr>
+    </Bscmake>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\state\properties\BlockStateProperties.cpp" />
     <ClCompile Include="src\world\block\Block.cpp" />
     <ClCompile Include="src\BlockRegistry.cpp" />
     <ClCompile Include="src\world\block\Blocks.cpp" />
     <ClCompile Include="src\Camera.cpp" />
+    <ClCompile Include="src\world\block\BlockState.cpp" />
     <ClCompile Include="src\world\block\Dirt.cpp" />
+    <ClCompile Include="src\world\block\Log.cpp" />
     <ClCompile Include="src\world\chunk\Chunk.cpp" />
     <ClCompile Include="src\Gui.cpp" />
     <ClCompile Include="src\Mycraft.cpp" />
@@ -190,6 +197,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Direction.h" />
+    <ClInclude Include="src\state\properties\BlockStateProperties.h" />
+    <ClInclude Include="src\state\Property.h" />
+    <ClInclude Include="src\state\StateContainer.h" />
+    <ClInclude Include="src\state\StateHolder.h" />
     <ClInclude Include="src\utils\MathUtils.h" />
     <ClInclude Include="src\utils\Timer.h" />
     <ClInclude Include="src\world\block\Block.h" />
@@ -197,7 +208,9 @@
     <ClInclude Include="src\BlockRegistry.h" />
     <ClInclude Include="src\world\block\Blocks.h" />
     <ClInclude Include="src\Camera.h" />
+    <ClInclude Include="src\world\block\BlockState.h" />
     <ClInclude Include="src\world\block\Dirt.h" />
+    <ClInclude Include="src\world\block\Log.h" />
     <ClInclude Include="src\world\chunk\Chunk.h" />
     <ClInclude Include="src\world\chunk\ChunkPos.h" />
     <ClInclude Include="src\Gui.h" />
