@@ -1,6 +1,7 @@
 #include "Chunk.h"
 
 #include "../World.h"
+#include "../../model/BlockModelRegistry.h"
 
 Chunk::Chunk()
 {
@@ -190,7 +191,7 @@ inline void Chunk::GenerateColumnMesh(int x, int z, int h)
 				BlockState * neighbour = GetBlockState(pos.Adjacent<direction>());
 
 				if (neighbour->GetBlock().IsOpaque())
-					neighbour->GetBlock().WriteFace<Direction::Opposite<direction>()>(m_mesh, pos.Adjacent<direction>());
+					BlockModelRegistry::GetBlockModel(neighbour).WriteFace(m_mesh, pos.Adjacent<direction>(), Direction::Opposite<direction>());
 			});
 	}
 }
@@ -212,7 +213,7 @@ inline void Chunk::GenerateBorderColumnMesh(int x, int z, int h)
 					neighbour = GetBlockState(pos.Adjacent<direction>());
 
 				if (neighbour->GetBlock().IsOpaque())
-					neighbour->GetBlock().WriteFace<Direction::Opposite<direction>()>(m_mesh, pos.Adjacent<direction>());
+					BlockModelRegistry::GetBlockModel(neighbour).WriteFace(m_mesh, pos.Adjacent<direction>(), Direction::Opposite<direction>());
 			});
 	}
 }

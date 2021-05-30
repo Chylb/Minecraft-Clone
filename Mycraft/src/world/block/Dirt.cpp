@@ -2,11 +2,11 @@
 
 #include "../World.h"
 
-Dirt::Dirt(GLuint tex) : Block(tex, true)
+Dirt::Dirt() : Block(true)
 {
 }
 
-void Dirt::Tick(World& world, BlockPos pos)
+void Dirt::Tick(World& world, BlockPos pos) const
 {
 	auto stateAbove = world.GetBlockState(pos.Adjacent<Direction::top>());
 	if (stateAbove->GetId() == 0)

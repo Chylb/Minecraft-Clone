@@ -5,6 +5,8 @@
 
 #include "Property.h"
 
+#define INT_PROP(prop) (Property<int>*) (void*)prop
+
 template<typename O, typename S>
 class StateContainer;
 
@@ -42,7 +44,7 @@ template<typename O, typename S>
 template<typename T>
 inline T StateHolder<O, S>::GetValue(Property<T>* p) const
 {
-	return m_values.at(p);
+	return (T)m_values.at(INT_PROP(p));
 }
 
 template<typename O, typename S>

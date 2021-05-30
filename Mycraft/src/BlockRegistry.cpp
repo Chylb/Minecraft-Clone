@@ -20,3 +20,8 @@ BlockState* BlockRegistry::GetBlockState(uint16_t id)
 {
 	return s_blockStates[id];
 }
+
+int BlockRegistry::GetBlockStateCount()
+{
+	return s_blockStates.size();
+}

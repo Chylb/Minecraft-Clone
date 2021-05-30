@@ -5,7 +5,7 @@
 class Dirt : public Block
 {
 public:
-	Dirt(GLuint tex);
+	Dirt();
 
-	void Tick(World& world, BlockPos pos);
+	void Tick(World& world, BlockPos pos) const override;
 };

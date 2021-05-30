@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ostream>
+
 #define FOREACH_CARDINAL_DIRECTION(VAR, CODE) \
 	{VAR = Direction::north; CODE} \
 	{VAR = Direction::east; CODE} \
@@ -20,7 +22,8 @@ namespace Direction
 		south,
 		west,
 		top,
-		bottom
+		bottom,
+		none
 	};
 
 	template<Direction dir> constexpr Direction Opposite()
@@ -45,4 +48,7 @@ namespace Direction
 	{
 		return !(dir == top || dir == bottom);
 	}
+
+	Direction GetNearest(float x, float y, float z);
+	std::ostream& operator<<(std::ostream& os, const Direction& dir);
 }

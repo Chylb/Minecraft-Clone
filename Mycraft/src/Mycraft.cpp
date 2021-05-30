@@ -21,6 +21,8 @@
 #include "state/properties/BlockStateProperties.h"
 #include "state/StateContainer.h"
 #include "state/StateHolder.h"
+#include "model/BlockModels.h"
+#include "model/BlockModelRegistry.h"
 
 #include "renderer/Shader.h"
 #include "renderer/Renderer.h"
@@ -49,6 +51,8 @@ int main()
 	Resources::LoadTextures();
 	BlockStateProperties::Initialize();
 	Blocks::Initialize();
+	BlockModelRegistry::Resize(BlockRegistry::GetBlockStateCount());
+	BlockModels::Initialize();
 
 	placedBlockState = Blocks::cobblestone->DefaultBlockState();
 

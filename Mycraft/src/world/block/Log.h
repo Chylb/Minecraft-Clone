@@ -6,5 +6,5 @@
 class Log : public Block
 {
 public:
-	Log(GLuint topTex, GLuint sideTex);
+	Log();
 };

@@ -4,14 +4,14 @@
 
 void Blocks::Initialize()
 {
-	air			= BlockRegistry::Register(new Block());
-	stone		= BlockRegistry::Register(new Block(TIX("stone"), true));
-	grass		= BlockRegistry::Register(new Block(TIX("grass_top"), TIX("grass_block_side"), TIX("dirt"), true));
-	dirt		= BlockRegistry::Register(new Dirt(TIX("dirt")));
-	cobblestone = BlockRegistry::Register(new Block(TIX("cobblestone"), true));
-	plank		= BlockRegistry::Register(new Block(TIX("oak_planks"), true));
-	wood		= BlockRegistry::Register(new Log(TIX("oak_log_top"), TIX("oak_log")));
-	leaves		= BlockRegistry::Register(new Block(TIX("leaves"), true));
+	air			= BlockRegistry::Register(new Block(false));
+	stone		= BlockRegistry::Register(new Block(true));
+	grass		= BlockRegistry::Register(new Block(true));
+	dirt		= BlockRegistry::Register(new Dirt());
+	cobblestone = BlockRegistry::Register(new Block(true));
+	plank		= BlockRegistry::Register(new Block(true));
+	wood		= BlockRegistry::Register(new Log());
+	leaves		= BlockRegistry::Register(new Block(true));
 }
 
 BlockState* Blocks::GetBlockState(uint16_t id)

@@ -10,6 +10,7 @@ class BlockRegistry
 public:
 	static Block* Register(Block* block);
 	static BlockState* GetBlockState(uint16_t id);
+	static int GetBlockStateCount();
 
 private:
 	inline static std::vector<Block*> s_blocks;

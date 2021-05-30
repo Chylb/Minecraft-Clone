@@ -169,6 +169,12 @@
     </Bscmake>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Direction.cpp" />
+    <ClCompile Include="src\model\BakedModel.cpp" />
+    <ClCompile Include="src\model\BlockModelRegistry.cpp" />
+    <ClCompile Include="src\model\BlockModels.cpp" />
+    <ClCompile Include="src\model\UnbakedModel.cpp" />
+    <ClCompile Include="src\model\UnbakedQuad.cpp" />
     <ClCompile Include="src\state\properties\BlockStateProperties.cpp" />
     <ClCompile Include="src\world\block\Block.cpp" />
     <ClCompile Include="src\BlockRegistry.cpp" />
@@ -197,6 +203,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Direction.h" />
+    <ClInclude Include="src\model\BakedModel.h" />
+    <ClInclude Include="src\model\BlockModelRegistry.h" />
+    <ClInclude Include="src\model\BlockModels.h" />
+    <ClInclude Include="src\model\UnbakedModel.h" />
+    <ClInclude Include="src\model\UnbakedQuad.h" />
     <ClInclude Include="src\state\properties\BlockStateProperties.h" />
     <ClInclude Include="src\state\Property.h" />
     <ClInclude Include="src\state\StateContainer.h" />

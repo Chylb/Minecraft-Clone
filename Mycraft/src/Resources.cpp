@@ -40,5 +40,9 @@ void Resources::LoadTextures()
 
 GLuint Resources::GetTextureIx(const std::string& name)
 {
-	return s_textureIxMap.at(name);
+	auto mapIt = s_textureIxMap.find(name);
+	if (mapIt != s_textureIxMap.end())
+		return mapIt->second;
+
+	return s_textureIxMap.at("missing_texture");
 }
