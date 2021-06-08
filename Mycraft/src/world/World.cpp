@@ -6,11 +6,13 @@
 #include <thread>
 #include <queue>
 #include <array>
+#include <functional>
 #include <set>
 
 #include "../utils/MathUtils.h"
 
 #include "../Camera.h"
+#include "../utils/math/shapes/VoxelShape.h"
 extern Camera g_camera;
 extern int g_renderDistance;
 
@@ -103,7 +105,7 @@ BlockState* World::GetBlockState(BlockPos pos)
 	return Blocks::air->DefaultBlockState();
 }
 
-void World::SetBlock(BlockPos pos, BlockState* state)
+void World::SetBlock(BlockPos pos, const BlockState* state)
 {
 	Chunk* chunk = GetChunkAt(pos);
 	if (chunk) {
@@ -203,76 +205,63 @@ int World::OccupiedChunkCount()
 	return m_occupiedChunks.size();
 }
 
-std::tuple<bool, BlockPos, Direction::Direction> World::DoBlockRayTrace(glm::vec3 start, glm::vec3 end)
+BlockRayTraceResult World::Clip(glm::vec3 from, glm::vec3 to)
 {
-	int i = floor(start.x);
-	int j = floor(start.y);
-	int k = floor(start.z);
+	return TraverseBlocks(from, to, [&](glm::vec3 from, glm::vec3 rayDir, BlockPos pos)
+		{
+			auto state = GetBlockState(pos);
+			auto& shape = state->GetBlock().GetShape(*state);
+			return shape.Clip(from, rayDir, pos);
+		});
+}
 
-	auto diff = end - start;
+BlockRayTraceResult World::TraverseBlocks(glm::vec3 from, glm::vec3 to, std::function<BlockRayTraceResult(glm::vec3 from, glm::vec3 rayDir, BlockPos pos)> hitFunction)
+{
+	int i = floor(from.x);
+	int j = floor(from.y);
+	int k = floor(from.z);
 
-	float dirX = MathUtils::signum(diff.x);
-	float dirY = MathUtils::signum(diff.y);
-	float dirZ = MathUtils::signum(diff.z);
+	auto rayDir = to - from;
 
-	float stepX = dirX == 0 ? std::numeric_limits<float>::max() : dirX / diff.x;
-	float stepY = dirY == 0 ? std::numeric_limits<float>::max() : dirY / diff.y;
-	float stepZ = dirZ == 0 ? std::numeric_limits<float>::max() : dirZ / diff.z;
+	float dirX = MathUtils::signum(rayDir.x);
+	float dirY = MathUtils::signum(rayDir.y);
+	float dirZ = MathUtils::signum(rayDir.z);
 
-	float traveledX = stepX * (dirX > 0 ? 1.0 - MathUtils::frac(start.x) : MathUtils::frac(start.x));
-	float traveledY = stepY * (dirY > 0 ? 1.0 - MathUtils::frac(start.y) : MathUtils::frac(start.y));
-	float traveledZ = stepZ * (dirZ > 0 ? 1.0 - MathUtils::frac(start.z) : MathUtils::frac(start.z));
+	float stepX = dirX == 0 ? std::numeric_limits<float>::max() : dirX / rayDir.x;
+	float stepY = dirY == 0 ? std::numeric_limits<float>::max() : dirY / rayDir.y;
+	float stepZ = dirZ == 0 ? std::numeric_limits<float>::max() : dirZ / rayDir.z;
 
-	enum class Axis
-	{
-		x, y, z
-	};
-	Axis lastAxis;
-	Direction::Direction hitFace;
-	bool hit = false;
+	float traveledX = stepX * (dirX > 0 ? 1.0 - MathUtils::frac(from.x) : MathUtils::frac(from.x));
+	float traveledY = stepY * (dirY > 0 ? 1.0 - MathUtils::frac(from.y) : MathUtils::frac(from.y));
+	float traveledZ = stepZ * (dirZ > 0 ? 1.0 - MathUtils::frac(from.z) : MathUtils::frac(from.z));
 
 	while (traveledX <= 1.0 || traveledY <= 1.0 || traveledZ <= 1.0) {
 		if (traveledX < traveledY) {
 			if (traveledX < traveledZ) {
 				i += dirX;
 				traveledX += stepX;
-				lastAxis = Axis::x;
 			}
 			else {
 				k += dirZ;
 				traveledZ += stepZ;
-				lastAxis = Axis::z;
 			}
 		}
 		else if (traveledY < traveledZ) {
 			j += dirY;
 			traveledY += stepY;
-			lastAxis = Axis::y;
 		}
 		else {
 			k += dirZ;
 			traveledZ += stepZ;
-			lastAxis = Axis::z;
 		}
 
-		if (GetBlockState({ i,j,k })->GetBlock().IsOpaque()) {
-			hit = true;
-			switch (lastAxis) {
-			case Axis::x:
-				dirX > 0 ? hitFace = Direction::west : hitFace = Direction::east;
-				break;
-			case Axis::y:
-				dirY > 0 ? hitFace = Direction::bottom : hitFace = Direction::top;
-				break;
-			default:
-				dirZ > 0 ? hitFace = Direction::north : hitFace = Direction::south;
-				break;
-			}
-
-			break;
+		BlockRayTraceResult result = hitFunction(from, rayDir, { i,j,k });
+		if (result.hit) {
+			result.world = this;
+			return result;
 		}
 	}
-	return { hit, {i,j,k}, hitFace };
+	return { .hit = false };
 }
 
 void World::DEV_UnloadWorld()

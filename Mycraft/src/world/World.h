@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <glm/glm.hpp>
 
 #include <vector>
@@ -10,6 +11,7 @@
 #include "chunk/Chunk.h"
 #include "block/BlockPos.h"
 #include "worldgen/WorldGenerator.h"
+#include "../utils/math/BlockRayTraceResult.h"
 
 class World
 {
@@ -23,7 +25,7 @@ public:
 	Chunk* GetChunkAt(BlockPos pos);
 
 	BlockState* GetBlockState(BlockPos pos);
-	void SetBlock(BlockPos pos, BlockState* state);
+	void SetBlock(BlockPos pos, const BlockState* state);
 
 	void Update();
 	void UpdateMeshes();
@@ -32,7 +34,8 @@ public:
 	int FreeChunkCount();
 	int OccupiedChunkCount();
 
-	std::tuple<bool, BlockPos, Direction::Direction> DoBlockRayTrace(glm::vec3 start, glm::vec3 end);
+	BlockRayTraceResult Clip(glm::vec3 from, glm::vec3 to);
+	BlockRayTraceResult TraverseBlocks(glm::vec3 from, glm::vec3 to, std::function<BlockRayTraceResult(glm::vec3 from, glm::vec3 rayDir, BlockPos pos)> hitFunction);
 
 	void DEV_UnloadWorld();
 	std::array<int, 4> DEV_ChunksLoadingStates();

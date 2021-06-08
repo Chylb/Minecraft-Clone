@@ -1,5 +1,11 @@
 #include "UnbakedModel.h"
 
+UnbakedModel::UnbakedModel(glm::vec3 from, glm::vec3 to, std::initializer_list<UnbakedQuad> quads) : m_quads(quads)
+{
+	auto size = (to - from) / 16.0f;
+	*this = Scale(size).Translate(from);
+}
+
 void UnbakedModel::AddQuad(UnbakedQuad quad)
 {
 	m_quads.push_back(quad);

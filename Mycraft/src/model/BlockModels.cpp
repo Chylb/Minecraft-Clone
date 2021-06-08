@@ -2,6 +2,7 @@
 
 #include "BlockModelRegistry.h"
 #include "../world/block/Blocks.h"
+#include "../state/properties/BlockStateProperties.h"
 
 void BlockModels::Initialize()
 {
@@ -16,11 +17,37 @@ void BlockModels::Initialize()
 		[](BlockState state) {
 			UnbakedModel model = BlockModels::CubeColumn().SetTexture("side", "oak_log").SetTexture("end", "oak_log_top");
 
-			if (state.GetValue(BlockStateProperties::axis) == Axis::x)
-				return model.RotateX(90);
-			else if (state.GetValue(BlockStateProperties::axis) == Axis::z)
+			if (state.GetValue(BlockStateProperties::axis) == Direction::Axis::x)
 				return model.RotateZ(90);
+			if (state.GetValue(BlockStateProperties::axis) == Direction::Axis::z)
+				return model.RotateX(90);
 			return model;
+		});
+
+	Register(Blocks::slab,
+		[](BlockState state) {
+			if (state.GetValue(BlockStateProperties::slabType) == SlabType::bottom)
+				return UnbakedModel({ 0, 0, 0 }, { 16,8,16 }, {
+				{Direction::bottom,	{0,0,16,16}, "oak_planks"},
+				{Direction::top,	{0,0,16,16}, "oak_planks", 1, 1},
+				{Direction::north,	{0,8,16,16}, "oak_planks"},
+				{Direction::south,	{0,8,16,16}, "oak_planks"},
+				{Direction::west,	{0,8,16,16}, "oak_planks"},
+				{Direction::east,	{0,8,16,16}, "oak_planks"}
+					});
+
+			if (state.GetValue(BlockStateProperties::slabType) == SlabType::top)
+				return UnbakedModel({ 0, 8, 0 }, { 16,16,16 }, {
+				{Direction::bottom,	{0,0,16,16}, "oak_planks",1,1},
+				{Direction::top,	{0,0,16,16}, "oak_planks"},
+				{Direction::north,	{0,0,16,8}, "oak_planks"},
+				{Direction::south,	{0,0,16,8}, "oak_planks"},
+				{Direction::west,	{0,0,16,8}, "oak_planks"},
+				{Direction::east,	{0,0,16,8}, "oak_planks"}
+					});
+
+
+			return CubeAll().SetTexture("all", "oak_planks");
 		});
 }
 
@@ -36,57 +63,14 @@ void BlockModels::Register(Block* block, UnbakedModel model)
 
 UnbakedModel BlockModels::Cube()
 {
-	UnbakedQuad north{
-		{0,0,0},{0,0},
-		{0,1,0},{0,1},
-		{1,1,0},{1,1},
-		{1,0,0},{1,0},
-		"south", Direction::north };
-
-	UnbakedQuad east{
-		{1,1,1},{0,1},
-		{1,0,1},{0,0},
-		{1,0,0},{1,0},
-		{1,1,0},{1,1},
-		"east", Direction::east };
-
-	UnbakedQuad south{
-		{0,0,1},{0,0},
-		{1,0,1},{1,0},
-		{1,1,1},{1,1},
-		{0,1,1},{0,1},
-		"south", Direction::south };
-
-	UnbakedQuad west{
-		{0,1,1},{1,1},
-		{0,1,0},{0,1},
-		{0,0,0},{0,0},
-		{0,0,1},{1,0},
-		"west", Direction::west };
-
-	UnbakedQuad top{
-		{0,1,0},{0,0},
-		{0,1,1},{0,1},
-		{1,1,1},{1,1},
-		{1,1,0},{1,0},
-		"top", Direction::top };
-
-	UnbakedQuad bottom{
-		{0,0,0},{0,0},
-		{1,0,0},{1,0},
-		{1,0,1},{1,1},
-		{0,0,1},{0,1},
-		"bottom", Direction::bottom };
-
-	UnbakedModel cube;
-	cube.AddQuad(north);
-	cube.AddQuad(east);
-	cube.AddQuad(south);
-	cube.AddQuad(west);
-	cube.AddQuad(top);
-	cube.AddQuad(bottom);
-
-	return cube.Scale({ 16,16,16 });
+	return UnbakedModel({ 0, 0, 0 }, { 16,16,16 }, {
+				{Direction::bottom,	{0,0,16,16}, "bottom"},
+				{Direction::top,	{0,0,16,16}, "top"},
+				{Direction::north,	{0,0,16,16}, "north"},
+				{Direction::south,	{0,0,16,16}, "south"},
+				{Direction::west,	{0,0,16,16}, "west"},
+				{Direction::east,	{0,0,16,16}, "east"}
+		});
 }
 
 UnbakedModel BlockModels::CubeAll()

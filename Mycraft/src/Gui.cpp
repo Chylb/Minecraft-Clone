@@ -28,6 +28,24 @@ void Gui::RenderWindow(GLFWwindow* window, glm::vec3 camPos, int occupiedChunks,
 	ImGui::NewFrame();
 	if (s_showDemoWindow)
 		ImGui::ShowDemoWindow(&s_showDemoWindow);
+
+	{
+		int iwidth, iheight;
+		float width, height;
+		glfwGetWindowSize(window, &iwidth, &iheight);
+		width = (float)iwidth;
+		height = (float)iheight;
+
+		ImGui::SetNextWindowPos({ 0,0 });
+		ImGui::SetNextWindowSize({ (float)width,(float)height });
+		ImGui::Begin("Crosshair", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMouseInputs);
+		ImColor yellow{ 255,255,100 };
+
+		float crosshairLength = 5;
+		ImGui::GetWindowDrawList()->AddLine({ width / 2,height / 2 - crosshairLength + 1 }, { width / 2,height / 2 + crosshairLength }, yellow);
+		ImGui::GetWindowDrawList()->AddLine({ width / 2 - crosshairLength + 1,height / 2 }, { width / 2 + crosshairLength ,height / 2 }, yellow);
+	}
+
 	{
 		ImGui::SetNextWindowPos({ 0,0 });
 		ImGui::SetNextWindowSize({ 210,-1 });

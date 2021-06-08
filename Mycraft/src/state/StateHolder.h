@@ -51,7 +51,7 @@ template<typename O, typename S>
 template<typename T>
 inline const S& StateHolder<O, S>::SetValue(Property<T>* p, T val) const
 {
-	return *m_neighbors.at({ p, val });
+	return *m_neighbors.at({ INT_PROP(p), (int)val });
 }
 
 template<typename O, typename S>

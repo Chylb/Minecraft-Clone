@@ -26,6 +26,11 @@ namespace Direction
 		none
 	};
 
+	enum class Axis
+	{
+		x, y, z
+	};
+
 	template<Direction dir> constexpr Direction Opposite()
 	{
 		switch (dir) {
@@ -44,11 +49,17 @@ namespace Direction
 		}
 	}
 
+	template<Direction dir> constexpr uint8_t Direction8()
+	{
+		return 1 << dir;
+	}
+
 	template<Direction dir> constexpr bool IsCardinal()
 	{
 		return !(dir == top || dir == bottom);
 	}
 
 	Direction GetNearest(float x, float y, float z);
+	Axis GetAxis(Direction dir);
 	std::ostream& operator<<(std::ostream& os, const Direction& dir);
 }

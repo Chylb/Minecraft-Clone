@@ -7,4 +7,6 @@ class Log : public Block
 {
 public:
 	Log();
+
+	const BlockState* GetStateForPlacement(BlockRayTraceResult rayTraceResult) const override;
 };

@@ -8,11 +8,14 @@ struct UnbakedQuad {
 	UnbakedQuad(glm::vec3 v1, glm::vec2 uv1, glm::vec3 v2, glm::vec2 uv2, glm::vec3 v3, glm::vec2 uv3, glm::vec3 v4, glm::vec2 uv4,
 		std::string texture, Direction::Direction dir = Direction::none);
 
+	UnbakedQuad(Direction::Direction dir, glm::vec4 uv, std::string texture, bool flip_y = true, bool clear_direction = false);
+
 	UnbakedQuad Translate(glm::vec3 offset);
 	UnbakedQuad Scale(glm::vec3 scale);
 	UnbakedQuad RotateX(float ang, glm::vec3 origin = { 8,8,8 });
 	UnbakedQuad RotateY(float ang, glm::vec3 origin = { 8,8,8 });
 	UnbakedQuad RotateZ(float ang, glm::vec3 origin = { 8,8,8 });
+	UnbakedQuad SetDirection(Direction::Direction dir);
 
 	BakedQuad Bake();
 

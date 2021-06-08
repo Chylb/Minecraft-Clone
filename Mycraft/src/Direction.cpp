@@ -13,6 +13,24 @@ Direction::Direction Direction::GetNearest(float x, float y, float z) {
 	return z > 0 ? Direction::south : Direction::north;
 }
 
+Direction::Axis Direction::GetAxis(Direction dir)
+{
+	switch (dir) {
+	case north:
+		return Axis::z;
+	case east:
+		return Axis::x;
+	case south:
+		return Axis::z;
+	case west:
+		return Axis::x;
+	case top:
+		return Axis::y;
+	case bottom:
+		return Axis::y;
+	}
+}
+
 std::ostream& Direction::operator<<(std::ostream& os, const Direction& dir)
 {
 	switch (dir) {

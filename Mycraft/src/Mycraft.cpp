@@ -33,7 +33,7 @@
 
 //Camera g_camera(glm::vec3(0, 2000, 40), 0, -90);
 Camera g_camera(glm::vec3(0, 100, 40));
-BlockState* placedBlockState;
+Block* placedBlock;
 int g_renderDistance = 8;
 World* world;
 
@@ -54,7 +54,7 @@ int main()
 	BlockModelRegistry::Resize(BlockRegistry::GetBlockStateCount());
 	BlockModels::Initialize();
 
-	placedBlockState = Blocks::cobblestone->DefaultBlockState();
+	placedBlock = Blocks::cobblestone;
 
 	world = new World();
 
@@ -106,26 +106,50 @@ void processInput(GLFWwindow* window, float deltaTime)
 		world->DEV_UnloadWorld();
 	prevC = glfwGetKey(window, GLFW_KEY_C);
 
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-		const float reach = 10.0f;
-		auto end = g_camera.position + g_camera.facingDirection * reach;
+	static bool justEditedWorld;
 
-		auto [hit, hitPos, hitFace] = world->DoBlockRayTrace(g_camera.position, end);
+	if (!(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS || glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS))
+		justEditedWorld = false;
 
-		if (hit)
-			world->SetBlock(hitPos, Blocks::air->DefaultBlockState());
-	}
+	if (!justEditedWorld) {
+		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+			const float reach = 10.0f;
+			auto end = g_camera.position + g_camera.facingDirection * reach;
 
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
-		const float reach = 10.0f;
-		auto end = g_camera.position + g_camera.facingDirection * reach;
+			auto rayTraceResult = world->Clip(g_camera.position, end);
 
-		auto [hit, hitPos, hitFace] = world->DoBlockRayTrace(g_camera.position, end);
+			if (rayTraceResult.hit) {
+				world->SetBlock(rayTraceResult.blockPos, Blocks::air->DefaultBlockState());
+				justEditedWorld = true;
+			}
+		}
 
-		if (hit) {
-			auto blockPos = hitPos.Adjacent(hitFace);
-			if (!world->GetBlockState(blockPos)->GetBlock().IsOpaque())
-				world->SetBlock(hitPos.Adjacent(hitFace), placedBlockState);
+		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
+			const float reach = 10.0f;
+			auto end = g_camera.position + g_camera.facingDirection * reach;
+
+			auto rayTraceResult = world->Clip(g_camera.position, end);
+			if (rayTraceResult.hit) {
+				auto state = world->GetBlockState(rayTraceResult.blockPos);
+				auto& block = state->GetBlock();
+				if (block.CanBeReplaced(*state, rayTraceResult)) {
+					world->SetBlock(rayTraceResult.blockPos, placedBlock->GetStateForPlacement(rayTraceResult));
+					justEditedWorld = true;
+				}
+				else
+				{
+					auto relativePos = rayTraceResult.blockPos.Adjacent(rayTraceResult.direction);
+					auto relativeState = world->GetBlockState(relativePos);
+					auto& relativeBlock = relativeState->GetBlock();
+					rayTraceResult.blockPos = relativePos;
+
+					if (relativeBlock.CanBeReplaced(*relativeState, rayTraceResult)) {
+						rayTraceResult.blockPos = relativePos;
+						world->SetBlock(relativePos, placedBlock->GetStateForPlacement(rayTraceResult));
+						justEditedWorld = true;
+					}
+				}
+			}
 		}
 	}
 
@@ -142,11 +166,12 @@ void processInput(GLFWwindow* window, float deltaTime)
 	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
 		g_camera.ProcessMovement(CameraMovement::down, deltaTime);
 
-	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) placedBlockState = Blocks::cobblestone->DefaultBlockState();
-	if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) placedBlockState = Blocks::stone->DefaultBlockState();
-	if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) placedBlockState = Blocks::dirt->DefaultBlockState();
-	if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS) placedBlockState = Blocks::grass->DefaultBlockState();
-	if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS) placedBlockState = Blocks::wood->DefaultBlockState();
+	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) placedBlock = Blocks::cobblestone;
+	if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) placedBlock = Blocks::stone;
+	if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) placedBlock = Blocks::dirt;
+	if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS) placedBlock = Blocks::grass;
+	if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS) placedBlock = Blocks::wood;
+	if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS) placedBlock = Blocks::slab;
 }
 
 

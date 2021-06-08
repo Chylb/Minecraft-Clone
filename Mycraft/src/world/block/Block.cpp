@@ -1,6 +1,7 @@
 #include "Block.h"
 
 #include "../World.h"
+#include "../../utils/math/shapes/VoxelShapes.h"
 
 Block::Block(bool opaque, StateContainer<Block, BlockState>::Builder builder) :
 	m_opaque(opaque)
@@ -29,6 +30,26 @@ BlockState* Block::DefaultBlockState() const
 	return m_defaultBlockState;
 }
 
+const BlockState* Block::GetStateForPlacement(BlockRayTraceResult rayTraceResult) const
+{
+	return m_defaultBlockState;
+}
+
+const VoxelShape& Block::GetShape(const BlockState& state) const
+{
+	return VoxelShapes::Block();
+}
+
 void Block::Tick(World& world, BlockPos pos) const
 {
+}
+
+bool Block::CanBeReplaced(const BlockState& state, BlockRayTraceResult rayTraceResult) const
+{
+	return false;
+}
+
+bool Block::OccludesFace(Direction::Direction dir, const BlockState& state) const
+{
+	return true;
 }

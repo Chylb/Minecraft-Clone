@@ -31,7 +31,7 @@ void WorldGenerator::GenerateChunk(Chunk& chunk) const
 			}
 		}
 
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < 13; i++) {
 		chunk.SetBlock({ i,90,0 }, Blocks::GetBlockState(i));
 	}
 }

@@ -25,7 +25,7 @@ public:
 	};
 
 	BlockState* GetBlockState(BlockPos pos) const;
-	void SetBlock(BlockPos pos, BlockState* state);
+	void SetBlock(BlockPos pos, const BlockState* state);
 
 	//Block* LocalGetBlock(BlockPos pos) const;
 	template<Direction::Direction dir>

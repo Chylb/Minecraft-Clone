@@ -1,10 +1,11 @@
 #pragma once
 
 #include "../Property.h"
+#include "../Direction.h"
 
-enum class Axis
+enum class SlabType
 {
-	x, y, z
+	top, bottom, full
 };
 
 class BlockStateProperties
@@ -12,5 +13,6 @@ class BlockStateProperties
 public:
 	static void Initialize();
 
-	inline static Property<Axis>* axis;
+	inline static Property<Direction::Axis>* axis;
+	inline static Property<SlabType>* slabType;
 };

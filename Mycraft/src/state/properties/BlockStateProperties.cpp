@@ -2,5 +2,6 @@
 
 void BlockStateProperties::Initialize()
 {
-	axis = new Property<Axis>{ {Axis::x, Axis::y, Axis::z} };
+	axis = new Property<Direction::Axis>{ {Direction::Axis::x, Direction::Axis::y, Direction::Axis::z} };
+	slabType = new Property<SlabType>{ {SlabType::bottom, SlabType::top, SlabType::full} };
 }

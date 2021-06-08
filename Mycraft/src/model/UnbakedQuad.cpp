@@ -26,6 +26,49 @@ UnbakedQuad::UnbakedQuad(glm::vec3 v1, glm::vec2 uv1, glm::vec3 v2, glm::vec2 uv
 	}
 }
 
+UnbakedQuad::UnbakedQuad(Direction::Direction dir, glm::vec4 uv, std::string texture, bool flip_y, bool clear_direction)
+{
+	if (flip_y) //minecraft textures have flipped y axis 
+	{
+		auto y = uv.y;
+		auto w = uv.w;
+		uv.y = 16 - w;
+		uv.w = 16 - y;
+	}
+	UnbakedQuad north{
+		{1,0,0},{uv.x,uv.y},
+		{0,0,0},{uv.z,uv.y},
+		{0,1,0},{uv.z,uv.w},
+		{1,1,0},{uv.x,uv.w},
+		texture, Direction::north };
+	north = north.Scale({ 16,16,16 });
+
+	if (clear_direction)
+		north.m_direction = Direction::none;
+
+	switch (dir)
+	{
+	case Direction::bottom:
+		*this = north.RotateX(-90).RotateY(180);
+		return;
+	case Direction::top:
+		*this = north.RotateX(90).RotateY(180);
+		return;
+	case Direction::north:
+		*this = north;
+		return;
+	case Direction::south:
+		*this = north.RotateY(180);
+		return;
+	case Direction::west:
+		*this = north.RotateY(90);
+		return;
+	case Direction::east:
+		*this = north.RotateY(270);
+		return;
+	}
+}
+
 UnbakedQuad UnbakedQuad::Translate(glm::vec3 offset) {
 	UnbakedQuad result(*this);
 	for (int i = 0; i < 4; i++)
@@ -88,6 +131,13 @@ UnbakedQuad UnbakedQuad::RotateZ(float ang, glm::vec3 origin) {
 	return result.Translate(origin);
 }
 
+UnbakedQuad UnbakedQuad::SetDirection(Direction::Direction dir)
+{
+	UnbakedQuad result = *this;
+	result.m_direction = dir;
+	return result;
+}
+
 BakedQuad UnbakedQuad::Bake()
 {
 	int texture_ix = Resources::GetTextureIx(m_texture);
@@ -110,8 +160,8 @@ void UnbakedQuad::WriteVertex(std::vector<float>& target, int vertex_ix, int tex
 	target.push_back(m_vertices[vertex_ix].x / 16.0);
 	target.push_back(m_vertices[vertex_ix].y / 16.0);
 	target.push_back(m_vertices[vertex_ix].z / 16.0);
-	target.push_back(m_uvs[vertex_ix].x);
-	target.push_back(m_uvs[vertex_ix].y);
+	target.push_back(m_uvs[vertex_ix].x / 16.0);
+	target.push_back(m_uvs[vertex_ix].y / 16.0);
 	target.push_back(texture_ix);
 }
 

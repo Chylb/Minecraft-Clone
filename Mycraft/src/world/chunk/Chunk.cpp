@@ -23,7 +23,7 @@ BlockState* Chunk::GetBlockState(BlockPos pos) const
 	return Blocks::GetBlockState(m_data[x][z][pos.y]);
 }
 
-void Chunk::SetBlock(BlockPos pos, BlockState* state)
+void Chunk::SetBlock(BlockPos pos, const BlockState* state)
 {
 	if (state != Blocks::air->DefaultBlockState())
 		highestBlock = std::max(highestBlock, pos.y);
@@ -183,11 +183,15 @@ inline void Chunk::GenerateColumnMesh(int x, int z, int h)
 	for (int y = 0; y <= h; y++) {
 		BlockPos pos = { x,y,z };
 		BlockState* state = GetBlockState(pos);
-		if (state->GetBlock().IsOpaque())
-			continue;
+
+		if (state->GetBlock().IsOpaque()) 
+			BlockModelRegistry::GetBlockModel(state).WriteFace(m_mesh, pos, Direction::none);
 
 		FOREACH_DIRECTION(constexpr auto direction,
 			{
+				if (state->GetBlock().OccludesFace(direction, *state))
+					continue;
+				
 				BlockState * neighbour = GetBlockState(pos.Adjacent<direction>());
 
 				if (neighbour->GetBlock().IsOpaque())
@@ -201,11 +205,15 @@ inline void Chunk::GenerateBorderColumnMesh(int x, int z, int h)
 	for (int y = 0; y <= h; y++) {
 		BlockPos pos = { x,y,z };
 		BlockState* state = GetBlockState(pos);
+
 		if (state->GetBlock().IsOpaque())
-			continue;
+			BlockModelRegistry::GetBlockModel(state).WriteFace(m_mesh, pos, Direction::none);
 
 		FOREACH_DIRECTION(constexpr auto direction,
 			{
+				if (state->GetBlock().OccludesFace(direction, *state))
+					continue;
+				
 				BlockState * neighbour;
 				if constexpr (Direction::IsCardinal<direction>())
 					neighbour = GetNearbyBlockState<direction>(pos.Adjacent<direction>());
