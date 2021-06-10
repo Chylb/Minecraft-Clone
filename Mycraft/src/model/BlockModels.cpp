@@ -6,6 +6,7 @@
 
 void BlockModels::Initialize()
 {
+	Register(Blocks::air, UnbakedModel());
 	Register(Blocks::stone, CubeAll().SetTexture("all", "stone"));
 	Register(Blocks::grass, CubeTopBottom().SetTexture("top", "grass_top").SetTexture("side", "grass_block_side").SetTexture("bottom", "dirt"));
 	Register(Blocks::dirt, CubeAll().SetTexture("all", "dirt"));

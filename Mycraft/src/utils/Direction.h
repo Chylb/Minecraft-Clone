@@ -40,6 +40,9 @@ public:
 	constexpr bool IsCardinal() const;
 	static Direction GetNearest(float x, float y, float z);
 
+	static constexpr Value directions[]{ north, east, south, west, up, down };
+	static constexpr Value directionsAndNone[]{ north, east, south, west, up, down, none };
+
 	Value _value;
 };
 

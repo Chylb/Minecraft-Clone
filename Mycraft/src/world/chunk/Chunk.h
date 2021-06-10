@@ -24,6 +24,7 @@ public:
 		completed
 	};
 
+	BlockState* RawGetBlockState(BlockPos pos) const;
 	BlockState* GetBlockState(BlockPos pos) const;
 	void SetBlock(BlockPos pos, const BlockState* state);
 

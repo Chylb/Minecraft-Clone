@@ -62,11 +62,13 @@ UnbakedModel UnbakedModel::RotateZ(float ang, glm::vec3 origin)
 
 BakedModel UnbakedModel::Bake()
 {
-	BakedModel model;
+	BakedModel model{};
 	for (auto& quad : m_quads) {
 		BakedQuad bakedQuad = quad.Bake();
 		model.m_quads[quad.m_direction].push_back(bakedQuad);
 	}
+	model.FillCacheFields();
+
 	return model;
 }
 

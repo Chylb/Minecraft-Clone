@@ -8,6 +8,7 @@
 
 class UnbakedModel {
 public:
+	UnbakedModel() = default;
 	UnbakedModel(glm::vec3 from, glm::vec3 to, std::initializer_list<UnbakedQuad> quads);
 
 	void AddQuad(UnbakedQuad quad);

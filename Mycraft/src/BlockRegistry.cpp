@@ -9,6 +9,7 @@ Block* BlockRegistry::Register(Block* block)
 	const auto& states = block->GetStateDefinition().GetPossibleStates();
 	for (auto state : states) {
 		state->m_id = blockStateId;
+		state->FillCacheFields();
 		s_blockStates.push_back(state);
 		blockStateId++;
 	}

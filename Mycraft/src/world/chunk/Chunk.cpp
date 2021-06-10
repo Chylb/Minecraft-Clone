@@ -16,6 +16,11 @@ Chunk::~Chunk()
 	glDeleteBuffers(1, &m_VBO);
 }
 
+BlockState* Chunk::RawGetBlockState(BlockPos pos) const
+{
+	return Blocks::GetBlockState(m_data[pos.x & 31][pos.z & 31][pos.y]);
+}
+
 BlockState* Chunk::GetBlockState(BlockPos pos) const
 {
 	int x = pos.x & 31, z = pos.z & 31;
@@ -85,9 +90,9 @@ void Chunk::GenerateMesh()
 	int h = std::max({ highestBlock, adjacentChunks[0]->highestBlock, adjacentChunks[1]->highestBlock, adjacentChunks[2]->highestBlock, adjacentChunks[3]->highestBlock }) + 1;
 
 	for (int x = m_offsetX + 1; x < m_offsetX + CHUNK_WIDTH - 1; x++)
-		for (int z = m_offsetZ + 1; z < m_offsetZ + CHUNK_WIDTH - 1; z++) {
+		for (int z = m_offsetZ + 1; z < m_offsetZ + CHUNK_WIDTH - 1; z++)
 			GenerateColumnMesh(x, z, h);
-		}
+
 	for (int z : {m_offsetZ, m_offsetZ + CHUNK_WIDTH - 1})
 		for (int x = m_offsetX; x < m_offsetX + CHUNK_WIDTH; x++)
 			GenerateBorderColumnMesh(x, z, h);
@@ -174,22 +179,25 @@ void Chunk::Tick()
 
 inline void Chunk::GenerateColumnMesh(int x, int z, int h)
 {
-	for (int y = 0; y <= h; y++) {
+	for (int y = 1; y <= h; y++) {
 		BlockPos pos = { x,y,z };
-		BlockState* state = GetBlockState(pos);
+		BlockState* state = RawGetBlockState(pos);
 
-		if (state->GetBlock().IsOpaque())
-			BlockModelRegistry::GetBlockModel(state).WriteFace(m_mesh, pos, Direction::none);
+		if (state->GetModel().HasFace(Direction::none))
+			state->GetModel().WriteFace(m_mesh, pos, Direction::none);
+
+		if (state->OccludesAllFaces())
+			continue;
 
 		FOREACH_DIRECTION(constexpr Direction direction,
 			{
-				if (state->GetBlock().OccludesFace(direction, *state))
+				if (state->OccludesFace(direction))
 					continue;
 
-				BlockState* neighbour = GetBlockState(pos.Adjacent<direction>());
+				BlockState* neighbour = RawGetBlockState(pos.Adjacent<direction>());
 
-				if (neighbour->GetBlock().IsOpaque())
-					BlockModelRegistry::GetBlockModel(neighbour).WriteFace(m_mesh, pos.Adjacent<direction>(), direction.GetOpposite());
+				if (neighbour->GetModel().HasFace(direction.GetOpposite()))
+					neighbour->GetModel().WriteFace(m_mesh, pos.Adjacent<direction>(), direction.GetOpposite());
 			});
 	}
 }
@@ -198,24 +206,27 @@ inline void Chunk::GenerateBorderColumnMesh(int x, int z, int h)
 {
 	for (int y = 0; y <= h; y++) {
 		BlockPos pos = { x,y,z };
-		BlockState* state = GetBlockState(pos);
+		BlockState* state = RawGetBlockState(pos);
 
-		if (state->GetBlock().IsOpaque())
-			BlockModelRegistry::GetBlockModel(state).WriteFace(m_mesh, pos, Direction::none);
+		if (state->GetModel().HasFace(Direction::none))
+			state->GetModel().WriteFace(m_mesh, pos, Direction::none);
+
+		if (state->OccludesAllFaces())
+			continue;
 
 		FOREACH_DIRECTION(constexpr Direction direction,
 			{
-				if (state->GetBlock().OccludesFace(direction, *state))
+				if (state->OccludesFace(direction))
 					continue;
 
 				BlockState* neighbour;
 				if constexpr (direction.IsCardinal())
 					neighbour = GetNearbyBlockState<direction>(pos.Adjacent<direction>());
 				else
-					neighbour = GetBlockState(pos.Adjacent<direction>());
+					neighbour = RawGetBlockState(pos.Adjacent<direction>());
 
-				if (neighbour->GetBlock().IsOpaque())
-					BlockModelRegistry::GetBlockModel(neighbour).WriteFace(m_mesh, pos.Adjacent<direction>(), direction.GetOpposite());
+				if (neighbour->GetModel().HasFace(direction.GetOpposite()))
+					neighbour->GetModel().WriteFace(m_mesh, pos.Adjacent<direction>(), direction.GetOpposite());
 			});
 	}
 }

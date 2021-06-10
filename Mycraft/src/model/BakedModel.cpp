@@ -16,6 +16,18 @@ void BakedModel::WriteFace(std::vector<float>& target, BlockPos pos, Direction d
 	}
 }
 
+bool BakedModel::HasFace(Direction dir) const
+{
+	return m_hasFace[dir];
+}
+
+void BakedModel::FillCacheFields()
+{
+	for (int i = 0; i < 7; i++)
+		if (m_quads[i].size())
+			m_hasFace[i] = true;
+}
+
 std::ostream& operator<<(std::ostream& os, const BakedModel& model)
 {
 	os << "BakedModel {" << "\n";

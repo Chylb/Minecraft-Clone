@@ -217,23 +217,23 @@ BlockRayTraceResult World::Clip(glm::vec3 from, glm::vec3 to)
 
 BlockRayTraceResult World::TraverseBlocks(glm::vec3 from, glm::vec3 to, std::function<BlockRayTraceResult(glm::vec3 from, glm::vec3 rayDir, BlockPos pos)> hitFunction)
 {
-	int i = floor(from.x);
-	int j = floor(from.y);
-	int k = floor(from.z);
+	int i = static_cast<int>(floor(from.x));
+	int j = static_cast<int>(floor(from.y));
+	int k = static_cast<int>(floor(from.z));
 
 	auto rayDir = to - from;
 
-	float dirX = MathUtils::signum(rayDir.x);
-	float dirY = MathUtils::signum(rayDir.y);
-	float dirZ = MathUtils::signum(rayDir.z);
+	int dirX = MathUtils::signum(rayDir.x);
+	int dirY = MathUtils::signum(rayDir.y);
+	int dirZ = MathUtils::signum(rayDir.z);
 
 	float stepX = dirX == 0 ? std::numeric_limits<float>::max() : dirX / rayDir.x;
 	float stepY = dirY == 0 ? std::numeric_limits<float>::max() : dirY / rayDir.y;
 	float stepZ = dirZ == 0 ? std::numeric_limits<float>::max() : dirZ / rayDir.z;
 
-	float traveledX = stepX * (dirX > 0 ? 1.0 - MathUtils::frac(from.x) : MathUtils::frac(from.x));
-	float traveledY = stepY * (dirY > 0 ? 1.0 - MathUtils::frac(from.y) : MathUtils::frac(from.y));
-	float traveledZ = stepZ * (dirZ > 0 ? 1.0 - MathUtils::frac(from.z) : MathUtils::frac(from.z));
+	float traveledX = stepX * (dirX > 0 ? 1.0f - MathUtils::frac(from.x) : MathUtils::frac(from.x));
+	float traveledY = stepY * (dirY > 0 ? 1.0f - MathUtils::frac(from.y) : MathUtils::frac(from.y));
+	float traveledZ = stepZ * (dirZ > 0 ? 1.0f - MathUtils::frac(from.z) : MathUtils::frac(from.z));
 
 	while (traveledX <= 1.0 || traveledY <= 1.0 || traveledZ <= 1.0) {
 		if (traveledX < traveledY) {

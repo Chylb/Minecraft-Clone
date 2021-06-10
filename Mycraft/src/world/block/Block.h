@@ -11,7 +11,7 @@
 #include "../state/StateContainer.h"
 #include "../../utils/math/BlockRayTraceResult.h"
 
-struct VoxelShape;
+class VoxelShape;
 class World;
 
 class Block
