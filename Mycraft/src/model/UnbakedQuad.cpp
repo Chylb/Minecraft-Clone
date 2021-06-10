@@ -4,7 +4,7 @@
 
 #include "../Resources.h"
 
-UnbakedQuad::UnbakedQuad(glm::vec3 v1, glm::vec2 uv1, glm::vec3 v2, glm::vec2 uv2, glm::vec3 v3, glm::vec2 uv3, glm::vec3 v4, glm::vec2 uv4, std::string texture, Direction::Direction dir)
+UnbakedQuad::UnbakedQuad(glm::vec3 v1, glm::vec2 uv1, glm::vec3 v2, glm::vec2 uv2, glm::vec3 v3, glm::vec2 uv3, glm::vec3 v4, glm::vec2 uv4, std::string texture, Direction dir)
 {
 	m_vertices[0] = glm::vec4(v1, 1.0);
 	m_vertices[1] = glm::vec4(v2, 1.0);
@@ -26,7 +26,7 @@ UnbakedQuad::UnbakedQuad(glm::vec3 v1, glm::vec2 uv1, glm::vec3 v2, glm::vec2 uv
 	}
 }
 
-UnbakedQuad::UnbakedQuad(Direction::Direction dir, glm::vec4 uv, std::string texture, bool flip_y, bool clear_direction)
+UnbakedQuad::UnbakedQuad(Direction dir, glm::vec4 uv, std::string texture, bool flip_y, bool clear_direction)
 {
 	if (flip_y) //minecraft textures have flipped y axis 
 	{
@@ -48,10 +48,10 @@ UnbakedQuad::UnbakedQuad(Direction::Direction dir, glm::vec4 uv, std::string tex
 
 	switch (dir)
 	{
-	case Direction::bottom:
+	case Direction::down:
 		*this = north.RotateX(-90).RotateY(180);
 		return;
-	case Direction::top:
+	case Direction::up:
 		*this = north.RotateX(90).RotateY(180);
 		return;
 	case Direction::north:
@@ -131,7 +131,7 @@ UnbakedQuad UnbakedQuad::RotateZ(float ang, glm::vec3 origin) {
 	return result.Translate(origin);
 }
 
-UnbakedQuad UnbakedQuad::SetDirection(Direction::Direction dir)
+UnbakedQuad UnbakedQuad::SetDirection(Direction dir)
 {
 	UnbakedQuad result = *this;
 	result.m_direction = dir;

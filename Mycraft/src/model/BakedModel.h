@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "../Direction.h"
+#include "../utils/Direction.h"
 #include "../world/block/BlockPos.h"
 
 struct BakedQuad {
@@ -12,7 +12,7 @@ struct BakedQuad {
 class BakedModel {
 
 public:
-	void WriteFace(std::vector<float>& target, BlockPos pos, Direction::Direction dir = Direction::none) const;
+	void WriteFace(std::vector<float>& target, BlockPos pos, Direction dir = Direction::none) const;
 
 private:
 	std::vector<BakedQuad> m_quads[7];

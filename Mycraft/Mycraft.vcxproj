@@ -174,7 +174,6 @@
     <ClCompile Include="src\utils\math\shapes\VoxelShapes.cpp" />
     <ClCompile Include="src\world\block\Air.cpp" />
     <ClCompile Include="src\world\block\Slab.cpp" />
-    <ClCompile Include="src\Direction.cpp" />
     <ClCompile Include="src\model\BakedModel.cpp" />
     <ClCompile Include="src\model\BlockModelRegistry.cpp" />
     <ClCompile Include="src\model\BlockModels.cpp" />
@@ -211,7 +210,7 @@
     <ClInclude Include="src\utils\math\shapes\VoxelShapes.h" />
     <ClInclude Include="src\world\block\Air.h" />
     <ClInclude Include="src\world\block\Slab.h" />
-    <ClInclude Include="src\Direction.h" />
+    <ClInclude Include="src\utils\Direction.h" />
     <ClInclude Include="src\model\BakedModel.h" />
     <ClInclude Include="src\model\BlockModelRegistry.h" />
     <ClInclude Include="src\model\BlockModels.h" />

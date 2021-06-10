@@ -49,7 +49,7 @@ bool Block::CanBeReplaced(const BlockState& state, BlockRayTraceResult rayTraceR
 	return false;
 }
 
-bool Block::OccludesFace(Direction::Direction dir, const BlockState& state) const
+bool Block::OccludesFace(Direction dir, const BlockState& state) const
 {
 	return true;
 }

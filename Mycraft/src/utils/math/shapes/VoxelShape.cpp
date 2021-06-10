@@ -8,7 +8,7 @@ VoxelShape::VoxelShape(std::initializer_list<AxisAlignedBB> aabbs) : m_aabbs(aab
 
 BlockRayTraceResult VoxelShape::Clip(glm::vec3 from, glm::vec3 rayDir, BlockPos pos) const
 {
-	Direction::Direction direction;
+	Direction direction;
 	float t_min = INFINITY;
 
 	for (auto& aabb : m_aabbs)

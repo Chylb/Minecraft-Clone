@@ -13,7 +13,7 @@ struct AxisAlignedBB
 	float maxY;
 	float maxZ;
 
-	std::pair<Direction::Direction, float> GetHitDirection(glm::vec3 from, glm::vec3 rayDir, BlockPos pos) const;
+	std::pair<Direction, float> GetHitDirection(glm::vec3 from, glm::vec3 rayDir, BlockPos pos) const;
 
 	friend std::ostream& operator<<(std::ostream& os, const AxisAlignedBB& aabb);
 };

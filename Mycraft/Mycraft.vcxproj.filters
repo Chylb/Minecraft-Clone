@@ -102,9 +102,6 @@
     <ClCompile Include="src\model\UnbakedQuad.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Direction.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\world\block\Slab.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -1040,7 +1037,7 @@
     <ClInclude Include="src\utils\Timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Direction.h">
+    <ClInclude Include="src\utils\Direction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\utils\MathUtils.h">

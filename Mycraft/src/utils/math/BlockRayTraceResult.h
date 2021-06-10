@@ -12,5 +12,5 @@ struct BlockRayTraceResult
 	glm::vec3 location;
 	bool hit;
 	BlockPos blockPos;
-	Direction::Direction direction;
+	Direction direction;
 };

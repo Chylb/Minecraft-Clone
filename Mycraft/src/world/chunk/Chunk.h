@@ -27,8 +27,7 @@ public:
 	BlockState* GetBlockState(BlockPos pos) const;
 	void SetBlock(BlockPos pos, const BlockState* state);
 
-	//Block* LocalGetBlock(BlockPos pos) const;
-	template<Direction::Direction dir>
+	template<Direction dir>
 	BlockState* GetNearbyBlockState(BlockPos pos) const;
 
 	void SetWorld(World* world);

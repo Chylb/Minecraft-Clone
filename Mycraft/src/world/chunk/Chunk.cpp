@@ -2,6 +2,7 @@
 
 #include "../World.h"
 #include "../../model/BlockModelRegistry.h"
+#include "../../utils/Direction.h"
 
 Chunk::Chunk()
 {
@@ -32,14 +33,7 @@ void Chunk::SetBlock(BlockPos pos, const BlockState* state)
 	m_data[x][z][pos.y] = state->GetId();
 }
 
-//Block* Chunk::LocalGetBlock(BlockPos pos) const
-//{
-//	if (pos.y < 0 || pos.y >= CHUNK_HEIGHT)
-//		return Blocks::air;
-//	return Blocks::GetBlock(m_data[pos.x][pos.z][pos.y]);
-//}
-
-template<Direction::Direction dir>
+template<Direction dir>
 BlockState* Chunk::GetNearbyBlockState(BlockPos pos) const
 {
 	if constexpr (dir == Direction::north) {
@@ -184,18 +178,18 @@ inline void Chunk::GenerateColumnMesh(int x, int z, int h)
 		BlockPos pos = { x,y,z };
 		BlockState* state = GetBlockState(pos);
 
-		if (state->GetBlock().IsOpaque()) 
+		if (state->GetBlock().IsOpaque())
 			BlockModelRegistry::GetBlockModel(state).WriteFace(m_mesh, pos, Direction::none);
 
-		FOREACH_DIRECTION(constexpr auto direction,
+		FOREACH_DIRECTION(constexpr Direction direction,
 			{
 				if (state->GetBlock().OccludesFace(direction, *state))
 					continue;
-				
-				BlockState * neighbour = GetBlockState(pos.Adjacent<direction>());
+
+				BlockState* neighbour = GetBlockState(pos.Adjacent<direction>());
 
 				if (neighbour->GetBlock().IsOpaque())
-					BlockModelRegistry::GetBlockModel(neighbour).WriteFace(m_mesh, pos.Adjacent<direction>(), Direction::Opposite<direction>());
+					BlockModelRegistry::GetBlockModel(neighbour).WriteFace(m_mesh, pos.Adjacent<direction>(), direction.GetOpposite());
 			});
 	}
 }
@@ -209,19 +203,19 @@ inline void Chunk::GenerateBorderColumnMesh(int x, int z, int h)
 		if (state->GetBlock().IsOpaque())
 			BlockModelRegistry::GetBlockModel(state).WriteFace(m_mesh, pos, Direction::none);
 
-		FOREACH_DIRECTION(constexpr auto direction,
+		FOREACH_DIRECTION(constexpr Direction direction,
 			{
 				if (state->GetBlock().OccludesFace(direction, *state))
 					continue;
-				
-				BlockState * neighbour;
-				if constexpr (Direction::IsCardinal<direction>())
+
+				BlockState* neighbour;
+				if constexpr (direction.IsCardinal())
 					neighbour = GetNearbyBlockState<direction>(pos.Adjacent<direction>());
 				else
 					neighbour = GetBlockState(pos.Adjacent<direction>());
 
 				if (neighbour->GetBlock().IsOpaque())
-					BlockModelRegistry::GetBlockModel(neighbour).WriteFace(m_mesh, pos.Adjacent<direction>(), Direction::Opposite<direction>());
+					BlockModelRegistry::GetBlockModel(neighbour).WriteFace(m_mesh, pos.Adjacent<direction>(), direction.GetOpposite());
 			});
 	}
 }

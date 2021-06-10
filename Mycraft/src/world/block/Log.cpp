@@ -1,5 +1,7 @@
 #include "Log.h"
 
+//#include "../../Direction.cpp"
+
 Log::Log() : Block(true,
 	StateContainer<Block, BlockState>::Builder(this).AddProperty(BlockStateProperties::axis))
 {
@@ -7,5 +9,5 @@ Log::Log() : Block(true,
 
 const BlockState* Log::GetStateForPlacement(BlockRayTraceResult rayTraceResult) const
 {
-	return &m_defaultBlockState->SetValue(BlockStateProperties::axis, Direction::GetAxis(rayTraceResult.direction));
+	return &m_defaultBlockState->SetValue(BlockStateProperties::axis, rayTraceResult.direction.GetAxis());
 }

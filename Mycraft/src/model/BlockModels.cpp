@@ -28,8 +28,8 @@ void BlockModels::Initialize()
 		[](BlockState state) {
 			if (state.GetValue(BlockStateProperties::slabType) == SlabType::bottom)
 				return UnbakedModel({ 0, 0, 0 }, { 16,8,16 }, {
-				{Direction::bottom,	{0,0,16,16}, "oak_planks"},
-				{Direction::top,	{0,0,16,16}, "oak_planks", 1, 1},
+				{Direction::down,	{0,0,16,16}, "oak_planks"},
+				{Direction::up,	{0,0,16,16}, "oak_planks", 1, 1},
 				{Direction::north,	{0,8,16,16}, "oak_planks"},
 				{Direction::south,	{0,8,16,16}, "oak_planks"},
 				{Direction::west,	{0,8,16,16}, "oak_planks"},
@@ -38,8 +38,8 @@ void BlockModels::Initialize()
 
 			if (state.GetValue(BlockStateProperties::slabType) == SlabType::top)
 				return UnbakedModel({ 0, 8, 0 }, { 16,16,16 }, {
-				{Direction::bottom,	{0,0,16,16}, "oak_planks",1,1},
-				{Direction::top,	{0,0,16,16}, "oak_planks"},
+				{Direction::down,	{0,0,16,16}, "oak_planks",1,1},
+				{Direction::up,	{0,0,16,16}, "oak_planks"},
 				{Direction::north,	{0,0,16,8}, "oak_planks"},
 				{Direction::south,	{0,0,16,8}, "oak_planks"},
 				{Direction::west,	{0,0,16,8}, "oak_planks"},
@@ -64,8 +64,8 @@ void BlockModels::Register(Block* block, UnbakedModel model)
 UnbakedModel BlockModels::Cube()
 {
 	return UnbakedModel({ 0, 0, 0 }, { 16,16,16 }, {
-				{Direction::bottom,	{0,0,16,16}, "bottom"},
-				{Direction::top,	{0,0,16,16}, "top"},
+				{Direction::down,	{0,0,16,16}, "bottom"},
+				{Direction::up,	{0,0,16,16}, "top"},
 				{Direction::north,	{0,0,16,16}, "north"},
 				{Direction::south,	{0,0,16,16}, "south"},
 				{Direction::west,	{0,0,16,16}, "west"},

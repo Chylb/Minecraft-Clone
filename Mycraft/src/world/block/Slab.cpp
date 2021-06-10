@@ -39,13 +39,13 @@ bool Slab::CanBeReplaced(const BlockState& state, BlockRayTraceResult rayTraceRe
 	return false;
 }
 
-bool Slab::OccludesFace(Direction::Direction dir, const BlockState& state) const
+bool Slab::OccludesFace(Direction dir, const BlockState& state) const
 {
 	if (state.GetValue(BlockStateProperties::slabType) == SlabType::full)
 		return true;
-	if (state.GetValue(BlockStateProperties::slabType) == SlabType::top && dir == Direction::top)
+	if (state.GetValue(BlockStateProperties::slabType) == SlabType::top && dir == Direction::up)
 		return true;
-	if (state.GetValue(BlockStateProperties::slabType) == SlabType::bottom && dir == Direction::bottom)
+	if (state.GetValue(BlockStateProperties::slabType) == SlabType::bottom && dir == Direction::down)
 		return true;
 	return false;
 }

@@ -54,6 +54,11 @@ int main()
 	BlockModelRegistry::Resize(BlockRegistry::GetBlockStateCount());
 	BlockModels::Initialize();
 
+	/*auto xxx = Blocks::cobblestone;
+	auto ds = xxx->DefaultBlockState();
+	auto mod = BlockModelRegistry::GetBlockModel(ds);
+	std::cout << mod;*/
+
 	placedBlock = Blocks::cobblestone;
 
 	world = new World();

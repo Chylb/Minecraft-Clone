@@ -1,6 +1,6 @@
 #include "BakedModel.h"
 
-void BakedModel::WriteFace(std::vector<float>& target, BlockPos pos, Direction::Direction dir) const
+void BakedModel::WriteFace(std::vector<float>& target, BlockPos pos, Direction dir) const
 {
 	for (auto face : m_quads[dir]) {
 		for (int i = 0; i < 36; i += 6) {

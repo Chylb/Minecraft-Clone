@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-std::pair<Direction::Direction, float> AxisAlignedBB::GetHitDirection(glm::vec3 from, glm::vec3 rayDir, BlockPos pos) const
+std::pair<Direction, float> AxisAlignedBB::GetHitDirection(glm::vec3 from, glm::vec3 rayDir, BlockPos pos) const
 {
 	float t1 = (minX + pos.x - from.x) / rayDir.x;
 	float t2 = (maxX + pos.x - from.x) / rayDir.x;
@@ -16,7 +16,7 @@ std::pair<Direction::Direction, float> AxisAlignedBB::GetHitDirection(glm::vec3 
 	float tmin = -1;
 	float tmax = 1;
 	float new_tmin, new_tmax;
-	Direction::Direction dir, new_dir;
+	Direction dir, new_dir;
 
 	if (t1 < t2)
 	{
@@ -42,13 +42,13 @@ std::pair<Direction::Direction, float> AxisAlignedBB::GetHitDirection(glm::vec3 
 	{
 		new_tmin = t3;
 		new_tmax = t4;
-		new_dir = Direction::bottom;
+		new_dir = Direction::down;
 	}
 	else
 	{
 		new_tmin = t4;
 		new_tmax = t3;
-		new_dir = Direction::top;
+		new_dir = Direction::up;
 	}
 
 	if (new_tmin > tmin) {

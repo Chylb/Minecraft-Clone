@@ -16,7 +16,7 @@ bool Air::CanBeReplaced(const BlockState& state, BlockRayTraceResult rayTraceRes
 	return true;
 }
 
-bool Air::OccludesFace(Direction::Direction dir, const BlockState& state) const
+bool Air::OccludesFace(Direction dir, const BlockState& state) const
 {
 	return false;
 }

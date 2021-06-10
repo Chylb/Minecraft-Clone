@@ -2,26 +2,26 @@
 #include <glm/glm.hpp>
 
 #include "BakedModel.h"
-#include "../Direction.h"
+#include "../utils/Direction.h"
 
 struct UnbakedQuad {
 	UnbakedQuad(glm::vec3 v1, glm::vec2 uv1, glm::vec3 v2, glm::vec2 uv2, glm::vec3 v3, glm::vec2 uv3, glm::vec3 v4, glm::vec2 uv4,
-		std::string texture, Direction::Direction dir = Direction::none);
+		std::string texture, Direction dir = Direction::none);
 
-	UnbakedQuad(Direction::Direction dir, glm::vec4 uv, std::string texture, bool flip_y = true, bool clear_direction = false);
+	UnbakedQuad(Direction dir, glm::vec4 uv, std::string texture, bool flip_y = true, bool clear_direction = false);
 
 	UnbakedQuad Translate(glm::vec3 offset);
 	UnbakedQuad Scale(glm::vec3 scale);
 	UnbakedQuad RotateX(float ang, glm::vec3 origin = { 8,8,8 });
 	UnbakedQuad RotateY(float ang, glm::vec3 origin = { 8,8,8 });
 	UnbakedQuad RotateZ(float ang, glm::vec3 origin = { 8,8,8 });
-	UnbakedQuad SetDirection(Direction::Direction dir);
+	UnbakedQuad SetDirection(Direction dir);
 
 	BakedQuad Bake();
 
 private:
 	std::string m_texture;
-	Direction::Direction m_direction;
+	Direction m_direction;
 	glm::vec4 m_normal;
 	glm::vec4 m_vertices[4];
 	glm::vec2 m_uvs[4];

@@ -161,13 +161,13 @@ void World::Update()
 		chunk->dirtyMesh = true;
 
 		Chunk* adjacentChunks[4];
-		FOREACH_CARDINAL_DIRECTION(auto constexpr direction, {
-			adjacentChunks[direction] = m_chunkMap[chunk->GetPos().Adjacent<direction>()];
+		FOREACH_CARDINAL_DIRECTION(constexpr Direction direction, {
+			adjacentChunks[direction] = m_chunkMap[chunk->GetPos().Adjacent(direction)];
 			});
 
-		FOREACH_CARDINAL_DIRECTION(auto constexpr direction, {
+		FOREACH_CARDINAL_DIRECTION(constexpr Direction direction, {
 			if (adjacentChunks[direction] && adjacentChunks[direction]->loadingState >= Chunk::LoadingState::loaded_blocks) {
-				adjacentChunks[direction]->adjacentChunks[Direction::Opposite<direction>()] = chunk;
+				adjacentChunks[direction]->adjacentChunks[direction.GetOpposite()] = chunk;
 				chunk->adjacentChunks[direction] = adjacentChunks[direction];
 			}
 			});

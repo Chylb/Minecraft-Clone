@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../Property.h"
-#include "../Direction.h"
+#include "../utils/Direction.h"
 
 enum class SlabType
 {

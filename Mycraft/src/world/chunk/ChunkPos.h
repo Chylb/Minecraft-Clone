@@ -5,18 +5,18 @@ struct ChunkPos
 	int x;
 	int z;
 
-	template<Direction::Direction dir> constexpr ChunkPos Adjacent()
+	constexpr ChunkPos Adjacent(Direction dir)
 	{
-		if constexpr (dir == Direction::north) {
+		if (dir == Direction::north) {
 			return { x,z - 1 };
 		}
-		if constexpr (dir == Direction::east) {
+		if (dir == Direction::east) {
 			return { x + 1,z };
 		}
-		if constexpr (dir == Direction::south) {
+		if (dir == Direction::south) {
 			return { x,z + 1 };
 		}
-		if constexpr (dir == Direction::west) {
+		if (dir == Direction::west) {
 			return { x - 1,z };
 		}
 	}
