@@ -36,6 +36,8 @@ Camera g_camera(glm::vec3(0, 100, 40));
 Block* placedBlock;
 int g_renderDistance = 8;
 World* world;
+thread_local std::vector<float> g_mesh;
+int max_mesh_size = 0;
 
 void processInput(GLFWwindow* window, float deltaTime);
 
@@ -46,6 +48,8 @@ int main()
 	srand(time(NULL));
 	if (Renderer::Init() != 0)
 		return -1;
+
+	g_mesh.reserve(90000);
 
 	Gui::Init(Renderer::window);
 	Resources::LoadTextures();
@@ -80,6 +84,11 @@ int main()
 		timer.finish();
 
 		world->Render();
+		/*if (g_mesh.size() > max_mesh_size)
+		{
+			max_mesh_size = g_mesh.size();
+			printf("size %d \n", max_mesh_size);
+		}*/
 
 		std::array<int, 4> chunksLoadingStates = world->DEV_ChunksLoadingStates();
 		Gui::RenderWindow(Renderer::window, g_camera.position, world->OccupiedChunkCount(), world->FreeChunkCount(), 0, g_polygons, chunksLoadingStates);

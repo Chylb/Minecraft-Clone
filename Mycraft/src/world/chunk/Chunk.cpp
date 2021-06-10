@@ -4,10 +4,11 @@
 #include "../../model/BlockModelRegistry.h"
 #include "../../utils/Direction.h"
 
+extern thread_local std::vector<float> g_mesh;
+
 Chunk::Chunk()
 {
 	Clear();
-	m_mesh.reserve(32 * 32 * 6 * sizeof(float) * 2);
 }
 
 Chunk::~Chunk()
@@ -85,7 +86,7 @@ bool Chunk::CanGenerateMesh()
 
 void Chunk::GenerateMesh()
 {
-	m_mesh.clear();
+	g_mesh.clear();
 
 	int h = std::max({ highestBlock, adjacentChunks[0]->highestBlock, adjacentChunks[1]->highestBlock, adjacentChunks[2]->highestBlock, adjacentChunks[3]->highestBlock }) + 1;
 
@@ -104,14 +105,14 @@ void Chunk::GenerateMesh()
 
 void Chunk::InitializeBuffers()
 {
-	m_polygonCount = m_mesh.size() / 6;
+	m_polygonCount = g_mesh.size() / 6;
 
 	glGenVertexArrays(1, &m_VAO);
 	glGenBuffers(1, &m_VBO);
 	glBindVertexArray(m_VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * m_mesh.size(), m_mesh.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * g_mesh.size(), g_mesh.data(), GL_STATIC_DRAW);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
@@ -183,8 +184,9 @@ inline void Chunk::GenerateColumnMesh(int x, int z, int h)
 		BlockPos pos = { x,y,z };
 		BlockState* state = RawGetBlockState(pos);
 
+		[[unlikely]]
 		if (state->GetModel().HasFace(Direction::none))
-			state->GetModel().WriteFace(m_mesh, pos, Direction::none);
+			state->GetModel().WriteFace(g_mesh, pos, Direction::none);
 
 		if (state->OccludesAllFaces())
 			continue;
@@ -197,7 +199,7 @@ inline void Chunk::GenerateColumnMesh(int x, int z, int h)
 				BlockState* neighbour = RawGetBlockState(pos.Adjacent<direction>());
 
 				if (neighbour->GetModel().HasFace(direction.GetOpposite()))
-					neighbour->GetModel().WriteFace(m_mesh, pos.Adjacent<direction>(), direction.GetOpposite());
+					neighbour->GetModel().WriteFace(g_mesh, pos.Adjacent<direction>(), direction.GetOpposite());
 			});
 	}
 }
@@ -208,8 +210,9 @@ inline void Chunk::GenerateBorderColumnMesh(int x, int z, int h)
 		BlockPos pos = { x,y,z };
 		BlockState* state = RawGetBlockState(pos);
 
+		[[unlikely]]
 		if (state->GetModel().HasFace(Direction::none))
-			state->GetModel().WriteFace(m_mesh, pos, Direction::none);
+			state->GetModel().WriteFace(g_mesh, pos, Direction::none);
 
 		if (state->OccludesAllFaces())
 			continue;
@@ -226,7 +229,7 @@ inline void Chunk::GenerateBorderColumnMesh(int x, int z, int h)
 					neighbour = RawGetBlockState(pos.Adjacent<direction>());
 
 				if (neighbour->GetModel().HasFace(direction.GetOpposite()))
-					neighbour->GetModel().WriteFace(m_mesh, pos.Adjacent<direction>(), direction.GetOpposite());
+					neighbour->GetModel().WriteFace(g_mesh, pos.Adjacent<direction>(), direction.GetOpposite());
 			});
 	}
 }

@@ -65,7 +65,6 @@ private:
 
 	uint16_t m_data[CHUNK_WIDTH][CHUNK_WIDTH][CHUNK_HEIGHT];
 
-	std::vector<float> m_mesh;
 	GLuint m_VBO, m_VAO;
 };
 
