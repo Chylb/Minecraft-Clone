@@ -13,6 +13,7 @@ void BlockModels::Initialize()
 	Register(Blocks::cobblestone, CubeAll().SetTexture("all", "cobblestone"));
 	Register(Blocks::plank, CubeAll().SetTexture("all", "oak_planks"));
 	Register(Blocks::leaves, CubeAll().SetTexture("all", "leaves"));
+	Register(Blocks::flower, Cross().SetTexture("cross", "poppy"));
 
 	Register(Blocks::wood,
 		[](BlockState state) {
@@ -98,4 +99,19 @@ UnbakedModel BlockModels::CubeTopBottom()
 	for (auto key : { "north", "east", "south", "west" })
 		cube.SetTexture(key, "side");
 	return cube;
+}
+
+UnbakedModel BlockModels::Cross()
+{
+	auto plane1 = UnbakedModel({ 0.8, 0, 8 }, { 15.2,16,8 }, {
+				{Direction::north,	{0,0,16,16}, "cross",1,1},
+				{Direction::south,	{0,0,16,16}, "cross",1,1},
+		}).RotateY(45);
+
+	auto plane2 = UnbakedModel({ 8, 0, 0.8 }, { 8, 16, 15.2 }, {
+				{Direction::west,	{0,0,16,16}, "cross",1,1},
+				{Direction::east,	{0,0,16,16}, "cross",1,1},
+		}).RotateY(45);
+
+	return plane1.AddModel(plane2);
 }

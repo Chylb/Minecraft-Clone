@@ -8,7 +8,7 @@ void Resources::LoadTextures()
 
 	glTexStorage3D(GL_TEXTURE_2D_ARRAY,
 		1,						//mipmaps
-		GL_RGB8,				//internal format
+		GL_RGBA8,				//internal format
 		16, 16,					//width, height
 		64						//number of layers
 	);
@@ -18,7 +18,7 @@ void Resources::LoadTextures()
 		int width, height, nrChannels;
 		stbi_set_flip_vertically_on_load(true);
 		unsigned char* data = stbi_load(entry.path().string().c_str(), &width, &height, &nrChannels, 0);
-
+		
 		s_textureIxMap[entry.path().stem().string()] = i;
 
 		glTexSubImage3D(GL_TEXTURE_2D_ARRAY,

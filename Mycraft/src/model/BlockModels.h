@@ -15,4 +15,6 @@ namespace BlockModels {
 	UnbakedModel CubeAll();
 	UnbakedModel CubeColumn();
 	UnbakedModel CubeTopBottom();
+
+	UnbakedModel Cross();
 };

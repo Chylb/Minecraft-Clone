@@ -53,3 +53,8 @@ bool Block::OccludesFace(Direction dir, const BlockState& state) const
 {
 	return true;
 }
+
+VoxelShape Block::Box(float x0, float y0, float z0, float x1, float y1, float z1)
+{
+	return VoxelShape({ {x0 / 16.0f,y0 / 16.0f,z0 / 16.0f,x1 / 16.0f,y1 / 16.0f,z1 / 16.0f} });
+}

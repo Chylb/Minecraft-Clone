@@ -2,6 +2,7 @@
 
 #include "Air.h"
 #include "Dirt.h"
+#include "Flower.h"
 #include "Log.h"
 #include "Slab.h"
 
@@ -18,6 +19,7 @@ void Blocks::Initialize()
 	wood		= BlockRegistry::Register(new Log());
 	leaves		= BlockRegistry::Register(new Block(true));
 	slab		= BlockRegistry::Register(new Slab());
+	flower		= BlockRegistry::Register(new Flower());
 }
 
 BlockState* Blocks::GetBlockState(uint16_t id)

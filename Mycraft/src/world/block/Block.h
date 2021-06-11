@@ -10,8 +10,8 @@
 #include "../../state/Property.h"
 #include "../state/StateContainer.h"
 #include "../../utils/math/BlockRayTraceResult.h"
+#include "../../utils/math/shapes/VoxelShape.h"
 
-class VoxelShape;
 class World;
 
 class Block
@@ -31,6 +31,8 @@ public:
 	virtual void Tick(World& world, BlockPos pos) const;
 	virtual bool CanBeReplaced(const BlockState& state, BlockRayTraceResult rayTraceResult) const;
 	virtual bool OccludesFace(Direction dir, const BlockState& state) const;
+
+	static VoxelShape Box(float x0, float y0, float z0, float x1, float y1, float z1);
 
 protected:
 	StateContainer<Block, BlockState> m_stateDefinition;

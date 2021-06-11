@@ -11,6 +11,16 @@ void UnbakedModel::AddQuad(UnbakedQuad quad)
 	m_quads.push_back(quad);
 }
 
+UnbakedModel UnbakedModel::AddModel(UnbakedModel model)
+{
+	UnbakedModel result = *this;
+
+	for (auto& quad : model.m_quads)
+		result.m_quads.push_back(quad);
+
+	return result;
+}
+
 UnbakedModel& UnbakedModel::SetTexture(std::string oldTex, std::string newTex)
 {
 	for (auto& quad : m_quads)
