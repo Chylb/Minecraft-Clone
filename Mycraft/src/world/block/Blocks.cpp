@@ -20,6 +20,7 @@ void Blocks::Initialize()
 	leaves		= BlockRegistry::Register(new Block(true));
 	slab		= BlockRegistry::Register(new Slab());
 	flower		= BlockRegistry::Register(new Flower());
+	debugBlock	= BlockRegistry::Register(new Flower());
 }
 
 BlockState* Blocks::GetBlockState(uint16_t id)

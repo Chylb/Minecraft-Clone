@@ -8,5 +8,5 @@ class Log : public Block
 public:
 	Log();
 
-	const BlockState* GetStateForPlacement(BlockRayTraceResult rayTraceResult) const override;
+	const BlockState* GetStateForPlacement(const BlockItemUseContext& useContext) const override;
 };

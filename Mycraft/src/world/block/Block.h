@@ -25,11 +25,10 @@ public:
 	const StateContainer<Block, BlockState>& GetStateDefinition() const;
 	BlockState* DefaultBlockState() const;
 
-	virtual const BlockState* GetStateForPlacement(BlockRayTraceResult rayTraceResult) const;
-
+	virtual const BlockState* GetStateForPlacement(const BlockItemUseContext& useContext) const;
 	virtual const VoxelShape& GetShape(const BlockState& state) const;
 	virtual void Tick(World& world, BlockPos pos) const;
-	virtual bool CanBeReplaced(const BlockState& state, BlockRayTraceResult rayTraceResult) const;
+	virtual bool CanBeReplaced(const BlockState& state, const BlockItemUseContext& useContext) const;
 	virtual bool OccludesFace(Direction dir, const BlockState& state) const;
 
 	static VoxelShape Box(float x0, float y0, float z0, float x1, float y1, float z1);

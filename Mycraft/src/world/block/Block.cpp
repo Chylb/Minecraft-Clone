@@ -30,7 +30,7 @@ BlockState* Block::DefaultBlockState() const
 	return m_defaultBlockState;
 }
 
-const BlockState* Block::GetStateForPlacement(BlockRayTraceResult rayTraceResult) const
+const BlockState* Block::GetStateForPlacement(const BlockItemUseContext& useContext) const
 {
 	return m_defaultBlockState;
 }
@@ -44,7 +44,7 @@ void Block::Tick(World& world, BlockPos pos) const
 {
 }
 
-bool Block::CanBeReplaced(const BlockState& state, BlockRayTraceResult rayTraceResult) const
+bool Block::CanBeReplaced(const BlockState& state, const BlockItemUseContext& useContext) const
 {
 	return false;
 }

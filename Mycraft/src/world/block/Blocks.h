@@ -19,4 +19,5 @@ public:
 	inline static Block* leaves;
 	inline static Block* slab;
 	inline static Block* flower;
+	inline static Block* debugBlock;
 };

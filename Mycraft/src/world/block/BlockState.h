@@ -4,6 +4,7 @@
 
 #include "../../utils/Direction.h"
 
+class BlockItemUseContext;
 struct BlockPos;
 struct BlockRayTraceResult;
 class BakedModel;
@@ -21,7 +22,7 @@ public:
 
 	const VoxelShape& GetShape() const;
 	void Tick(World& world, BlockPos pos) const;
-	bool CanBeReplaced(BlockRayTraceResult rayTraceResult) const;
+	bool CanBeReplaced(const BlockItemUseContext& useContext) const;
 
 	bool OccludesFace(Direction dir) const;
 	bool OccludesAllFaces() const;

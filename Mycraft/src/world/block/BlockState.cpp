@@ -1,6 +1,7 @@
 #include "BlockState.h"
 
 #include "Block.h"
+#include "../../item/BlockItemUseContext.h"
 
 uint16_t BlockState::GetId() const
 {
@@ -22,9 +23,9 @@ void BlockState::Tick(World& world, BlockPos pos) const
 	m_owner->Tick(world, pos);
 }
 
-bool BlockState::CanBeReplaced(BlockRayTraceResult rayTraceResult) const
+bool BlockState::CanBeReplaced(const BlockItemUseContext& useContext) const
 {
-	return m_owner->CanBeReplaced(*this, rayTraceResult);
+	return m_owner->CanBeReplaced(*this, useContext);
 }
 
 bool BlockState::OccludesFace(Direction dir) const

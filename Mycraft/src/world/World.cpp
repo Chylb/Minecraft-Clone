@@ -92,12 +92,12 @@ Chunk* World::GetChunk(int x, int z)
 	return m_chunkMap[{x, z}];
 }
 
-Chunk* World::GetChunkAt(BlockPos pos)
+Chunk* World::GetChunkAt(BlockPos pos) const
 {
-	return m_chunkMap[{pos.x >> 5, pos.z >> 5}];
+	return m_chunkMap.at({ pos.x >> 5, pos.z >> 5 });
 }
 
-BlockState* World::GetBlockState(BlockPos pos)
+BlockState* World::GetBlockState(BlockPos pos) const
 {
 	Chunk* chunk = GetChunkAt(pos);
 	if (chunk)
@@ -256,10 +256,8 @@ BlockRayTraceResult World::TraverseBlocks(glm::vec3 from, glm::vec3 to, std::fun
 		}
 
 		BlockRayTraceResult result = hitFunction(from, rayDir, { i,j,k });
-		if (result.hit) {
-			result.world = this;
+		if (result.hit)
 			return result;
-		}
 	}
 	return { .hit = false };
 }

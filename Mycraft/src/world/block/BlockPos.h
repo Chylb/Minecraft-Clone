@@ -8,7 +8,7 @@ struct BlockPos
 	int y;
 	int z;
 	
-	constexpr BlockPos Adjacent(Direction dir)
+	constexpr BlockPos Adjacent(Direction dir) const
 	{
 		switch (dir) {
 		case Direction::north:
@@ -32,7 +32,7 @@ struct BlockPos
 	}
 
 	template <Direction dir>
-	constexpr BlockPos Adjacent()
+	constexpr BlockPos Adjacent() const
 	{
 		if constexpr (dir == Direction::north) {
 			return { x,y,z - 1 };

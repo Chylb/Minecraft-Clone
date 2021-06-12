@@ -44,6 +44,8 @@ void Gui::RenderWindow(GLFWwindow* window, glm::vec3 camPos, int occupiedChunks,
 		float crosshairLength = 5;
 		ImGui::GetWindowDrawList()->AddLine({ width / 2,height / 2 - crosshairLength + 1 }, { width / 2,height / 2 + crosshairLength }, yellow);
 		ImGui::GetWindowDrawList()->AddLine({ width / 2 - crosshairLength + 1,height / 2 }, { width / 2 + crosshairLength ,height / 2 }, yellow);
+
+		ImGui::End();
 	}
 
 	{

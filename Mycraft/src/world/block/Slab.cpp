@@ -1,6 +1,7 @@
 #include "Slab.h"
 
 #include "../World.h"
+#include "../../item/BlockItemUseContext.h"
 #include "../../state/properties/BlockStateProperties.h"
 
 Slab::Slab() : Block(true,
@@ -18,24 +19,37 @@ const VoxelShape& Slab::GetShape(const BlockState& state) const
 	return topAABB;
 }
 
-const BlockState* Slab::GetStateForPlacement(BlockRayTraceResult rayTraceResult) const
+const BlockState* Slab::GetStateForPlacement(const BlockItemUseContext& useContext) const
 {
-	const auto& block = rayTraceResult.world->GetBlockState(rayTraceResult.blockPos)->GetBlock();
-	if (&block == this)
-		return &m_defaultBlockState->SetValue(BlockStateProperties::slabType, SlabType::full);
-
-	if (rayTraceResult.location.y - rayTraceResult.blockPos.y > 0.5f)
-		return &m_defaultBlockState->SetValue(BlockStateProperties::slabType, SlabType::top);
-
-	return &m_defaultBlockState->SetValue(BlockStateProperties::slabType, SlabType::bottom);
+	auto pos = useContext.GetClickedPos();
+	const auto state = useContext.GetWorld().GetBlockState(pos);
+	if (&state->GetBlock() == this) {
+		return &(state->SetValue(BlockStateProperties::slabType, SlabType::full));
+	}
+	else {
+		auto dir = useContext.GetClickedFace();
+		auto& top = m_defaultBlockState->SetValue(BlockStateProperties::slabType, SlabType::top);
+		auto& bottom = m_defaultBlockState->SetValue(BlockStateProperties::slabType, SlabType::bottom);
+		return dir != Direction::down && (dir == Direction::up || !(useContext.GetClickLocation().y - pos.y > 0.5)) ? &bottom : &top;
+	}
 }
 
-bool Slab::CanBeReplaced(const BlockState& state, BlockRayTraceResult rayTraceResult) const
+bool Slab::CanBeReplaced(const BlockState& state, const BlockItemUseContext& useContext) const
 {
-	const auto& block = rayTraceResult.world->GetBlockState(rayTraceResult.blockPos)->GetBlock();
-	if (&block == this)
-		return (state.GetValue(BlockStateProperties::slabType) != SlabType::full);
-
+	SlabType slabType = state.GetValue(BlockStateProperties::slabType);
+	if (slabType != SlabType::full && &useContext.GetPlacedBlock() == this)
+	{
+		if (useContext.ReplacingClickedOnBlock())
+		{
+			bool hitUpper = useContext.GetClickLocation().y - useContext.GetClickedPos().y > 0.5f;
+			auto dir = useContext.GetClickedFace();
+			if (slabType == SlabType::bottom)
+				return dir == Direction::up || hitUpper && dir.IsCardinal();
+			else
+				return dir == Direction::down || !hitUpper && dir.IsCardinal();
+		}
+		return true;
+	}
 	return false;
 }
 
@@ -43,9 +57,10 @@ bool Slab::OccludesFace(Direction dir, const BlockState& state) const
 {
 	if (state.GetValue(BlockStateProperties::slabType) == SlabType::full)
 		return true;
-	if (state.GetValue(BlockStateProperties::slabType) == SlabType::top && dir == Direction::up)
-		return true;
 	if (state.GetValue(BlockStateProperties::slabType) == SlabType::bottom && dir == Direction::down)
 		return true;
+	if (state.GetValue(BlockStateProperties::slabType) == SlabType::top && dir == Direction::up)
+		return true;
+
 	return false;
 }

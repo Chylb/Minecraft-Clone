@@ -10,8 +10,8 @@ public:
 	Slab();
 
 	const VoxelShape& GetShape(const BlockState& state) const override;
-	const BlockState* GetStateForPlacement(BlockRayTraceResult rayTraceResult) const override;
-	bool CanBeReplaced(const BlockState& state, BlockRayTraceResult rayTraceResult) const override;
+	const BlockState* GetStateForPlacement(const BlockItemUseContext& useContext) const override;
+	bool CanBeReplaced(const BlockState& state, const BlockItemUseContext& useContext) const override;
 	bool OccludesFace(Direction dir, const BlockState& state) const override;
 private:
 

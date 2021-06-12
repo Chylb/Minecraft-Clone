@@ -11,7 +11,7 @@ const VoxelShape& Air::GetShape(const BlockState& state) const
 	return VoxelShapes::Empty();
 }
 
-bool Air::CanBeReplaced(const BlockState& state, BlockRayTraceResult rayTraceResult) const
+bool Air::CanBeReplaced(const BlockState& state, const BlockItemUseContext& useContext) const
 {
 	return true;
 }

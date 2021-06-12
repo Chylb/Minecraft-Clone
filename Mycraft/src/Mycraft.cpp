@@ -23,6 +23,7 @@
 #include "state/StateHolder.h"
 #include "model/BlockModels.h"
 #include "model/BlockModelRegistry.h"
+#include "item/BlockItemUseContext.h"
 
 #include "renderer/Shader.h"
 #include "renderer/Renderer.h"
@@ -59,6 +60,7 @@ int main()
 	BlockModels::Initialize();
 
 	placedBlock = Blocks::cobblestone;
+	auto slab = Blocks::slab;
 
 	world = new World();
 
@@ -138,26 +140,11 @@ void processInput(GLFWwindow* window, float deltaTime)
 			auto end = g_camera.position + g_camera.facingDirection * reach;
 
 			auto rayTraceResult = world->Clip(g_camera.position, end);
-			if (rayTraceResult.hit) {
-				auto state = world->GetBlockState(rayTraceResult.blockPos);
-				auto& block = state->GetBlock();
-				if (block.CanBeReplaced(*state, rayTraceResult)) {
-					world->SetBlock(rayTraceResult.blockPos, placedBlock->GetStateForPlacement(rayTraceResult));
-					justEditedWorld = true;
-				}
-				else
-				{
-					auto relativePos = rayTraceResult.blockPos.Adjacent(rayTraceResult.direction);
-					auto relativeState = world->GetBlockState(relativePos);
-					auto& relativeBlock = relativeState->GetBlock();
-					rayTraceResult.blockPos = relativePos;
 
-					if (relativeBlock.CanBeReplaced(*relativeState, rayTraceResult)) {
-						rayTraceResult.blockPos = relativePos;
-						world->SetBlock(relativePos, placedBlock->GetStateForPlacement(rayTraceResult));
-						justEditedWorld = true;
-					}
-				}
+			if (rayTraceResult.hit) {
+				auto useContext = BlockItemUseContext(world, rayTraceResult, *placedBlock);
+				if (useContext.Place(*placedBlock))
+					justEditedWorld = true;
 			}
 		}
 	}
@@ -182,6 +169,7 @@ void processInput(GLFWwindow* window, float deltaTime)
 	if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS) placedBlock = Blocks::wood;
 	if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS) placedBlock = Blocks::slab;
 	if (glfwGetKey(window, GLFW_KEY_7) == GLFW_PRESS) placedBlock = Blocks::flower;
+	if (glfwGetKey(window, GLFW_KEY_8) == GLFW_PRESS) placedBlock = Blocks::debugBlock;
 }
 
 

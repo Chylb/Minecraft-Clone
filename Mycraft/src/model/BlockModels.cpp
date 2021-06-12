@@ -14,6 +14,7 @@ void BlockModels::Initialize()
 	Register(Blocks::plank, CubeAll().SetTexture("all", "oak_planks"));
 	Register(Blocks::leaves, CubeAll().SetTexture("all", "leaves"));
 	Register(Blocks::flower, Cross().SetTexture("cross", "poppy"));
+	Register(Blocks::debugBlock, CubeAll().Scale({ 0.5,0.5,0.5 }).Translate({ 4,4,4 }).SetTexture("all", "debug"));
 
 	Register(Blocks::wood,
 		[](BlockState state) {

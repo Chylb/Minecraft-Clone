@@ -24,7 +24,7 @@ BlockRayTraceResult VoxelShape::Clip(glm::vec3 from, glm::vec3 rayDir, BlockPos 
 		return { .hit = false };
 
 	glm::vec3 location = from + rayDir * t_min;
-	return { nullptr, location, true, pos, direction };
+	return {location, true, pos, direction };
 }
 
 std::ostream& operator<<(std::ostream& os, const VoxelShape& shape)

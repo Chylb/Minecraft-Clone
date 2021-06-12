@@ -1,13 +1,13 @@
 #include "Log.h"
 
-//#include "../../Direction.cpp"
+#include "../../item/BlockItemUseContext.h"
 
 Log::Log() : Block(true,
 	StateContainer<Block, BlockState>::Builder(this).AddProperty(BlockStateProperties::axis))
 {
 }
 
-const BlockState* Log::GetStateForPlacement(BlockRayTraceResult rayTraceResult) const
+const BlockState* Log::GetStateForPlacement(const BlockItemUseContext& useContext) const
 {
-	return &m_defaultBlockState->SetValue(BlockStateProperties::axis, rayTraceResult.direction.GetAxis());
+	return &m_defaultBlockState->SetValue(BlockStateProperties::axis, useContext.GetClickedFace().GetAxis());
 }
