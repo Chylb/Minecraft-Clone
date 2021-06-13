@@ -150,7 +150,7 @@ void Chunk::Clear()
 	m_polygonCount = 0;
 	dirtyMesh = false;
 
-	FOREACH_CARDINAL_DIRECTION(auto direction, {
+	FOREACH_HORIZONTAL_DIRECTION(auto direction, {
 		adjacentChunks[direction] = nullptr;
 		});
 
@@ -200,13 +200,13 @@ inline void Chunk::GenerateColumnMesh(int x, int z, int h)
 
 				if (neighbour->GetModel().HasFace(direction.GetOpposite()))
 					neighbour->GetModel().WriteFace(g_mesh, pos.Adjacent<direction>(), direction.GetOpposite());
-			});
+			})
 	}
 }
 
 inline void Chunk::GenerateBorderColumnMesh(int x, int z, int h)
 {
-	for (int y = 0; y <= h; y++) {
+	for (int y = 1; y <= h; y++) {
 		BlockPos pos = { x,y,z };
 		BlockState* state = RawGetBlockState(pos);
 
@@ -223,13 +223,13 @@ inline void Chunk::GenerateBorderColumnMesh(int x, int z, int h)
 					continue;
 
 				BlockState* neighbour;
-				if constexpr (direction.IsCardinal())
+				if constexpr (direction.IsHorizontal())
 					neighbour = GetNearbyBlockState<direction>(pos.Adjacent<direction>());
 				else
 					neighbour = RawGetBlockState(pos.Adjacent<direction>());
 
 				if (neighbour->GetModel().HasFace(direction.GetOpposite()))
 					neighbour->GetModel().WriteFace(g_mesh, pos.Adjacent<direction>(), direction.GetOpposite());
-			});
+			})
 	}
 }

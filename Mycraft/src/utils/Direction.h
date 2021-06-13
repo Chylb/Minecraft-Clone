@@ -2,16 +2,16 @@
 
 #include <ostream>
 
-#define FOREACH_CARDINAL_DIRECTION(VAR, CODE) \
-	{VAR = Direction::north; CODE} \
-	{VAR = Direction::east; CODE} \
-	{VAR = Direction::south; CODE} \
-	{VAR = Direction::west; CODE} 
+#define FOREACH_HORIZONTAL_DIRECTION(VAR, CODE) \
+	{VAR = Direction::north; do CODE while(0);} \
+	{VAR = Direction::east; do CODE while(0);} \
+	{VAR = Direction::south; do CODE while(0);} \
+	{VAR = Direction::west; do CODE while(0);}
 
 #define FOREACH_DIRECTION(VAR, CODE) \
-	FOREACH_CARDINAL_DIRECTION(VAR, CODE) \
-	{VAR = Direction::up; CODE} \
-	{VAR = Direction::down; CODE} 
+	FOREACH_HORIZONTAL_DIRECTION(VAR, CODE) \
+	{VAR = Direction::up; do CODE while(0);} \
+	{VAR = Direction::down; do CODE while(0);}
 
 class Direction
 {
@@ -37,7 +37,7 @@ public:
 
 	constexpr Direction GetOpposite() const;
 	constexpr Axis GetAxis() const;
-	constexpr bool IsCardinal() const;
+	constexpr bool IsHorizontal() const;
 	static Direction GetNearest(float x, float y, float z);
 
 	static constexpr Value directions[]{ north, east, south, west, up, down };
@@ -84,7 +84,7 @@ constexpr Direction::Axis Direction::GetAxis() const
 	}
 }
 
-constexpr bool Direction::IsCardinal() const
+constexpr bool Direction::IsHorizontal() const
 {
 	return !(_value == up || _value == down);
 }

@@ -44,9 +44,9 @@ bool Slab::CanBeReplaced(const BlockState& state, const BlockItemUseContext& use
 			bool hitUpper = useContext.GetClickLocation().y - useContext.GetClickedPos().y > 0.5f;
 			auto dir = useContext.GetClickedFace();
 			if (slabType == SlabType::bottom)
-				return dir == Direction::up || hitUpper && dir.IsCardinal();
+				return dir == Direction::up || hitUpper && dir.IsHorizontal();
 			else
-				return dir == Direction::down || !hitUpper && dir.IsCardinal();
+				return dir == Direction::down || !hitUpper && dir.IsHorizontal();
 		}
 		return true;
 	}
