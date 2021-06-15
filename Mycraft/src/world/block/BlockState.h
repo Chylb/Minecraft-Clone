@@ -23,6 +23,7 @@ public:
 	const VoxelShape& GetShape() const;
 	void Tick(World& world, BlockPos pos) const;
 	bool CanBeReplaced(const BlockItemUseContext& useContext) const;
+	bool Use(World& world, BlockPos pos, BlockRayTraceResult hitResult) const;
 
 	bool OccludesFace(Direction dir) const;
 	bool OccludesAllFaces() const;

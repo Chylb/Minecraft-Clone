@@ -19,9 +19,9 @@ public:
 		}
 
 		template <typename T>
-		Builder& AddProperty(Property<T>* property)
+		Builder& AddProperty(const Property<T>& property)
 		{
-			void* voidPtr = (void*)property;
+			void* voidPtr = (void*)&property;
 			m_properties.push_back(static_cast<Property <int>*>(voidPtr));
 			return *this;
 		}
@@ -101,6 +101,3 @@ inline const std::vector<S*>& StateContainer<O, S>::GetPossibleStates() const
 {
 	return m_states;
 }
-
-
-

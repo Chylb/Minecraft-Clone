@@ -2,12 +2,11 @@
 
 #include "../../item/BlockItemUseContext.h"
 
-Log::Log() : Block(true,
-	StateContainer<Block, BlockState>::Builder(this).AddProperty(BlockStateProperties::axis))
+Log::Log() : Block(StateContainer<Block, BlockState>::Builder(this).AddProperty(axis))
 {
 }
 
 const BlockState* Log::GetStateForPlacement(const BlockItemUseContext& useContext) const
 {
-	return &m_defaultBlockState->SetValue(BlockStateProperties::axis, useContext.GetClickedFace().GetAxis());
+	return &m_defaultBlockState->SetValue(axis, useContext.GetClickedFace().GetAxis());
 }

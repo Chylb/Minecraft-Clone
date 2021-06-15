@@ -8,11 +8,18 @@ enum class SlabType
 	top, bottom, full
 };
 
+enum class Half
+{
+	top, bottom
+};
+
 class BlockStateProperties
 {
 public:
-	static void Initialize();
 
-	inline static Property<Direction::Axis>* axis;
-	inline static Property<SlabType>* slabType;
+	inline const static Property<Direction::Axis> axis = { {Direction::Axis::x, Direction::Axis::y, Direction::Axis::z} };
+	inline const static Property<Direction::Value> horizontalFacing = { {Direction::north, Direction::east, Direction::south, Direction::west} };
+	inline const static Property<SlabType> slabType = { {SlabType::top, SlabType::bottom, SlabType::full} };
+	inline const static Property<Half> half = { {Half::top, Half::bottom} };
+	inline const static Property<bool> open = { {false,true} };
 };

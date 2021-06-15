@@ -2,7 +2,7 @@
 
 #include "../../utils/math/shapes/VoxelShapes.h"
 
-Flower::Flower() : Block(false)
+Flower::Flower() : Block()
 {
 }
 

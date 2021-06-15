@@ -32,7 +32,8 @@ public:
 		x, y, z
 	};
 
-	constexpr  Direction(Value value = north) : _value(value) { }
+	constexpr  Direction(Value value = north) : _value(value) {}
+	explicit constexpr Direction(int direction) : _value((Value)direction) {}
 	constexpr operator int() const { return _value; }
 
 	constexpr Direction GetOpposite() const;

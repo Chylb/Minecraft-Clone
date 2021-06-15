@@ -15,10 +15,11 @@ struct StateHolder
 {
 public:
 	template <typename T>
-	T GetValue(Property<T>* p) const;
+	T GetValue(const Property<T>& p) const;
 	const std::map<Property<int>*, int>& GetValues() const;
+
 	template <typename T>
-	const S& SetValue(Property<T>* p, T val) const;
+	const S& SetValue(const Property<T>& p, T val) const;
 
 	void PopulateNeighbors(std::map<std::map<Property<int>*, int>, S*> map);
 
@@ -42,16 +43,16 @@ protected:
 
 template<typename O, typename S>
 template<typename T>
-inline T StateHolder<O, S>::GetValue(Property<T>* p) const
+inline T StateHolder<O, S>::GetValue(const Property<T>& p) const
 {
-	return (T)m_values.at(INT_PROP(p));
+	return (T)m_values.at(INT_PROP(&p));
 }
 
 template<typename O, typename S>
 template<typename T>
-inline const S& StateHolder<O, S>::SetValue(Property<T>* p, T val) const
+inline const S& StateHolder<O, S>::SetValue(const Property<T>& p, T val) const
 {
-	return *m_neighbors.at({ INT_PROP(p), (int)val });
+	return *m_neighbors.at({ INT_PROP(&p), (int)val });
 }
 
 template<typename O, typename S>

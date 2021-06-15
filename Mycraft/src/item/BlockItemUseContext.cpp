@@ -2,11 +2,12 @@
 
 #include "../world/World.h"
 
-BlockItemUseContext::BlockItemUseContext(World* world, const BlockRayTraceResult& hitResult, const Block& placedBlock) :
+BlockItemUseContext::BlockItemUseContext(World* world, const BlockRayTraceResult& hitResult, const Block& placedBlock, glm::vec3 cameraDir) :
 	m_world(world),
 	m_hitResult(hitResult),
 	m_relativePos(hitResult.blockPos.Adjacent(hitResult.direction)),
-	m_placedBlock(placedBlock)
+	m_placedBlock(placedBlock),
+	m_cameraDir(cameraDir)
 {
 	m_replaceClicked = world->GetBlockState(hitResult.blockPos)->CanBeReplaced(*this);
 }
@@ -54,4 +55,9 @@ bool BlockItemUseContext::Place(const Block& block)
 	auto state = block.GetStateForPlacement(*this);
 	m_world->SetBlock(GetClickedPos(), state);
 	return true;
+}
+
+Direction BlockItemUseContext::GetHorizontalDirection() const
+{
+	return Direction::GetNearest(m_cameraDir.x, 0, m_cameraDir.z);
 }

@@ -28,6 +28,11 @@ bool BlockState::CanBeReplaced(const BlockItemUseContext& useContext) const
 	return m_owner->CanBeReplaced(*this, useContext);
 }
 
+bool BlockState::Use(World& world, BlockPos pos, BlockRayTraceResult hitResult) const
+{
+	return m_owner->Use(*this, world, pos, hitResult);
+}
+
 bool BlockState::OccludesFace(Direction dir) const
 {
 	return m_occludesFace[dir];

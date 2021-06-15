@@ -2,7 +2,7 @@
 
 #include "../../utils/math/shapes/VoxelShapes.h"
 
-Air::Air() : Block(false)
+Air::Air() : Block()
 {
 }
 

@@ -10,7 +10,7 @@ class World;
 class BlockItemUseContext
 {
 public:
-	BlockItemUseContext(World* world, const BlockRayTraceResult& hitResult, const Block& placedBlock);
+	BlockItemUseContext(World* world, const BlockRayTraceResult& hitResult, const Block& placedBlock, glm::vec3 cameraDir);
 
 	BlockPos GetClickedPos() const;
 	Direction GetClickedFace() const;
@@ -21,7 +21,10 @@ public:
 	bool CanPlace() const;
 	bool Place(const Block& block);
 
+	Direction GetHorizontalDirection() const;
+
 private:
+	glm::vec3 m_cameraDir;
 	World* m_world;
 	BlockRayTraceResult m_hitResult;
 	BlockPos m_relativePos;

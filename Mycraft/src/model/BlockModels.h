@@ -16,5 +16,7 @@ namespace BlockModels {
 	UnbakedModel CubeColumn();
 	UnbakedModel CubeTopBottom();
 
+	UnbakedModel MissingModel();
+
 	UnbakedModel Cross();
 };

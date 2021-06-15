@@ -81,9 +81,6 @@
     <ClCompile Include="src\world\block\Log.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\state\properties\BlockStateProperties.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\world\block\BlockState.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -124,6 +121,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\item\BlockItemUseContext.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\world\block\TrapDoor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1107,6 +1107,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\item\BlockItemUseContext.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\world\block\TrapDoor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -54,13 +54,11 @@ int main()
 
 	Gui::Init(Renderer::window);
 	Resources::LoadTextures();
-	BlockStateProperties::Initialize();
 	Blocks::Initialize();
 	BlockModelRegistry::Resize(BlockRegistry::GetBlockStateCount());
 	BlockModels::Initialize();
 
 	placedBlock = Blocks::cobblestone;
-	auto slab = Blocks::slab;
 
 	world = new World();
 
@@ -142,9 +140,17 @@ void processInput(GLFWwindow* window, float deltaTime)
 			auto rayTraceResult = world->Clip(g_camera.position, end);
 
 			if (rayTraceResult.hit) {
-				auto useContext = BlockItemUseContext(world, rayTraceResult, *placedBlock);
-				if (useContext.Place(*placedBlock))
+				auto state = world->GetBlockState(rayTraceResult.blockPos);
+				if (state->Use(*world, rayTraceResult.blockPos, rayTraceResult))
+				{
 					justEditedWorld = true;
+				}			
+				else 
+				{
+					auto useContext = BlockItemUseContext(world, rayTraceResult, *placedBlock, g_camera.facingDirection);
+					if (useContext.Place(*placedBlock))
+						justEditedWorld = true;
+				}
 			}
 		}
 	}
@@ -170,6 +176,7 @@ void processInput(GLFWwindow* window, float deltaTime)
 	if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS) placedBlock = Blocks::slab;
 	if (glfwGetKey(window, GLFW_KEY_7) == GLFW_PRESS) placedBlock = Blocks::flower;
 	if (glfwGetKey(window, GLFW_KEY_8) == GLFW_PRESS) placedBlock = Blocks::debugBlock;
+	if (glfwGetKey(window, GLFW_KEY_9) == GLFW_PRESS) placedBlock = Blocks::trapDoor;
 }
 
 

@@ -6,10 +6,7 @@ template<typename T>
 class Property
 {
 public:
-	Property(std::list<T> values)
-	{
-		m_values = values;
-	}
+	constexpr Property(std::list<T> values) : m_values(values) {}
 	const std::list<T>& GetValues() const
 	{
 		return m_values;

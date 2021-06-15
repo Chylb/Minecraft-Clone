@@ -2,11 +2,11 @@
 
 #include "Block.h"
 
-#include "../../utils/math/shapes/VoxelShapes.h"
-
 class Slab : public Block
 {
 public:
+	inline static const auto& type = BlockStateProperties::slabType;
+	
 	Slab();
 
 	const VoxelShape& GetShape(const BlockState& state) const override;

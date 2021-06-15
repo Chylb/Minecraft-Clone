@@ -49,8 +49,55 @@ void BlockModels::Initialize()
 				{Direction::east,	{0,0,16,8}, "oak_planks"}
 					});
 
-
 			return CubeAll().SetTexture("all", "oak_planks");
+		});
+
+	Register(Blocks::trapDoor,
+		[](BlockState state)
+		{
+			UnbakedModel bottom({ 0, 0, 0 }, { 16,3,16 }, {
+				{Direction::down,	{0,0,16,16}, "oak_trapdoor"},
+				{Direction::up,	{0,0,16,16}, "oak_trapdoor",1,1},
+				{Direction::north,	{0,16,16,13}, "oak_trapdoor"},
+				{Direction::south,	{0,16,16,13}, "oak_trapdoor"},
+				{Direction::west,	{0,16,16,13}, "oak_trapdoor"},
+				{Direction::east,	{0,16,16,13}, "oak_trapdoor"}
+				});
+
+			UnbakedModel top({ 0, 13, 0 }, { 16,16,16 }, {
+				{Direction::down,	{0,0,16,16}, "oak_trapdoor",1,1},
+				{Direction::up,	{0,0,16,16}, "oak_trapdoor"},
+				{Direction::north,	{0,16,16,13}, "oak_trapdoor"},
+				{Direction::south,	{0,16,16,13}, "oak_trapdoor"},
+				{Direction::west,	{0,16,16,13}, "oak_trapdoor"},
+				{Direction::east,	{0,16,16,13}, "oak_trapdoor"}
+				});
+
+			UnbakedModel open = top.RotateX(-90, { 8,16,16 }).Translate({ 0,0,-3 });
+
+			UnbakedModel model;
+
+			if (!state.GetValue(BlockStateProperties::open)) {
+				if (state.GetValue(BlockStateProperties::half) == Half::bottom)
+					model = bottom;
+				else
+					model = top;
+			}
+			else
+				model = open;
+
+			switch (state.GetValue(BlockStateProperties::horizontalFacing))
+			{
+			case Direction::north:
+				return model;
+			case Direction::west:
+				return model.RotateY(90);
+			case Direction::south:
+				return model.RotateY(180);
+			case Direction::east:
+				return model.RotateY(270);
+			}
+			return MissingModel();
 		});
 }
 
@@ -100,6 +147,11 @@ UnbakedModel BlockModels::CubeTopBottom()
 	for (auto key : { "north", "east", "south", "west" })
 		cube.SetTexture(key, "side");
 	return cube;
+}
+
+UnbakedModel BlockModels::MissingModel()
+{
+	return CubeAll().SetTexture("all", "missing_texture");
 }
 
 UnbakedModel BlockModels::Cross()

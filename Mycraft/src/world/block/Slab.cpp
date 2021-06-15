@@ -2,18 +2,17 @@
 
 #include "../World.h"
 #include "../../item/BlockItemUseContext.h"
-#include "../../state/properties/BlockStateProperties.h"
+#include "../../utils/math/shapes/VoxelShapes.h"
 
-Slab::Slab() : Block(true,
-	StateContainer<Block, BlockState>::Builder(this).AddProperty(BlockStateProperties::slabType))
+Slab::Slab() : Block(StateContainer<Block, BlockState>::Builder(this).AddProperty(type))
 {
 }
 
 const VoxelShape& Slab::GetShape(const BlockState& state) const
 {
-	if (state.GetValue(BlockStateProperties::slabType) == SlabType::full)
+	if (state.GetValue(type) == SlabType::full)
 		return VoxelShapes::Block();
-	if (state.GetValue(BlockStateProperties::slabType) == SlabType::bottom)
+	if (state.GetValue(type) == SlabType::bottom)
 		return bottomAABB;
 
 	return topAABB;
@@ -24,19 +23,19 @@ const BlockState* Slab::GetStateForPlacement(const BlockItemUseContext& useConte
 	auto pos = useContext.GetClickedPos();
 	const auto state = useContext.GetWorld().GetBlockState(pos);
 	if (&state->GetBlock() == this) {
-		return &(state->SetValue(BlockStateProperties::slabType, SlabType::full));
+		return &(state->SetValue(type, SlabType::full));
 	}
 	else {
 		auto dir = useContext.GetClickedFace();
-		auto& top = m_defaultBlockState->SetValue(BlockStateProperties::slabType, SlabType::top);
-		auto& bottom = m_defaultBlockState->SetValue(BlockStateProperties::slabType, SlabType::bottom);
+		auto& top = m_defaultBlockState->SetValue(type, SlabType::top);
+		auto& bottom = m_defaultBlockState->SetValue(type, SlabType::bottom);
 		return dir != Direction::down && (dir == Direction::up || !(useContext.GetClickLocation().y - pos.y > 0.5)) ? &bottom : &top;
 	}
 }
 
 bool Slab::CanBeReplaced(const BlockState& state, const BlockItemUseContext& useContext) const
 {
-	SlabType slabType = state.GetValue(BlockStateProperties::slabType);
+	SlabType slabType = state.GetValue(type);
 	if (slabType != SlabType::full && &useContext.GetPlacedBlock() == this)
 	{
 		if (useContext.ReplacingClickedOnBlock())
@@ -55,11 +54,11 @@ bool Slab::CanBeReplaced(const BlockState& state, const BlockItemUseContext& use
 
 bool Slab::OccludesFace(Direction dir, const BlockState& state) const
 {
-	if (state.GetValue(BlockStateProperties::slabType) == SlabType::full)
+	if (state.GetValue(type) == SlabType::full)
 		return true;
-	if (state.GetValue(BlockStateProperties::slabType) == SlabType::bottom && dir == Direction::down)
+	if (state.GetValue(type) == SlabType::bottom && dir == Direction::down)
 		return true;
-	if (state.GetValue(BlockStateProperties::slabType) == SlabType::top && dir == Direction::up)
+	if (state.GetValue(type) == SlabType::top && dir == Direction::up)
 		return true;
 
 	return false;
