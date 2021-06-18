@@ -5,7 +5,9 @@
 #include "Flower.h"
 #include "Log.h"
 #include "Slab.h"
+#include "Torch.h"
 #include "TrapDoor.h"
+#include "WallTorch.h"
 
 void Blocks::Initialize()
 {
@@ -21,6 +23,8 @@ void Blocks::Initialize()
 	flower		= BlockRegistry::Register(new Flower());
 	debugBlock	= BlockRegistry::Register(new Flower());
 	trapDoor	= BlockRegistry::Register(new TrapDoor());
+	torch		= BlockRegistry::Register(new Torch());
+	wallTorch	= BlockRegistry::Register(new WallTorch());
 }
 
 BlockState* Blocks::GetBlockState(uint16_t id)

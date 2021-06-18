@@ -19,4 +19,6 @@ namespace BlockModels {
 	UnbakedModel MissingModel();
 
 	UnbakedModel Cross();
+	UnbakedModel Torch();
+	UnbakedModel WallTorch();
 };

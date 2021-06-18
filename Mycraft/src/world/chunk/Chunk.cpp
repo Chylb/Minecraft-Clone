@@ -17,12 +17,12 @@ Chunk::~Chunk()
 	glDeleteBuffers(1, &m_VBO);
 }
 
-BlockState* Chunk::RawGetBlockState(BlockPos pos) const
+const BlockState* Chunk::RawGetBlockState(BlockPos pos) const
 {
 	return Blocks::GetBlockState(m_data[pos.x & 31][pos.z & 31][pos.y]);
 }
 
-BlockState* Chunk::GetBlockState(BlockPos pos) const
+const BlockState* Chunk::GetBlockState(BlockPos pos) const
 {
 	int x = pos.x & 31, z = pos.z & 31;
 	if (pos.y < 0 || pos.y >= CHUNK_HEIGHT)
@@ -40,7 +40,7 @@ void Chunk::SetBlock(BlockPos pos, const BlockState* state)
 }
 
 template<Direction dir>
-BlockState* Chunk::GetNearbyBlockState(BlockPos pos) const
+const BlockState* Chunk::GetNearbyBlockState(BlockPos pos) const
 {
 	if constexpr (dir == Direction::north) {
 		if (pos.z < m_offsetZ)
@@ -182,7 +182,7 @@ inline void Chunk::GenerateColumnMesh(int x, int z, int h)
 {
 	for (int y = 1; y <= h; y++) {
 		BlockPos pos = { x,y,z };
-		BlockState* state = RawGetBlockState(pos);
+		const BlockState* state = RawGetBlockState(pos);
 
 		[[unlikely]]
 		if (state->GetModel().HasFace(Direction::none))
@@ -196,7 +196,7 @@ inline void Chunk::GenerateColumnMesh(int x, int z, int h)
 				if (state->OccludesFace(direction))
 					continue;
 
-				BlockState* neighbour = RawGetBlockState(pos.Adjacent<direction>());
+				const BlockState* neighbour = RawGetBlockState(pos.Adjacent<direction>());
 
 				if (neighbour->GetModel().HasFace(direction.GetOpposite()))
 					neighbour->GetModel().WriteFace(g_mesh, pos.Adjacent<direction>(), direction.GetOpposite());
@@ -208,7 +208,7 @@ inline void Chunk::GenerateBorderColumnMesh(int x, int z, int h)
 {
 	for (int y = 1; y <= h; y++) {
 		BlockPos pos = { x,y,z };
-		BlockState* state = RawGetBlockState(pos);
+		const BlockState* state = RawGetBlockState(pos);
 
 		[[unlikely]]
 		if (state->GetModel().HasFace(Direction::none))
@@ -222,7 +222,7 @@ inline void Chunk::GenerateBorderColumnMesh(int x, int z, int h)
 				if (state->OccludesFace(direction))
 					continue;
 
-				BlockState* neighbour;
+				const BlockState* neighbour;
 				if constexpr (direction.IsHorizontal())
 					neighbour = GetNearbyBlockState<direction>(pos.Adjacent<direction>());
 				else

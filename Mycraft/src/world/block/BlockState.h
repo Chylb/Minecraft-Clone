@@ -24,6 +24,8 @@ public:
 	void Tick(World& world, BlockPos pos) const;
 	bool CanBeReplaced(const BlockItemUseContext& useContext) const;
 	bool Use(World& world, BlockPos pos, BlockRayTraceResult hitResult) const;
+	bool IsFaceSturdy(const World& world, BlockPos pos, Direction dir) const;
+	bool CanSurvive(const World& world, BlockPos pos) const;
 
 	bool OccludesFace(Direction dir) const;
 	bool OccludesAllFaces() const;

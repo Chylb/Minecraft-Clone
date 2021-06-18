@@ -53,11 +53,34 @@ bool BlockItemUseContext::Place(const Block& block)
 		return false;
 
 	auto state = block.GetStateForPlacement(*this);
-	m_world->SetBlock(GetClickedPos(), state);
-	return true;
+	if (state != nullptr) {
+		m_world->SetBlock(GetClickedPos(), state);
+		return true;
+	}
+	return false;
 }
 
 Direction BlockItemUseContext::GetHorizontalDirection() const
 {
 	return Direction::GetNearest(m_cameraDir.x, 0, m_cameraDir.z);
+}
+
+std::array<Direction, 6> BlockItemUseContext::GetNearestLookingDirections() const
+{
+	auto orderedDirections = Direction::OrderedByNearest(m_cameraDir);
+	if (m_replaceClicked)
+		return orderedDirections;
+
+	auto clickedFace = GetClickedFace();
+
+	int i;
+	for (i = 0; i < orderedDirections.size() && orderedDirections[i] != clickedFace.GetOpposite(); i++) {}
+
+	if (i > 0)
+	{
+		for (int j = 0; j < i; j++)
+			orderedDirections[j + 1] = orderedDirections[j];
+		orderedDirections[0] = clickedFace.GetOpposite();
+	}
+	return orderedDirections;
 }

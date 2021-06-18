@@ -21,4 +21,6 @@ public:
 	inline static Block* flower;
 	inline static Block* debugBlock;
 	inline static Block* trapDoor;
+	inline static Block* torch;
+	inline static Block* wallTorch;
 };

@@ -22,6 +22,7 @@ public:
 	bool Place(const Block& block);
 
 	Direction GetHorizontalDirection() const;
+	std::array<Direction, 6> GetNearestLookingDirections() const;
 
 private:
 	glm::vec3 m_cameraDir;

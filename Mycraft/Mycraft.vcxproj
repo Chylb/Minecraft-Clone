@@ -189,7 +189,9 @@
     <ClCompile Include="src\world\block\BlockState.cpp" />
     <ClCompile Include="src\world\block\Dirt.cpp" />
     <ClCompile Include="src\world\block\Log.cpp" />
+    <ClCompile Include="src\world\block\Torch.cpp" />
     <ClCompile Include="src\world\block\TrapDoor.cpp" />
+    <ClCompile Include="src\world\block\WallTorch.cpp" />
     <ClCompile Include="src\world\chunk\Chunk.cpp" />
     <ClCompile Include="src\Gui.cpp" />
     <ClCompile Include="src\Mycraft.cpp" />
@@ -237,7 +239,9 @@
     <ClInclude Include="src\world\block\BlockState.h" />
     <ClInclude Include="src\world\block\Dirt.h" />
     <ClInclude Include="src\world\block\Log.h" />
+    <ClInclude Include="src\world\block\Torch.h" />
     <ClInclude Include="src\world\block\TrapDoor.h" />
+    <ClInclude Include="src\world\block\WallTorch.h" />
     <ClInclude Include="src\world\chunk\Chunk.h" />
     <ClInclude Include="src\world\chunk\ChunkPos.h" />
     <ClInclude Include="src\Gui.h" />

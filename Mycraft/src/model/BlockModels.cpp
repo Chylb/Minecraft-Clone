@@ -15,6 +15,22 @@ void BlockModels::Initialize()
 	Register(Blocks::leaves, CubeAll().SetTexture("all", "leaves"));
 	Register(Blocks::flower, Cross().SetTexture("cross", "poppy"));
 	Register(Blocks::debugBlock, CubeAll().Scale({ 0.5,0.5,0.5 }).Translate({ 4,4,4 }).SetTexture("all", "debug"));
+	Register(Blocks::torch, Torch());
+	Register(Blocks::wallTorch,
+		[](BlockState state) {
+			switch (state.GetValue(BlockStateProperties::horizontalFacing))
+			{
+			case Direction::north:
+				return WallTorch();
+			case Direction::west:
+				return WallTorch().RotateY(90);
+			case Direction::south:
+				return WallTorch().RotateY(180);
+			case Direction::east:
+				return WallTorch().RotateY(270);
+			}
+			return MissingModel();
+		});
 
 	Register(Blocks::wood,
 		[](BlockState state) {
@@ -167,4 +183,29 @@ UnbakedModel BlockModels::Cross()
 		}).RotateY(45);
 
 	return plane1.AddModel(plane2);
+}
+
+UnbakedModel BlockModels::Torch()
+{
+	auto planesY = UnbakedModel({ 7, 0, 7 }, { 9,10,9 }, {
+				{Direction::down,	{7, 13, 9, 15}, "torch",1,1},
+				{Direction::up,	{7,  6, 9,  8}, "torch",1,1},
+		});
+
+	auto planesX = UnbakedModel({ 7, 0, 0 }, { 9, 16, 16 }, {
+				{Direction::west,	{0,0,16,16}, "torch",1,1},
+				{Direction::east,	{0,0,16,16}, "torch",1,1},
+		});
+
+	auto planesZ = UnbakedModel({ 0, 0, 7 }, { 16, 16, 9 }, {
+				{Direction::north,	{0,0,16,16}, "torch",1,1},
+				{Direction::south,	{0,0,16,16}, "torch",1,1},
+		});
+
+	return planesX.AddModel(planesY).AddModel(planesZ);
+}
+
+UnbakedModel BlockModels::WallTorch()
+{
+	return Torch().Translate({0,3.5,-8}).RotateX(22.5, { 8,3.5,0 }).RotateY(180);
 }

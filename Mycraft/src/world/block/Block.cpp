@@ -14,12 +14,23 @@ Block::Block() :
 {
 }
 
+void Block::CreateBlockStateDefinition(StateContainer<Block, BlockState>::Builder builder)
+{
+	m_stateDefinition = builder.Create();
+	m_defaultBlockState = m_stateDefinition.Any();
+}
+
+void Block::RegisterDefaultState(const BlockState& state)
+{
+	m_defaultBlockState = &state;
+}
+
 const StateContainer<Block, BlockState>& Block::GetStateDefinition() const
 {
 	return m_stateDefinition;
 }
 
-BlockState* Block::DefaultBlockState() const
+const BlockState* Block::DefaultBlockState() const
 {
 	return m_defaultBlockState;
 }
@@ -49,6 +60,11 @@ bool Block::Use(const BlockState& state, World& world, BlockPos pos, BlockRayTra
 }
 
 bool Block::OccludesFace(Direction dir, const BlockState& state) const
+{
+	return true;
+}
+
+bool Block::CanSurvive(const BlockState& state, const World& world, BlockPos pos) const
 {
 	return true;
 }

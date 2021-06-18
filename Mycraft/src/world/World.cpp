@@ -97,7 +97,7 @@ Chunk* World::GetChunkAt(BlockPos pos) const
 	return m_chunkMap.at({ pos.x >> 5, pos.z >> 5 });
 }
 
-BlockState* World::GetBlockState(BlockPos pos) const
+const BlockState* World::GetBlockState(BlockPos pos) const
 {
 	Chunk* chunk = GetChunkAt(pos);
 	if (chunk)

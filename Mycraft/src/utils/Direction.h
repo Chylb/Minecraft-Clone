@@ -1,6 +1,9 @@
 #pragma once
 
 #include <ostream>
+#include <array>
+
+#include "glm/vec3.hpp"
 
 #define FOREACH_HORIZONTAL_DIRECTION(VAR, CODE) \
 	{VAR = Direction::north; do CODE while(0);} \
@@ -40,11 +43,15 @@ public:
 	constexpr Axis GetAxis() const;
 	constexpr bool IsHorizontal() const;
 	static Direction GetNearest(float x, float y, float z);
+	static std::array<Direction, 6> OrderedByNearest(glm::vec3);
 
 	static constexpr Value directions[]{ north, east, south, west, up, down };
 	static constexpr Value directionsAndNone[]{ north, east, south, west, up, down, none };
 
 	Value _value;
+
+private:
+	static std::array<Direction, 6> MakeDirectionArray(Direction dir1, Direction dir2, Direction dir3);
 };
 
 constexpr Direction Direction::GetOpposite() const
@@ -101,3 +108,25 @@ inline Direction Direction::GetNearest(float x, float y, float z)
 
 	return z > 0 ? south : north;
 }
+
+inline std::array<Direction, 6> Direction::OrderedByNearest(glm::vec3 vec)
+{
+	Direction directions[3];
+	directions[0] = vec[0] >= 0 ? east : west;
+	directions[1] = vec[1] >= 0 ? up : down;
+	directions[2] = vec[2] >= 0 ? south : north;
+
+	int order[] = { 0,1,2 };
+	for (int i = 0; i < 3; i++)
+		for (int j = i + 1; j < 3; j++)
+			if (abs(vec[order[i]]) < abs(vec[order[j]]))
+				std::swap(order[i], order[j]);
+
+	return MakeDirectionArray(directions[order[0]], directions[order[1]], directions[order[2]]);
+}
+
+inline std::array<Direction, 6> Direction::MakeDirectionArray(Direction dir1, Direction dir2, Direction dir3)
+{
+	return { dir1, dir2, dir3, dir3.GetOpposite(), dir2.GetOpposite(), dir1.GetOpposite() };
+}
+

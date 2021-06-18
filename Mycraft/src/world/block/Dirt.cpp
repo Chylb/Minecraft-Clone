@@ -2,7 +2,7 @@
 
 #include "../World.h"
 
-Dirt::Dirt() : Block(true)
+Dirt::Dirt() : Block()
 {
 }
 

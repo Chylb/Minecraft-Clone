@@ -2,6 +2,7 @@
 
 #include "Block.h"
 #include "../../item/BlockItemUseContext.h"
+#include "../../utils/math/shapes/VoxelShapes.h"
 
 uint16_t BlockState::GetId() const
 {
@@ -31,6 +32,16 @@ bool BlockState::CanBeReplaced(const BlockItemUseContext& useContext) const
 bool BlockState::Use(World& world, BlockPos pos, BlockRayTraceResult hitResult) const
 {
 	return m_owner->Use(*this, world, pos, hitResult);
+}
+
+bool BlockState::IsFaceSturdy(const World& world, BlockPos pos, Direction dir) const
+{
+	return &m_owner->GetShape(*this) == &VoxelShapes::Block();
+}
+
+bool BlockState::CanSurvive(const World& world, BlockPos pos) const
+{
+	return m_owner->CanSurvive(*this, world, pos);
 }
 
 bool BlockState::OccludesFace(Direction dir) const

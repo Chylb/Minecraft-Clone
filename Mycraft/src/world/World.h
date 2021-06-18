@@ -24,7 +24,7 @@ public:
 	Chunk* GetChunk(int x, int z);
 	Chunk* GetChunkAt(BlockPos pos) const;
 
-	BlockState* GetBlockState(BlockPos pos) const;
+	const BlockState* GetBlockState(BlockPos pos) const;
 	void SetBlock(BlockPos pos, const BlockState* state);
 
 	void Update();
