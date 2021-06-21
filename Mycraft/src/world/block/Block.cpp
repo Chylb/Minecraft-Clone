@@ -45,6 +45,11 @@ const VoxelShape& Block::GetShape(const BlockState& state) const
 	return VoxelShapes::Block();
 }
 
+const BlockState& Block::UpdateShape(const BlockState& oldState, Direction from, const BlockState& updaterState, World& world, BlockPos pos) const
+{
+	return oldState;
+}
+
 void Block::Tick(World& world, BlockPos pos) const
 {
 }
@@ -67,6 +72,10 @@ bool Block::OccludesFace(Direction dir, const BlockState& state) const
 bool Block::CanSurvive(const BlockState& state, const World& world, BlockPos pos) const
 {
 	return true;
+}
+
+void Block::SetPlacedBy(World& world, BlockPos pos, const BlockState& state) const
+{
 }
 
 VoxelShape Block::Box(float x0, float y0, float z0, float x1, float y1, float z1)

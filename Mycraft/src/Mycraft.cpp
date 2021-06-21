@@ -45,7 +45,7 @@ void processInput(GLFWwindow* window, float deltaTime);
 unsigned int g_polygons = 0;
 
 int main()
-{	
+{
 	srand(time(NULL));
 	if (Renderer::Init() != 0)
 		return -1;
@@ -128,7 +128,7 @@ void processInput(GLFWwindow* window, float deltaTime)
 			auto rayTraceResult = world->Clip(g_camera.position, end);
 
 			if (rayTraceResult.hit) {
-				world->SetBlock(rayTraceResult.blockPos, Blocks::air->DefaultBlockState());
+				world->SetBlock(rayTraceResult.blockPos, *Blocks::air->DefaultBlockState());
 				justEditedWorld = true;
 			}
 		}
@@ -176,7 +176,7 @@ void processInput(GLFWwindow* window, float deltaTime)
 	if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS) placedBlock = Blocks::slab;
 	if (glfwGetKey(window, GLFW_KEY_7) == GLFW_PRESS) placedBlock = Blocks::flower;
 	if (glfwGetKey(window, GLFW_KEY_8) == GLFW_PRESS) placedBlock = Blocks::debugBlock;
-	if (glfwGetKey(window, GLFW_KEY_9) == GLFW_PRESS) placedBlock = Blocks::trapDoor;
+	if (glfwGetKey(window, GLFW_KEY_9) == GLFW_PRESS) placedBlock = Blocks::door;
 	if (glfwGetKey(window, GLFW_KEY_0) == GLFW_PRESS) placedBlock = Blocks::wallTorch;
 }
 

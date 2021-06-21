@@ -20,7 +20,11 @@ public:
 	uint16_t GetId() const;
 	const Block& GetBlock() const;
 
+	bool Is(const Block& block) const;
+
 	const VoxelShape& GetShape() const;
+	void UpdateNeighbourShapes(World& world, BlockPos pos) const;
+	const BlockState& UpdateShape(Direction from, const BlockState& updaterState, World& world, BlockPos pos) const;
 	void Tick(World& world, BlockPos pos) const;
 	bool CanBeReplaced(const BlockItemUseContext& useContext) const;
 	bool Use(World& world, BlockPos pos, BlockRayTraceResult hitResult) const;

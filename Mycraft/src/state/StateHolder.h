@@ -21,6 +21,9 @@ public:
 	template <typename T>
 	const S& SetValue(const Property<T>& p, T val) const;
 
+	template <typename T>
+	const S& Cycle(const Property<T>& p) const;
+
 	void PopulateNeighbors(std::map<std::map<Property<int>*, int>, S*> map);
 
 	friend std::ostream& operator<<(std::ostream& os, const S& state)
@@ -53,6 +56,13 @@ template<typename T>
 inline const S& StateHolder<O, S>::SetValue(const Property<T>& p, T val) const
 {
 	return *m_neighbors.at({ INT_PROP(&p), (int)val });
+}
+
+template<typename O, typename S>
+template<typename T>
+inline const S& StateHolder<O, S>::Cycle(const Property<T>& p) const
+{
+	return *m_neighbors.at({ INT_PROP(&p), ((int)GetValue(p) + 1) % p.GetValues().size() });
 }
 
 template<typename O, typename S>

@@ -1,6 +1,7 @@
 #include "BlockState.h"
 
 #include "Block.h"
+#include "../world/World.h"
 #include "../../item/BlockItemUseContext.h"
 #include "../../utils/math/shapes/VoxelShapes.h"
 
@@ -14,9 +15,32 @@ const Block& BlockState::GetBlock() const
 	return *m_owner;
 }
 
+bool BlockState::Is(const Block& block) const
+{
+	return m_owner == &block;
+}
+
 const VoxelShape& BlockState::GetShape() const
 {
 	return m_owner->GetShape(*this);
+}
+
+void BlockState::UpdateNeighbourShapes(World& world, BlockPos pos) const
+{
+	for (Direction dir : Direction::directions)
+	{
+		auto neighborPos = pos.Adjacent(dir);
+		auto currState = world.GetBlockState(neighborPos);
+		auto& newState = currState->UpdateShape(dir.GetOpposite(), *this, world, neighborPos);
+
+		if (&newState != currState)
+			world.SetBlock(neighborPos, newState);
+	}
+}
+
+const BlockState& BlockState::UpdateShape(Direction from, const BlockState& updaterState, World& world, BlockPos pos) const
+{
+	return m_owner->UpdateShape(*this, from, updaterState, world, pos);
 }
 
 void BlockState::Tick(World& world, BlockPos pos) const

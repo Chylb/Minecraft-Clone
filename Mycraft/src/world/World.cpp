@@ -105,11 +105,16 @@ const BlockState* World::GetBlockState(BlockPos pos) const
 	return Blocks::air->DefaultBlockState();
 }
 
-void World::SetBlock(BlockPos pos, const BlockState* state)
+void World::SetBlock(BlockPos pos, const BlockState& state)
 {
 	Chunk* chunk = GetChunkAt(pos);
 	if (chunk) {
-		chunk->SetBlock(pos, state);
+		auto& oldState = *GetBlockState(pos);
+		if (&oldState == &state)
+			return;
+
+		chunk->SetBlock(pos, &state);
+		state.UpdateNeighbourShapes(*this, pos);
 
 		chunk->dirtyMesh = true;
 		for (int i = 0; i < 4; i++)

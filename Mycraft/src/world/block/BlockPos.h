@@ -7,7 +7,7 @@ struct BlockPos
 	int x;
 	int y;
 	int z;
-	
+
 	constexpr BlockPos Adjacent(Direction dir) const
 	{
 		switch (dir) {
@@ -52,5 +52,15 @@ struct BlockPos
 		if constexpr (dir == Direction::down) {
 			return { x,y - 1,z };
 		}
+	}
+
+	constexpr BlockPos Below()
+	{
+		return Adjacent<Direction::down>();
+	}
+
+	constexpr BlockPos Above()
+	{
+		return Adjacent<Direction::up>();
 	}
 };

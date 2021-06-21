@@ -21,4 +21,9 @@ namespace BlockModels {
 	UnbakedModel Cross();
 	UnbakedModel Torch();
 	UnbakedModel WallTorch();
+
+	UnbakedModel DoorBottom();
+	UnbakedModel DoorBottomRH();
+	UnbakedModel DoorTop();
+	UnbakedModel DoorTopRH();
 };

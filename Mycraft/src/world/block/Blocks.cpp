@@ -2,6 +2,7 @@
 
 #include "Air.h"
 #include "Dirt.h"
+#include "Door.h"
 #include "Flower.h"
 #include "Log.h"
 #include "Slab.h"
@@ -25,6 +26,7 @@ void Blocks::Initialize()
 	trapDoor	= BlockRegistry::Register(new TrapDoor());
 	torch		= BlockRegistry::Register(new Torch());
 	wallTorch	= BlockRegistry::Register(new WallTorch());
+	door		= BlockRegistry::Register(new Door());
 }
 
 BlockState* Blocks::GetBlockState(uint16_t id)

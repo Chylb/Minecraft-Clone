@@ -18,12 +18,10 @@ UnbakedQuad::UnbakedQuad(glm::vec3 v1, glm::vec2 uv1, glm::vec3 v2, glm::vec2 uv
 	this->m_texture = texture;
 	this->m_direction = dir;
 
-	if (m_direction != Direction::none) {
-		glm::vec3 vec1 = v2 - v1;
-		glm::vec3 vec2 = v3 - v1;
-		glm::vec3 cr = glm::cross(vec1, vec2);
-		m_normal = glm::vec4(glm::cross(vec1, vec2), 1.0);
-	}
+	glm::vec3 vec1 = v2 - v1;
+	glm::vec3 vec2 = v3 - v1;
+	glm::vec3 cr = glm::cross(vec1, vec2);
+	m_normal = glm::vec4(glm::cross(vec1, vec2), 1.0);
 }
 
 UnbakedQuad::UnbakedQuad(Direction dir, glm::vec4 uv, std::string texture, bool flip_y, bool clear_direction)
@@ -95,8 +93,9 @@ UnbakedQuad UnbakedQuad::RotateX(float ang, glm::vec3 origin) {
 	for (int i = 0; i < 4; i++)
 		result.m_vertices[i] = matrix * result.m_vertices[i];
 
+	result.m_normal = matrix * m_normal;
+
 	if (m_direction != Direction::none) {
-		result.m_normal = matrix * m_normal;
 		result.m_direction = Direction::GetNearest(result.m_normal.x, result.m_normal.y, result.m_normal.z);
 	}
 
@@ -109,8 +108,9 @@ UnbakedQuad UnbakedQuad::RotateY(float ang, glm::vec3 origin) {
 	for (int i = 0; i < 4; i++)
 		result.m_vertices[i] = matrix * result.m_vertices[i];
 
+	result.m_normal = matrix * m_normal;
+
 	if (m_direction != Direction::none) {
-		result.m_normal = matrix * m_normal;
 		result.m_direction = Direction::GetNearest(result.m_normal.x, result.m_normal.y, result.m_normal.z);
 	}
 
@@ -123,8 +123,9 @@ UnbakedQuad UnbakedQuad::RotateZ(float ang, glm::vec3 origin) {
 	for (int i = 0; i < 4; i++)
 		result.m_vertices[i] = matrix * result.m_vertices[i];
 
+	result.m_normal = matrix * m_normal;
+
 	if (m_direction != Direction::none) {
-		result.m_normal = matrix * m_normal;
 		result.m_direction = Direction::GetNearest(result.m_normal.x, result.m_normal.y, result.m_normal.z);
 	}
 

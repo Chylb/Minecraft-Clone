@@ -16,6 +16,33 @@ void BlockModels::Initialize()
 	Register(Blocks::flower, Cross().SetTexture("cross", "poppy"));
 	Register(Blocks::debugBlock, CubeAll().Scale({ 0.5,0.5,0.5 }).Translate({ 4,4,4 }).SetTexture("all", "debug"));
 	Register(Blocks::torch, Torch());
+
+	Register(Blocks::door,
+		[](BlockState state) {
+			bool upper = state.GetValue(BlockStateProperties::doubleBlockHalf) == DoubleBlockHalf::upper;
+			bool left = state.GetValue(BlockStateProperties::doorHinge) == DoorHingeSide::left;
+			UnbakedModel modelLH = upper ? DoorTop() : DoorBottom();
+			UnbakedModel modelRH = upper ? DoorTopRH() : DoorBottomRH();
+			UnbakedModel modelClosed = left ? modelLH : modelRH;
+			UnbakedModel modelOpened = left ? modelClosed.RotateY(90, { 1.5,8,1.5 }, true) : modelClosed.RotateY(-90, { 1.5,8,14.5 }, true);
+			UnbakedModel model = state.GetValue(BlockStateProperties::open) ? modelOpened : modelClosed;
+			model.SetTexture("top", "oak_door_top");
+			model.SetTexture("bottom", "oak_door_bottom");
+
+			switch (state.GetValue(BlockStateProperties::horizontalFacing))
+			{
+			case Direction::north:
+				return model.RotateY(90);
+			case Direction::west:
+				return model.RotateY(180);
+			case Direction::south:
+				return model.RotateY(270);
+			case Direction::east:
+				return model;
+			}
+			return MissingModel();
+		});
+
 	Register(Blocks::wallTorch,
 		[](BlockState state) {
 			switch (state.GetValue(BlockStateProperties::horizontalFacing))
@@ -207,5 +234,49 @@ UnbakedModel BlockModels::Torch()
 
 UnbakedModel BlockModels::WallTorch()
 {
-	return Torch().Translate({0,3.5,-8}).RotateX(22.5, { 8,3.5,0 }).RotateY(180);
+	return Torch().Translate({ 0,3.5,-8 }).RotateX(22.5, { 8,3.5,0 }).RotateY(180);
+}
+
+UnbakedModel BlockModels::DoorBottom()
+{
+	return UnbakedModel({ 0, 0, 0 }, { 3, 16, 16 }, {
+				{Direction::down,	{13, 0, 16, 16}, "bottom"},
+				{Direction::north,	{ 3, 0,  0, 16}, "bottom"},
+				{Direction::south,	{ 0, 0,  3, 16}, "bottom"},
+				{Direction::west,	{ 0, 0, 16, 16}, "bottom"},
+				{Direction::east,	{16, 0,  0, 16}, "bottom",1,1}
+		});
+}
+
+UnbakedModel BlockModels::DoorBottomRH()
+{
+	return UnbakedModel({ 0, 0, 0 }, { 3, 16, 16 }, {
+				{Direction::down,	{13, 0, 16, 16}, "bottom"},
+				{Direction::north,	{ 3, 0,  0, 16}, "bottom"},
+				{Direction::south,	{ 0, 0,  3, 16}, "bottom"},
+				{Direction::west,	{16, 0,  0, 16}, "bottom"},
+				{Direction::east,	{ 0, 0, 16, 16}, "bottom",1,1}
+		});
+}
+
+UnbakedModel BlockModels::DoorTop()
+{
+	return UnbakedModel({ 0, 0, 0 }, { 3, 16, 16 }, {
+				{Direction::up,		{13, 0, 16, 16}, "bottom"},
+				{Direction::north,	{ 3, 0,  0, 16}, "top"},
+				{Direction::south,	{ 0, 0,  3, 16}, "top"},
+				{Direction::west,	{ 0, 0, 16, 16}, "top"},
+				{Direction::east,	{16, 0,  0, 16}, "top",1,1}
+		});
+}
+
+UnbakedModel BlockModels::DoorTopRH()
+{
+	return UnbakedModel({ 0, 0, 0 }, { 3, 16, 16 }, {
+				{Direction::up,		{13, 0, 16, 16}, "bottom"},
+				{Direction::north,	{ 3, 0,  0, 16}, "top"},
+				{Direction::south,	{ 0, 0,  3, 16}, "top"},
+				{Direction::west,	{16, 0,  0, 16}, "top"},
+				{Direction::east,	{ 0, 0, 16, 16}, "top",1,1}
+		});
 }

@@ -6,12 +6,17 @@ template<typename T>
 class Property
 {
 public:
-	constexpr Property(std::list<T> values) : m_values(values) {}
-	const std::list<T>& GetValues() const
+	constexpr Property(std::list<T> values)
+	{
+		for (T val : values)
+			m_values.emplace_back((int)val);
+	}
+
+	const std::list<int>& GetValues() const
 	{
 		return m_values;
 	}
 
 protected:
-	std::list<T> m_values;
+	std::list<int> m_values;
 };

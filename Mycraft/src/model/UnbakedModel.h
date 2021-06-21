@@ -18,7 +18,7 @@ public:
 	UnbakedModel Translate(glm::vec3 offset);
 	UnbakedModel Scale(glm::vec3 scale);
 	UnbakedModel RotateX(float ang, glm::vec3 origin = { 8,8,8 });
-	UnbakedModel RotateY(float ang, glm::vec3 origin = { 8,8,8 });
+	UnbakedModel RotateY(float ang, glm::vec3 origin = { 8,8,8 }, bool flip_none_directions = false);
 	UnbakedModel RotateZ(float ang, glm::vec3 origin = { 8,8,8 });
 
 	BakedModel Bake();

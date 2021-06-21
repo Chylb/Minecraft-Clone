@@ -33,16 +33,16 @@ void WorldGenerator::GenerateChunk(Chunk& chunk) const
 			}
 		}
 
-	addAllBlockStates(chunk);
+	//addAllBlockStates(chunk);
 }
 
 void addAllBlockStates(Chunk& chunk)
 {
-	int y = 92;
+	int y = 93;
 
 	for (int id = 0; id < BlockRegistry::GetBlockStateCount(); id++) {
 		if (id % 32 == 0)
-			y -= 2;
+			y -= 3;
 
 		int x = id % 32;
 		chunk.SetBlock({ x,y,16 }, Blocks::GetBlockState(id));

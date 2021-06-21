@@ -54,11 +54,31 @@ UnbakedModel UnbakedModel::RotateX(float ang, glm::vec3 origin)
 	return result;
 }
 
-UnbakedModel UnbakedModel::RotateY(float ang, glm::vec3 origin)
+UnbakedModel UnbakedModel::RotateY(float ang, glm::vec3 origin, bool flip_none_directions)
 {
 	UnbakedModel result = *this;
 	for (auto& quad : result.m_quads)
 		quad = quad.RotateY(ang, origin);
+
+	bool directionsToErase[6] = {};
+
+	if (flip_none_directions) {
+		for (auto& quad : result.m_quads)
+			if (quad.m_direction == Direction::none)
+			{
+				Direction actualDirection = Direction::GetNearest(quad.m_normal.x, quad.m_normal.y, quad.m_normal.z);
+				if (actualDirection.GetAxis() != Direction::Axis::y)
+				{
+					quad.m_direction = actualDirection;
+					directionsToErase[actualDirection.GetOpposite()] = true;
+				}
+			}
+
+		for (auto& quad : result.m_quads)
+			if (directionsToErase[quad.m_direction])
+				quad.m_direction = Direction::none;
+	}
+
 	return result;
 }
 

@@ -171,6 +171,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\item\BlockItemUseContext.cpp" />
+    <ClCompile Include="src\world\block\Door.cpp" />
     <ClCompile Include="src\world\block\Flower.cpp" />
     <ClCompile Include="src\utils\math\AxisAlignedBB.cpp" />
     <ClCompile Include="src\utils\math\shapes\VoxelShape.cpp" />
@@ -212,6 +213,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\item\BlockItemUseContext.h" />
+    <ClInclude Include="src\world\block\Door.h" />
     <ClInclude Include="src\world\block\Flower.h" />
     <ClInclude Include="src\utils\math\shapes\VoxelShape.h" />
     <ClInclude Include="src\utils\math\shapes\VoxelShapes.h" />

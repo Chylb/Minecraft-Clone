@@ -19,7 +19,7 @@
 class Direction
 {
 public:
-	enum Value : uint8_t
+	enum Value
 	{
 		north,
 		east,
@@ -40,6 +40,9 @@ public:
 	constexpr operator int() const { return _value; }
 
 	constexpr Direction GetOpposite() const;
+	constexpr Direction GetClockWise() const;
+	constexpr Direction GetCounterClockWise() const;
+	constexpr glm::vec3 GetVector() const;
 	constexpr Axis GetAxis() const;
 	constexpr bool IsHorizontal() const;
 	static Direction GetNearest(float x, float y, float z);
@@ -71,6 +74,52 @@ constexpr Direction Direction::GetOpposite() const
 		return up;
 	case none:
 		return none;
+	}
+}
+
+constexpr Direction Direction::GetClockWise() const
+{
+	switch (_value) {
+	case north:
+		return east;
+	case south:
+		return west;
+	case west:
+		return north;
+	case east:
+		return south;
+	}
+}
+
+constexpr Direction Direction::GetCounterClockWise() const
+{
+	switch (_value) {
+	case north:
+		return west;
+	case south:
+		return east;
+	case west:
+		return south;
+	case east:
+		return north;
+	}
+}
+
+constexpr glm::vec3 Direction::GetVector() const
+{
+	switch (_value) {
+	case north:
+		return { 0,0,-1 };
+	case east:
+		return { 1,0,0 };
+	case south:
+		return { 0,0,1 };
+	case west:
+		return { -1,0,0 };
+	case up:
+		return { 0,1,0 };
+	case down:
+		return { 0,-1,0 };
 	}
 }
 
