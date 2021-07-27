@@ -12,14 +12,14 @@ public:
 	UnbakedModel(glm::vec3 from, glm::vec3 to, std::initializer_list<UnbakedQuad> quads);
 
 	void AddQuad(UnbakedQuad quad);
-	UnbakedModel AddModel(UnbakedModel model);
+	[[nodiscard]] UnbakedModel AddModel(UnbakedModel model);
 	UnbakedModel& SetTexture(std::string oldTex, std::string newTex);
 
-	UnbakedModel Translate(glm::vec3 offset);
-	UnbakedModel Scale(glm::vec3 scale);
-	UnbakedModel RotateX(float ang, glm::vec3 origin = { 8,8,8 });
-	UnbakedModel RotateY(float ang, glm::vec3 origin = { 8,8,8 }, bool flip_none_directions = false);
-	UnbakedModel RotateZ(float ang, glm::vec3 origin = { 8,8,8 });
+	[[nodiscard]] UnbakedModel Translate(glm::vec3 offset);
+	[[nodiscard]] UnbakedModel Scale(glm::vec3 scale);
+	[[nodiscard]] UnbakedModel RotateX(float ang, glm::vec3 origin = { 8,8,8 });
+	[[nodiscard]] UnbakedModel RotateY(float ang, glm::vec3 origin = { 8,8,8 }, bool flip_none_directions = false);
+	[[nodiscard]] UnbakedModel RotateZ(float ang, glm::vec3 origin = { 8,8,8 });
 
 	BakedModel Bake();
 

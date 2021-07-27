@@ -10,7 +10,7 @@
 class BlockModelRegistry
 {
 public:
-	static void Register(Block* block, std::function<UnbakedModel(BlockState)> mapper);
+	static void Register(Block* block, std::function<UnbakedModel(const BlockState& state)> mapper);
 	static const BakedModel& GetBlockModel(uint16_t id);
 	static const BakedModel& GetBlockModel(BlockState* state);
 

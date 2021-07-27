@@ -46,6 +46,11 @@ const BlockState* WallTorch::GetStateForPlacement(const BlockItemUseContext& use
 	return nullptr;
 }
 
+const BlockState& WallTorch::UpdateShape(const BlockState& oldState, Direction from, const BlockState& updaterState, World& world, BlockPos pos) const
+{
+	return from.GetOpposite() == oldState.GetValue(facing) && !oldState.CanSurvive(world, pos) ? *Blocks::air->DefaultBlockState() : oldState;
+}
+
 bool WallTorch::CanSurvive(const BlockState& state, const World& world, BlockPos pos) const
 {
 	Direction facingDir = state.GetValue(facing);

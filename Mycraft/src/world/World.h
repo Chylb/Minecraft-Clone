@@ -8,6 +8,7 @@
 #include <unordered_set>
 #include <queue>
 
+#include "TickList.h"
 #include "chunk/Chunk.h"
 #include "block/BlockPos.h"
 #include "worldgen/WorldGenerator.h"
@@ -25,7 +26,18 @@ public:
 	Chunk* GetChunkAt(BlockPos pos) const;
 
 	const BlockState* GetBlockState(BlockPos pos) const;
-	void SetBlock(BlockPos pos, const BlockState& state);
+	void SetBlock(BlockPos pos, const BlockState& state, int flags);
+	void UpdateNeighborsAt(BlockPos pos, const Block& block);
+	void NeighborChanged(BlockPos updatedPos, const Block& updaterBlock, BlockPos updaterPos);
+	int GetBestNeighborSignal(BlockPos pos) const;
+	int GetSignal(BlockPos pos, Direction dir) const;
+	int GetDirectSignal(BlockPos pos, Direction dir) const;
+	int GetDirectSignalTo(BlockPos pos) const;
+	bool HasNeighborSignal(BlockPos pos) const;
+
+	TickList<Block>& GetBlockTicks();
+	uint64_t GetTick() const;
+	void TickBlock(const NextTickListEntry<Block>& entry);
 
 	void Update();
 	void UpdateMeshes();
@@ -45,7 +57,12 @@ private:
 	std::unordered_map<ChunkPos, Chunk*, ChunkPos::HashFunction> m_chunkMap;
 	std::unordered_set<Chunk*> m_occupiedChunks, m_freeChunks;
 
+	TickList<Block> m_blockTicks;
+	uint64_t m_tick = 0;
+
 	WorldGenerator m_worldGenerator;
 
 	std::vector<ChunkPos> m_nearbyChunksPositions;
+
+
 };

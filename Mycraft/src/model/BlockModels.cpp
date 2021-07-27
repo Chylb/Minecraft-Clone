@@ -3,6 +3,7 @@
 #include "BlockModelRegistry.h"
 #include "../world/block/Blocks.h"
 #include "../state/properties/BlockStateProperties.h"
+#include "../world/block/RedstoneWire.h"
 
 void BlockModels::Initialize()
 {
@@ -15,10 +16,53 @@ void BlockModels::Initialize()
 	Register(Blocks::leaves, CubeAll().SetTexture("all", "leaves"));
 	Register(Blocks::flower, Cross().SetTexture("cross", "poppy"));
 	Register(Blocks::debugBlock, CubeAll().Scale({ 0.5,0.5,0.5 }).Translate({ 4,4,4 }).SetTexture("all", "debug"));
-	Register(Blocks::torch, Torch());
+
+	RegisterTorch(Blocks::torch,
+		[](const BlockState& state) {return "torch"; },
+		Blocks::wallTorch,
+		[](const BlockState& state) {return "torch"; }
+	);
+
+	RegisterTorch(
+		Blocks::redstoneTorch,
+		[](const BlockState& state) { return state.GetValue(BlockStateProperties::lit) ? "redstone_torch" : "redstone_torch_off"; },
+		Blocks::redstoneWallTorch,
+		[](const BlockState& state) { return state.GetValue(BlockStateProperties::lit) ? "redstone_torch" : "redstone_torch_off"; }
+	);
+
+	Register(Blocks::redstoneWire,
+		[](const BlockState& state) {
+			if (RedstoneWire::IsDot(state))
+				return state.GetValue(BlockStateProperties::power) ? RedstoneDot().SetTexture("line", "redstone_dust_dot_on") : RedstoneDot().SetTexture("line", "redstone_dust_dot_off");
+
+			UnbakedModel model{};
+
+			RedstoneSide sides[] = { state.GetValue(BlockStateProperties::northRedstone), state.GetValue(BlockStateProperties::westRedstone), state.GetValue(BlockStateProperties::southRedstone) , state.GetValue(BlockStateProperties::eastRedstone) };
+			float rotation[] = { 0,90,180,270 };
+
+			for (int i = 0; i < 4; i++)
+			{
+				auto side = sides[i];
+				auto rot = rotation[i];
+
+				switch (side)
+				{
+				case RedstoneSide::side:
+					model = model.AddModel(RedstoneDustSide().RotateY(rot));
+					break;
+				case RedstoneSide::up:
+					model = model.AddModel(RedstoneDustSide().RotateY(rot));
+					model = model.AddModel(RedstoneDustUp().RotateY(rot));
+					break;
+				}
+			}
+			state.GetValue(BlockStateProperties::power) ? model.SetTexture("line", "redstone_dust_line_on") : model.SetTexture("line", "redstone_dust_line_off");
+
+			return model;
+		});
 
 	Register(Blocks::door,
-		[](BlockState state) {
+		[](const BlockState& state) {
 			bool upper = state.GetValue(BlockStateProperties::doubleBlockHalf) == DoubleBlockHalf::upper;
 			bool left = state.GetValue(BlockStateProperties::doorHinge) == DoorHingeSide::left;
 			UnbakedModel modelLH = upper ? DoorTop() : DoorBottom();
@@ -43,24 +87,8 @@ void BlockModels::Initialize()
 			return MissingModel();
 		});
 
-	Register(Blocks::wallTorch,
-		[](BlockState state) {
-			switch (state.GetValue(BlockStateProperties::horizontalFacing))
-			{
-			case Direction::north:
-				return WallTorch();
-			case Direction::west:
-				return WallTorch().RotateY(90);
-			case Direction::south:
-				return WallTorch().RotateY(180);
-			case Direction::east:
-				return WallTorch().RotateY(270);
-			}
-			return MissingModel();
-		});
-
 	Register(Blocks::wood,
-		[](BlockState state) {
+		[](const BlockState& state) {
 			UnbakedModel model = BlockModels::CubeColumn().SetTexture("side", "oak_log").SetTexture("end", "oak_log_top");
 
 			if (state.GetValue(BlockStateProperties::axis) == Direction::Axis::x)
@@ -71,7 +99,7 @@ void BlockModels::Initialize()
 		});
 
 	Register(Blocks::slab,
-		[](BlockState state) {
+		[](const BlockState& state) {
 			if (state.GetValue(BlockStateProperties::slabType) == SlabType::bottom)
 				return UnbakedModel({ 0, 0, 0 }, { 16,8,16 }, {
 				{Direction::down,	{0,0,16,16}, "oak_planks"},
@@ -96,7 +124,7 @@ void BlockModels::Initialize()
 		});
 
 	Register(Blocks::trapDoor,
-		[](BlockState state)
+		[](const BlockState& state)
 		{
 			UnbakedModel bottom({ 0, 0, 0 }, { 16,3,16 }, {
 				{Direction::down,	{0,0,16,16}, "oak_trapdoor"},
@@ -142,17 +170,73 @@ void BlockModels::Initialize()
 			}
 			return MissingModel();
 		});
+
+	Register(Blocks::powerSensor,
+		[](const BlockState& state)
+		{
+			UnbakedModel model = UnbakedModel({ 4, 4, 4 }, { 12,12,12 }, {
+				{Direction::down,	{0,0,16,16}, "bottom",1,1},
+				{Direction::up,		{0,0,16,16}, "top",1,1},
+				{Direction::north,	{0,0,16,16}, "north",1,1},
+				{Direction::south,	{0,0,16,16}, "south",1,1},
+				{Direction::west,	{0,0,16,16}, "west",1,1},
+				{Direction::east,	{0,0,16,16}, "east",1,1}
+				});
+
+			model.SetTexture("top", state.GetValue(BlockStateProperties::poweredUp) ? "sensor_on" : "sensor_off");
+			model.SetTexture("bottom", state.GetValue(BlockStateProperties::poweredDown) ? "sensor_on" : "sensor_off");
+			model.SetTexture("north", state.GetValue(BlockStateProperties::poweredNorth) ? "sensor_on" : "sensor_off");
+			model.SetTexture("east", state.GetValue(BlockStateProperties::poweredEast) ? "sensor_on" : "sensor_off");
+			model.SetTexture("south", state.GetValue(BlockStateProperties::poweredSouth) ? "sensor_on" : "sensor_off");
+			model.SetTexture("west", state.GetValue(BlockStateProperties::poweredWest) ? "sensor_on" : "sensor_off");
+
+			return model;
+		});
 }
 
-void BlockModels::Register(Block* block, std::function<UnbakedModel(BlockState)> mapper)
+void BlockModels::Register(Block* block, std::function<UnbakedModel(const BlockState& state)> mapper)
 {
 	BlockModelRegistry::Register(block, mapper);
 }
 
 void BlockModels::Register(Block* block, UnbakedModel model)
 {
-	BlockModelRegistry::Register(block, [&](BlockState state) {return model; });
+	BlockModelRegistry::Register(block, [&](const BlockState& state) {return model; });
 }
+
+void BlockModels::RegisterTorch(Block* torch, std::function<std::string(const BlockState& state)> torchTexture, Block* wallTorch, std::function<std::string(const BlockState& state)> wallTorchTexture)
+{
+	Register(torch,
+		[&](const BlockState& state) {
+			auto model = Torch();
+			model.SetTexture("torch", torchTexture(state));
+			return model;
+		});
+
+	Register(wallTorch,
+		[&](const BlockState& state) {
+			UnbakedModel model = WallTorch();
+			switch (state.GetValue(BlockStateProperties::horizontalFacing))
+			{
+			case Direction::north:
+				break;
+			case Direction::west:
+				model = model.RotateY(90);
+				break;
+			case Direction::south:
+				model = model.RotateY(180);
+				break;
+			case Direction::east:
+				model = model.RotateY(270);
+				break;
+			default:
+				return MissingModel();
+			}
+			model.SetTexture("torch", wallTorchTexture(state));
+			return model;
+		});
+}
+
 
 UnbakedModel BlockModels::Cube()
 {
@@ -278,5 +362,37 @@ UnbakedModel BlockModels::DoorTopRH()
 				{Direction::south,	{ 0, 0,  3, 16}, "top"},
 				{Direction::west,	{16, 0,  0, 16}, "top"},
 				{Direction::east,	{ 0, 0, 16, 16}, "top",1,1}
+		});
+}
+
+UnbakedModel BlockModels::RedstoneDot()
+{
+	return UnbakedModel({ 0, 0.25, 0 }, { 16, 0.25, 16 }, {
+				{Direction::up,		{0, 0, 16, 16}, "line",1,1},
+				{Direction::down,	{0, 16, 16, 0}, "line",1,1},
+		});
+}
+
+UnbakedModel BlockModels::RedstoneDustSide()
+{
+	return UnbakedModel({ 0, 0.25, 0 }, { 16, 0.25, 8 }, {
+				{Direction::up,		{0, 0, 16, 8}, "line",1,1},
+				{Direction::down,	{0, 8, 16, 0}, "line",1,1},
+		});
+}
+
+UnbakedModel BlockModels::RedstoneDustSideAlt()
+{
+	return UnbakedModel({ 0, 0.25, 8 }, { 16, 0.25, 16 }, {
+				{Direction::up,		{0, 8, 16, 16}, "line",1,1},
+				{Direction::down,	{0, 16, 16, 8}, "line",1,1},
+		});
+}
+
+UnbakedModel BlockModels::RedstoneDustUp()
+{
+	return UnbakedModel({ 0, 0, 0.25 }, { 16, 16, 0.25 }, {
+				{Direction::south,		{0, 0, 16, 16}, "line",1,1},
+				{Direction::north,	{16, 0, 0, 16}, "line",1,1},
 		});
 }

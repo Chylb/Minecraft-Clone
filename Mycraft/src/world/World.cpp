@@ -41,7 +41,8 @@ std::pair<int, int> spiral(int n)
 }
 
 World::World() :
-	m_worldGenerator(this)
+	m_worldGenerator(this),
+	m_blockTicks(this)
 {
 	int chunkCount = g_renderDistance * g_renderDistance * 4;
 
@@ -105,7 +106,17 @@ const BlockState* World::GetBlockState(BlockPos pos) const
 	return Blocks::air->DefaultBlockState();
 }
 
-void World::SetBlock(BlockPos pos, const BlockState& state)
+/*
+Sets a block state into this world.Flags are as follows :
+1 will cause a block update.
+2 will send the change to clients.
+4 will prevent the block from being re - rendered.
+8 will force any re - renders to run on the main thread instead
+16 will prevent neighbor reactions(e.g.fences connecting, observers pulsing).
+32 will prevent neighbor reactions from spawning drops.
+64 will signify the block is being moved.Flags can be OR - ed
+*/
+void World::SetBlock(BlockPos pos, const BlockState& state, int flags)
 {
 	Chunk* chunk = GetChunkAt(pos);
 	if (chunk) {
@@ -114,12 +125,99 @@ void World::SetBlock(BlockPos pos, const BlockState& state)
 			return;
 
 		chunk->SetBlock(pos, &state);
-		state.UpdateNeighbourShapes(*this, pos);
+		oldState.OnRemove(*this, pos, state);
+		state.OnPlace(*this, pos, oldState);
 
+		const auto& newerState = *GetBlockState(pos);
+		if (&newerState == &state) {
+			if (flags & 1)
+				UpdateNeighborsAt(pos, oldState.GetBlock());
+
+			if ((flags & 16) == 0) {
+				int newFlags = flags & -34; //remove 32 and 1
+				oldState.UpdateIndirectNeighbourShapes(*this, pos, newFlags);
+				state.UpdateNeighbourShapes(*this, pos, newFlags);
+				state.UpdateIndirectNeighbourShapes(*this, pos, newFlags);
+			}
+		}
 		chunk->dirtyMesh = true;
 		for (int i = 0; i < 4; i++)
 			chunk->adjacentChunks[i]->dirtyMesh = true;
 	}
+}
+
+void World::UpdateNeighborsAt(BlockPos pos, const Block& block)
+{
+	NeighborChanged(pos.West(), block, pos);
+	NeighborChanged(pos.East(), block, pos);
+	NeighborChanged(pos.Below(), block, pos);
+	NeighborChanged(pos.Above(), block, pos);
+	NeighborChanged(pos.North(), block, pos);
+	NeighborChanged(pos.South(), block, pos);
+}
+
+void World::NeighborChanged(BlockPos updatedPos, const Block& updaterBlock, BlockPos updaterPos)
+{
+	const BlockState& state = *GetBlockState(updatedPos);
+	state.NeighborChanged(*this, updatedPos, updaterBlock, updaterPos);
+}
+
+int World::GetBestNeighborSignal(BlockPos pos) const
+{
+	int maxSignal = 0;
+
+	for (Direction dir : Direction::directions)
+	{
+		int signal = GetSignal(pos.Adjacent(dir), dir);
+		if (signal >= 15)
+			return 15;
+
+		if (maxSignal > signal)
+			maxSignal = signal;
+	}
+	return maxSignal;
+}
+
+int World::GetSignal(BlockPos pos, Direction dir) const
+{
+	auto& state = *GetBlockState(pos);
+	int signal = state.GetSignal(*this, pos, dir);
+	return state.IsRedstoneConductor(*this, pos) ? std::max(signal, GetDirectSignalTo(pos)) : signal;
+}
+
+int World::GetDirectSignal(BlockPos pos, Direction dir) const
+{
+	return GetBlockState(pos)->GetDirectSignal(*this, pos, dir);
+}
+
+int World::GetDirectSignalTo(BlockPos pos) const
+{
+	int maxSignal = 0;
+	for (Direction dir : Direction::directions)
+	{
+		int signal = GetDirectSignal(pos.Adjacent(dir), dir);
+		if (signal >= 15)
+			return 15;
+
+		if (signal > maxSignal)
+			maxSignal = signal;
+	}
+	return maxSignal;
+}
+
+bool World::HasNeighborSignal(BlockPos pos) const
+{
+	return GetBestNeighborSignal(pos);
+}
+
+TickList<Block>& World::GetBlockTicks()
+{
+	return m_blockTicks;
+}
+
+uint64_t World::GetTick() const
+{
+	return m_tick;
 }
 
 void World::Update()
@@ -142,6 +240,8 @@ void World::Update()
 		chunk->loadingState = Chunk::LoadingState::loading_blocks;
 		UnloadChunk(*chunk);
 	}
+
+	m_blockTicks.Tick();
 
 	int cameraChunkX = (int)g_camera.position.x >> 5;
 	int cameraChunkZ = (int)g_camera.position.z >> 5;
@@ -177,6 +277,7 @@ void World::Update()
 			}
 			});
 	}
+	m_tick++;
 }
 
 void World::UpdateMeshes()
@@ -287,5 +388,14 @@ std::array<int, 4> World::DEV_ChunksLoadingStates()
 		stateCount[static_cast<int>(chunk->loadingState)]++;
 
 	return stateCount;
+}
+
+void World::TickBlock(const NextTickListEntry<Block>& entry)
+{
+	auto& state = *GetBlockState(entry.pos);
+	if (state.Is(entry.type))
+	{
+		state.Tick(*this, entry.pos);
+	}
 }
 

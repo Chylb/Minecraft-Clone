@@ -44,14 +44,14 @@ const BlockState* Door::GetStateForPlacement(const BlockItemUseContext& useConte
 
 bool Door::Use(const BlockState& state, World& world, BlockPos pos, BlockRayTraceResult hitResult) const
 {
-	auto newState = state.Cycle(open);
-	world.SetBlock(pos, newState);
+	auto& newState = state.Cycle(open);
+	world.SetBlock(pos, newState, 10);
 	return true;
 }
 
 void Door::SetPlacedBy(World& world, BlockPos pos, const BlockState& state) const
 {
-	world.SetBlock(pos.Adjacent(Direction::up), state.SetValue(half, DoubleBlockHalf::upper));
+	world.SetBlock(pos.Adjacent(Direction::up), state.SetValue(half, DoubleBlockHalf::upper), 3);
 }
 
 bool Door::CanSurvive(const BlockState& state, const World& world, BlockPos pos) const
@@ -71,6 +71,14 @@ const BlockState& Door::UpdateShape(const BlockState& oldState, Direction from, 
 	return oldHalf == DoubleBlockHalf::lower && from == Direction::down && !oldState.CanSurvive(world, pos) ? *Blocks::air->DefaultBlockState() : Block::UpdateShape(oldState, from, updaterState, world, pos);
 }
 
+void Door::NeighborChanged(const BlockState& state, World& world, BlockPos pos, const Block& updaterBlock, BlockPos updaterPos) const
+{
+	//bool hasSignal = world.HasNeighborSignal(pos) || world.HasNeighborSignal(pos.Adjacent(state.GetValue(half) == DoubleBlockHalf::lower ? Direction::up : Direction::down));
+	//if (&updaterBlock != this && hasSignal != state.GetValue(powered))
+	//{
+	//	//world.SetBlock(pos, state.SetValue(open, ))
+	//}
+}
 
 DoorHingeSide Door::GetHinge(const BlockItemUseContext& useContext) const
 {

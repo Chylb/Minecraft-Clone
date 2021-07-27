@@ -7,5 +7,5 @@ class Dirt : public Block
 public:
 	Dirt();
 
-	void Tick(World& world, BlockPos pos) const override;
+	void RandomTick(const BlockState& state, World& world, BlockPos pos) const override;
 };

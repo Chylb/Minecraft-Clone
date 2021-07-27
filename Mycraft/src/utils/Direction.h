@@ -45,9 +45,12 @@ public:
 	constexpr glm::vec3 GetVector() const;
 	constexpr Axis GetAxis() const;
 	constexpr bool IsHorizontal() const;
+	constexpr std::string ToString() const;
 	static Direction GetNearest(float x, float y, float z);
 	static std::array<Direction, 6> OrderedByNearest(glm::vec3);
 
+	static constexpr Value horizontalDirections[]{ north, east, south, west };
+	static constexpr Value verticalDirections[]{ up, down };
 	static constexpr Value directions[]{ north, east, south, west, up, down };
 	static constexpr Value directionsAndNone[]{ north, east, south, west, up, down, none };
 
@@ -144,6 +147,27 @@ constexpr Direction::Axis Direction::GetAxis() const
 constexpr bool Direction::IsHorizontal() const
 {
 	return !(_value == up || _value == down);
+}
+
+inline constexpr std::string Direction::ToString() const
+{
+	switch (_value)
+	{
+	case north:
+		return "north";
+	case east:
+		return "east";
+	case south:
+		return "south";
+	case west:
+		return "west";
+	case up:
+		return "up";
+	case down:
+		return "down";
+	case none:
+		return "none";
+	}
 }
 
 inline Direction Direction::GetNearest(float x, float y, float z)

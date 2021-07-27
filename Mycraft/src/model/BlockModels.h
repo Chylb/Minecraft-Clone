@@ -8,8 +8,10 @@
 namespace BlockModels {
 	void Initialize();
 
-	void Register(Block* block, std::function<UnbakedModel(BlockState)> mapper);
+	void Register(Block* block, std::function<UnbakedModel(const BlockState& state)> mapper);
 	void Register(Block* block, UnbakedModel model);
+
+	void RegisterTorch(Block* torch, std::function<std::string(const BlockState& state)> torchTexture, Block* wallTorch, std::function<std::string(const BlockState& state)> wallTorchTexture);
 
 	UnbakedModel Cube();
 	UnbakedModel CubeAll();
@@ -26,4 +28,9 @@ namespace BlockModels {
 	UnbakedModel DoorBottomRH();
 	UnbakedModel DoorTop();
 	UnbakedModel DoorTopRH();
+
+	UnbakedModel RedstoneDot();
+	UnbakedModel RedstoneDustSide();
+	UnbakedModel RedstoneDustSideAlt();
+	UnbakedModel RedstoneDustUp();
 };

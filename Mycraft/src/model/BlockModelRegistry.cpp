@@ -3,7 +3,7 @@
 #include "BlockModels.h"
 #include "../BlockRegistry.h"
 
-void BlockModelRegistry::Register(Block* block, std::function<UnbakedModel(BlockState)> mapper)
+void BlockModelRegistry::Register(Block* block, std::function<UnbakedModel(const BlockState& state)> mapper)
 {
 	for (auto state : block->GetStateDefinition().GetPossibleStates()) {
 		s_models[state->GetId()] = mapper(*state).Bake();

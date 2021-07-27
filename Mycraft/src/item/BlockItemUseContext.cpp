@@ -53,8 +53,8 @@ bool BlockItemUseContext::Place(const Block& block)
 		return false;
 
 	auto state = block.GetStateForPlacement(*this);
-	if (state != nullptr) {
-		m_world->SetBlock(GetClickedPos(), *state);
+	if (state != nullptr && state->CanSurvive(*m_world, GetClickedPos())) {
+		m_world->SetBlock(GetClickedPos(), *state, 11);
 		block.SetPlacedBy(*m_world, GetClickedPos(), *state);
 		return true;
 	}

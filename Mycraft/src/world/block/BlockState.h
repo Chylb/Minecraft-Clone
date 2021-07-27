@@ -16,6 +16,7 @@ class BlockState : public StateHolder<Block, BlockState>
 {
 public:
 	BlockState() : StateHolder<Block, BlockState>() {}
+	//BlockState(const BlockState& state) = delete;
 
 	uint16_t GetId() const;
 	const Block& GetBlock() const;
@@ -23,13 +24,22 @@ public:
 	bool Is(const Block& block) const;
 
 	const VoxelShape& GetShape() const;
-	void UpdateNeighbourShapes(World& world, BlockPos pos) const;
+	void UpdateNeighbourShapes(World& world, BlockPos pos, int flags) const;
+	void UpdateIndirectNeighbourShapes(World& world, BlockPos pos, int flags) const;
+	void NeighborChanged(World& world, BlockPos updatedPos, const Block& updaterBlock, BlockPos updaterPos) const;
 	const BlockState& UpdateShape(Direction from, const BlockState& updaterState, World& world, BlockPos pos) const;
 	void Tick(World& world, BlockPos pos) const;
+	void RandomTick(World& world, BlockPos pos) const;
 	bool CanBeReplaced(const BlockItemUseContext& useContext) const;
 	bool Use(World& world, BlockPos pos, BlockRayTraceResult hitResult) const;
 	bool IsFaceSturdy(const World& world, BlockPos pos, Direction dir) const;
 	bool CanSurvive(const World& world, BlockPos pos) const;
+	bool IsRedstoneConductor(const World& world, BlockPos pos) const;
+	void OnPlace(World& world, BlockPos pos, const BlockState& oldState) const;
+	void OnRemove(World& world, BlockPos pos, const BlockState& newState) const;
+	int GetSignal(const World& world, BlockPos pos, Direction dir) const;
+	int GetDirectSignal(const World& world, BlockPos pos, Direction dir) const;
+	bool IsSignalSource() const;
 
 	bool OccludesFace(Direction dir) const;
 	bool OccludesAllFaces() const;

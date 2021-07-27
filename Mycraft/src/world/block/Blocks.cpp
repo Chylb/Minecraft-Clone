@@ -5,10 +5,15 @@
 #include "Door.h"
 #include "Flower.h"
 #include "Log.h"
+#include "RedstoneTorch.h"
+#include "RedstoneWire.h"
 #include "Slab.h"
 #include "Torch.h"
 #include "TrapDoor.h"
 #include "WallTorch.h"
+#include "DebugBlock.h"
+#include "PowerSensor.h"
+#include "RedstoneWallTorch.h"
 
 void Blocks::Initialize()
 {
@@ -22,11 +27,15 @@ void Blocks::Initialize()
 	leaves		= BlockRegistry::Register(new Block());
 	slab		= BlockRegistry::Register(new Slab());
 	flower		= BlockRegistry::Register(new Flower());
-	debugBlock	= BlockRegistry::Register(new Flower());
+	debugBlock	= BlockRegistry::Register(new DebugBlock());
 	trapDoor	= BlockRegistry::Register(new TrapDoor());
 	torch		= BlockRegistry::Register(new Torch());
 	wallTorch	= BlockRegistry::Register(new WallTorch());
 	door		= BlockRegistry::Register(new Door());
+	redstoneWire = BlockRegistry::Register(new RedstoneWire());
+	redstoneTorch = BlockRegistry::Register(new RedstoneTorch());
+	redstoneWallTorch = BlockRegistry::Register(new RedstoneWallTorch());
+	powerSensor = BlockRegistry::Register(new PowerSensor());
 }
 
 BlockState* Blocks::GetBlockState(uint16_t id)

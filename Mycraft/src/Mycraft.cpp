@@ -128,7 +128,7 @@ void processInput(GLFWwindow* window, float deltaTime)
 			auto rayTraceResult = world->Clip(g_camera.position, end);
 
 			if (rayTraceResult.hit) {
-				world->SetBlock(rayTraceResult.blockPos, *Blocks::air->DefaultBlockState());
+				world->SetBlock(rayTraceResult.blockPos, *Blocks::air->DefaultBlockState(), 3);
 				justEditedWorld = true;
 			}
 		}
@@ -144,8 +144,8 @@ void processInput(GLFWwindow* window, float deltaTime)
 				if (state->Use(*world, rayTraceResult.blockPos, rayTraceResult))
 				{
 					justEditedWorld = true;
-				}			
-				else 
+				}
+				else
 				{
 					auto useContext = BlockItemUseContext(world, rayTraceResult, *placedBlock, g_camera.facingDirection);
 					if (useContext.Place(*placedBlock))
@@ -174,10 +174,10 @@ void processInput(GLFWwindow* window, float deltaTime)
 	if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS) placedBlock = Blocks::grass;
 	if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS) placedBlock = Blocks::wood;
 	if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS) placedBlock = Blocks::slab;
-	if (glfwGetKey(window, GLFW_KEY_7) == GLFW_PRESS) placedBlock = Blocks::flower;
-	if (glfwGetKey(window, GLFW_KEY_8) == GLFW_PRESS) placedBlock = Blocks::debugBlock;
-	if (glfwGetKey(window, GLFW_KEY_9) == GLFW_PRESS) placedBlock = Blocks::door;
-	if (glfwGetKey(window, GLFW_KEY_0) == GLFW_PRESS) placedBlock = Blocks::wallTorch;
+	if (glfwGetKey(window, GLFW_KEY_7) == GLFW_PRESS) placedBlock = Blocks::door;
+	if (glfwGetKey(window, GLFW_KEY_8) == GLFW_PRESS) placedBlock = Blocks::powerSensor;
+	if (glfwGetKey(window, GLFW_KEY_9) == GLFW_PRESS) placedBlock = Blocks::redstoneWallTorch;
+	if (glfwGetKey(window, GLFW_KEY_0) == GLFW_PRESS) placedBlock = Blocks::redstoneWire;
 }
 
 

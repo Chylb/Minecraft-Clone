@@ -171,12 +171,17 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\item\BlockItemUseContext.cpp" />
+    <ClCompile Include="src\world\block\DebugBlock.cpp" />
     <ClCompile Include="src\world\block\Door.cpp" />
     <ClCompile Include="src\world\block\Flower.cpp" />
     <ClCompile Include="src\utils\math\AxisAlignedBB.cpp" />
     <ClCompile Include="src\utils\math\shapes\VoxelShape.cpp" />
     <ClCompile Include="src\utils\math\shapes\VoxelShapes.cpp" />
     <ClCompile Include="src\world\block\Air.cpp" />
+    <ClCompile Include="src\world\block\PowerSensor.cpp" />
+    <ClCompile Include="src\world\block\RedstoneTorch.cpp" />
+    <ClCompile Include="src\world\block\RedstoneWallTorch.cpp" />
+    <ClCompile Include="src\world\block\RedstoneWire.cpp" />
     <ClCompile Include="src\world\block\Slab.cpp" />
     <ClCompile Include="src\model\BakedModel.cpp" />
     <ClCompile Include="src\model\BlockModelRegistry.cpp" />
@@ -213,11 +218,16 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\item\BlockItemUseContext.h" />
+    <ClInclude Include="src\world\block\DebugBlock.h" />
     <ClInclude Include="src\world\block\Door.h" />
     <ClInclude Include="src\world\block\Flower.h" />
     <ClInclude Include="src\utils\math\shapes\VoxelShape.h" />
     <ClInclude Include="src\utils\math\shapes\VoxelShapes.h" />
     <ClInclude Include="src\world\block\Air.h" />
+    <ClInclude Include="src\world\block\PowerSensor.h" />
+    <ClInclude Include="src\world\block\RedstoneTorch.h" />
+    <ClInclude Include="src\world\block\RedstoneWallTorch.h" />
+    <ClInclude Include="src\world\block\RedstoneWire.h" />
     <ClInclude Include="src\world\block\Slab.h" />
     <ClInclude Include="src\utils\Direction.h" />
     <ClInclude Include="src\model\BakedModel.h" />
@@ -250,6 +260,8 @@
     <ClInclude Include="src\renderer\Renderer.h" />
     <ClInclude Include="src\Resources.h" />
     <ClInclude Include="src\renderer\Shader.h" />
+    <ClInclude Include="src\world\NextTickListEntry.h" />
+    <ClInclude Include="src\world\TickList.h" />
     <ClInclude Include="src\world\World.h" />
     <ClInclude Include="src\world\worldgen\WorldGenerator.h" />
     <ClInclude Include="src\vendor\glm\common.hpp" />

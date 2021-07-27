@@ -44,7 +44,7 @@ const BlockState* TrapDoor::GetStateForPlacement(const BlockItemUseContext& useC
 bool TrapDoor::Use(const BlockState& state, World& world, BlockPos pos, BlockRayTraceResult hitResult) const
 {
 	auto& newState = state.SetValue(open, !state.GetValue(open));
-	world.SetBlock(pos, newState);
+	world.SetBlock(pos, newState, 2);
 
 	return true;
 }

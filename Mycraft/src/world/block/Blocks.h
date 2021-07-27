@@ -24,4 +24,8 @@ public:
 	inline static Block* torch;
 	inline static Block* wallTorch;
 	inline static Block* door;
+	inline static Block* redstoneWire;
+	inline static Block* redstoneTorch;
+	inline static Block* redstoneWallTorch;
+	inline static Block* powerSensor;
 };

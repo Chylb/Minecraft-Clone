@@ -18,6 +18,11 @@ bool Torch::CanSurvive(const BlockState& state, const World& world, BlockPos pos
 	return belowState->IsFaceSturdy(world, posBelow, Direction::up);
 }
 
+const BlockState& Torch::UpdateShape(const BlockState& oldState, Direction from, const BlockState& updaterState, World& world, BlockPos pos) const
+{
+	return from == Direction::down && !CanSurvive(oldState, world, pos) ? *Blocks::air->DefaultBlockState() : oldState;
+}
+
 const VoxelShape& Torch::GetShape(const BlockState& state) const
 {
 	return AABB;

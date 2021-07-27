@@ -174,7 +174,7 @@ void Chunk::Tick()
 
 		BlockPos pos = { x,y,z };
 		auto state = GetBlockState({ x,y,z });
-		state->GetBlock().Tick(*m_world, pos);
+		state->RandomTick(*m_world, pos);
 	}
 }
 

@@ -6,9 +6,9 @@ Dirt::Dirt() : Block()
 {
 }
 
-void Dirt::Tick(World& world, BlockPos pos) const
+void Dirt::RandomTick(const BlockState& state, World& world, BlockPos pos) const
 {
-	auto stateAbove = world.GetBlockState(pos.Adjacent(Direction::up));
+	/*auto stateAbove = world.GetBlockState(pos.Adjacent(Direction::up));
 	if (stateAbove->GetId() == 0)
-		world.SetBlock(pos, Blocks::grass->DefaultBlockState());
+		world.SetBlock(pos, Blocks::grass->DefaultBlockState());*/
 }
