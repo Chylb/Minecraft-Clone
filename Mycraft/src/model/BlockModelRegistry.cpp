@@ -16,7 +16,7 @@ const BakedModel& BlockModelRegistry::GetBlockModel(uint16_t id)
 	return s_models[id];
 }
 
-const BakedModel& BlockModelRegistry::GetBlockModel(BlockState* state)
+const BakedModel& BlockModelRegistry::GetBlockModel(const BlockState* state)
 {
 	return s_models[state->GetId()];
 }

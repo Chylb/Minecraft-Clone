@@ -24,6 +24,8 @@ namespace BlockModels {
 	UnbakedModel Torch();
 	UnbakedModel WallTorch();
 
+	UnbakedModel Grass();
+
 	UnbakedModel DoorBottom();
 	UnbakedModel DoorBottomRH();
 	UnbakedModel DoorTop();

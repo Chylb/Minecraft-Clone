@@ -17,6 +17,8 @@ public:
 	inline static const std::map<Direction, const Property<RedstoneSide>*> propertyByDirection = { {Direction::north, &north}, {Direction::east, &east},{Direction::south, &south},{Direction::west, &west} };
 	const BlockState* cross;
 
+	inline static glm::vec3 colors[16];
+
 	RedstoneWire();
 
 	const VoxelShape& GetShape(const BlockState& state) const override;
@@ -35,6 +37,8 @@ public:
 
 	static bool IsDot(const BlockState& state);
 	static bool IsCross(const BlockState& state);
+
+	static glm::vec3 Color(int power);
 
 private:
 	mutable bool m_shouldSignal = true;

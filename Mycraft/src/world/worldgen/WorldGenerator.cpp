@@ -33,7 +33,7 @@ void WorldGenerator::GenerateChunk(Chunk& chunk) const
 			}
 		}
 
-	addAllBlockStates(chunk);
+	//addAllBlockStates(chunk);
 }
 
 void addAllBlockStates(Chunk& chunk)
@@ -43,7 +43,7 @@ void addAllBlockStates(Chunk& chunk)
 
 	for (int id = 0; id < BlockRegistry::GetBlockStateCount(); id++) {
 		auto& state = *BlockRegistry::GetBlockState(id);
-		if (&state.GetBlock() == Blocks::redstoneWire && state.GetValue(BlockStateProperties::power) > 1)
+		if (&state.GetBlock() == Blocks::redstoneWire && (state.GetValue(BlockStateProperties::power) != 0 || state.GetValue(BlockStateProperties::power) != 15))
 			continue;
 
 		x = (x + 1) % 32;

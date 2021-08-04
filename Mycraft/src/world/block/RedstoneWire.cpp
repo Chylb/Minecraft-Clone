@@ -2,6 +2,7 @@
 
 #include "../World.h"
 #include "../../item/BlockItemUseContext.h"
+#include "../../utils/MathUtils.h"
 
 RedstoneWire::RedstoneWire()
 {
@@ -9,6 +10,14 @@ RedstoneWire::RedstoneWire()
 	RegisterDefaultState(m_stateDefinition.Any()->SetValue(north, RedstoneSide::none).SetValue(east, RedstoneSide::none).SetValue(south, RedstoneSide::none).SetValue(west, RedstoneSide::none).SetValue(power, 0));
 
 	cross = &m_defaultBlockState->SetValue(north, RedstoneSide::side).SetValue(east, RedstoneSide::side).SetValue(south, RedstoneSide::side).SetValue(west, RedstoneSide::side);
+
+	for (int i = 0; i <= 15; ++i) {
+		float f = (float)i / 15.0F;
+		float r = f * 0.6F + (f > 0.0F ? 0.4F : 0.3F);
+		float g = MathUtils::clamp(f * f * 0.7F - 0.5F, 0.0F, 1.0F);
+		float b = MathUtils::clamp(f * f * 0.6F - 0.7F, 0.0F, 1.0F);
+		colors[i] = glm::vec3{ r, g, b };
+	}
 }
 
 const VoxelShape& RedstoneWire::GetShape(const BlockState& state) const
@@ -256,6 +265,11 @@ bool RedstoneWire::IsCross(const BlockState& state)
 			return false;
 	}
 	return true;
+}
+
+glm::vec3 RedstoneWire::Color(int power)
+{
+	return colors[power];
 }
 
 const BlockState& RedstoneWire::GetConnectionState(const World& world, const BlockState& state, BlockPos pos) const

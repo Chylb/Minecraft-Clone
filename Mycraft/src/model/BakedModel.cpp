@@ -1,18 +1,34 @@
 #include "BakedModel.h"
 
-void BakedModel::WriteFace(std::vector<float>& target, BlockPos pos, Direction dir) const
+void BakedModel::WriteFace(std::vector<float>& target, const BlockState& state, BlockPos pos, Direction dir) const
 {
 	for (auto face : m_quads[dir]) {
-		for (int i = 0; i < 36; i += 6) {
+		for (int i = 0; i < BakedQuad::quad_size; i += BakedQuad::vertex_size) {
 			face.data[i] += pos.x;
 		}
-		for (int i = 1; i < 36; i += 6) {
+		for (int i = 1; i < BakedQuad::quad_size; i += BakedQuad::vertex_size) {
 			face.data[i] += pos.y;
 		}
-		for (int i = 2; i < 36; i += 6) {
+		for (int i = 2; i < BakedQuad::quad_size; i += BakedQuad::vertex_size) {
 			face.data[i] += pos.z;
 		}
-		target.insert(target.end(), face.data, face.data + 36);
+
+		if (face.tintIx != -1)
+		{
+			auto color = m_colorFunc(state, pos, face.tintIx);
+
+			for (int i = 6; i < BakedQuad::quad_size; i += BakedQuad::vertex_size) {
+				face.data[i] = color.x;
+			}
+			for (int i = 7; i < BakedQuad::quad_size; i += BakedQuad::vertex_size) {
+				face.data[i] = color.y;
+			}
+			for (int i = 8; i < BakedQuad::quad_size; i += BakedQuad::vertex_size) {
+				face.data[i] = color.z;
+			}
+		}
+
+		target.insert(target.end(), face.data, face.data + BakedQuad::quad_size);
 	}
 }
 

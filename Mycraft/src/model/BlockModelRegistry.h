@@ -12,7 +12,7 @@ class BlockModelRegistry
 public:
 	static void Register(Block* block, std::function<UnbakedModel(const BlockState& state)> mapper);
 	static const BakedModel& GetBlockModel(uint16_t id);
-	static const BakedModel& GetBlockModel(BlockState* state);
+	static const BakedModel& GetBlockModel(const BlockState* state);
 
 	friend int main();
 

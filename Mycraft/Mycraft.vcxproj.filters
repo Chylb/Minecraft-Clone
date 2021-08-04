@@ -150,6 +150,12 @@
     <ClCompile Include="src\world\block\PowerSensor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\renderer\color\BlockColors.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\MathUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\vendor\stb_image\stb_image.h">
@@ -1166,6 +1172,9 @@
     <ClInclude Include="src\world\block\PowerSensor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\renderer\color\BlockColors.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="src\vendor\glm\CMakeLists.txt" />
@@ -1581,5 +1590,10 @@
     </None>
     <None Include="res\basic.fs" />
     <None Include="res\basic.vs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\..\Dump\minecraftComp\textures\block\grass_block_side_overlay.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

@@ -6,9 +6,9 @@
 
 struct UnbakedQuad {
 	UnbakedQuad(glm::vec3 v1, glm::vec2 uv1, glm::vec3 v2, glm::vec2 uv2, glm::vec3 v3, glm::vec2 uv3, glm::vec3 v4, glm::vec2 uv4,
-		std::string texture, Direction dir = Direction::none);
+		std::string texture, Direction dir = Direction::none, int tint_ix = -1);
 
-	UnbakedQuad(Direction dir, glm::vec4 uv, std::string texture, bool flip_y = true, bool clear_direction = false);
+	UnbakedQuad(Direction dir, glm::vec4 uv, std::string texture, bool flip_y = true, bool clear_direction = false, int tint_ix = -1);
 
 	UnbakedQuad Translate(glm::vec3 offset);
 	UnbakedQuad Scale(glm::vec3 scale);
@@ -25,6 +25,7 @@ private:
 	glm::vec4 m_normal;
 	glm::vec4 m_vertices[4];
 	glm::vec2 m_uvs[4];
+	int m_tint_ix;
 
 	void WriteVertex(std::vector<float>& target, int vertex_ix, int texture_ix);
 

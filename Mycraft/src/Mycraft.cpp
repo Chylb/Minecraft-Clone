@@ -27,6 +27,7 @@
 
 #include "renderer/Shader.h"
 #include "renderer/Renderer.h"
+#include "renderer/color/BlockColors.h"
 
 #include "utils/Timer.h"
 
@@ -57,6 +58,7 @@ int main()
 	Blocks::Initialize();
 	BlockModelRegistry::Resize(BlockRegistry::GetBlockStateCount());
 	BlockModels::Initialize();
+	BlockColors::Initialize();
 
 	placedBlock = Blocks::cobblestone;
 

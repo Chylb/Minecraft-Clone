@@ -9,13 +9,13 @@ void BlockModels::Initialize()
 {
 	Register(Blocks::air, UnbakedModel());
 	Register(Blocks::stone, CubeAll().SetTexture("all", "stone"));
-	Register(Blocks::grass, CubeTopBottom().SetTexture("top", "grass_top").SetTexture("side", "grass_block_side").SetTexture("bottom", "dirt"));
 	Register(Blocks::dirt, CubeAll().SetTexture("all", "dirt"));
 	Register(Blocks::cobblestone, CubeAll().SetTexture("all", "cobblestone"));
 	Register(Blocks::plank, CubeAll().SetTexture("all", "oak_planks"));
 	Register(Blocks::leaves, CubeAll().SetTexture("all", "leaves"));
 	Register(Blocks::flower, Cross().SetTexture("cross", "poppy"));
 	Register(Blocks::debugBlock, CubeAll().Scale({ 0.5,0.5,0.5 }).Translate({ 4,4,4 }).SetTexture("all", "debug"));
+	Register(Blocks::grass, Grass().SetTexture("top", "grass_block_top").SetTexture("side", "grass_block_side").SetTexture("bottom", "dirt").SetTexture("overlay", "grass_block_side_overlay"));
 
 	RegisterTorch(Blocks::torch,
 		[](const BlockState& state) {return "torch"; },
@@ -33,7 +33,7 @@ void BlockModels::Initialize()
 	Register(Blocks::redstoneWire,
 		[](const BlockState& state) {
 			if (RedstoneWire::IsDot(state))
-				return state.GetValue(BlockStateProperties::power) ? RedstoneDot().SetTexture("line", "redstone_dust_dot_on") : RedstoneDot().SetTexture("line", "redstone_dust_dot_off");
+				return RedstoneDot().SetTexture("line", "redstone_dust_dot").SetTexture("overlay", "redstone_dust_overlay");
 
 			UnbakedModel model{};
 
@@ -56,7 +56,9 @@ void BlockModels::Initialize()
 					break;
 				}
 			}
-			state.GetValue(BlockStateProperties::power) ? model.SetTexture("line", "redstone_dust_line_on") : model.SetTexture("line", "redstone_dust_line_off");
+
+			model.SetTexture("line", "redstone_dust_line0");
+			model.SetTexture("overlay", "redstone_dust_overlay");
 
 			return model;
 		});
@@ -321,6 +323,23 @@ UnbakedModel BlockModels::WallTorch()
 	return Torch().Translate({ 0,3.5,-8 }).RotateX(22.5, { 8,3.5,0 }).RotateY(180);
 }
 
+UnbakedModel BlockModels::Grass()
+{
+	return UnbakedModel({ 0, 0, 0 }, { 16,16,16 }, {
+			{Direction::north,	{0,0,16,16}, "overlay",1,0,0},
+			{Direction::south,	{0,0,16,16}, "overlay",1,0,0},
+			{Direction::west,	{0,0,16,16}, "overlay",1,0,0},
+			{Direction::east,	{0,0,16,16}, "overlay",1,0,0},
+
+			{Direction::down,	{0,0,16,16}, "bottom"},
+			{Direction::up,	{0,0,16,16}, "top",1,0,0},
+			{Direction::north,	{0,0,16,16}, "side"},
+			{Direction::south,	{0,0,16,16}, "side"},
+			{Direction::west,	{0,0,16,16}, "side"},
+			{Direction::east,	{0,0,16,16}, "side"},
+		});
+}
+
 UnbakedModel BlockModels::DoorBottom()
 {
 	return UnbakedModel({ 0, 0, 0 }, { 3, 16, 16 }, {
@@ -368,16 +387,22 @@ UnbakedModel BlockModels::DoorTopRH()
 UnbakedModel BlockModels::RedstoneDot()
 {
 	return UnbakedModel({ 0, 0.25, 0 }, { 16, 0.25, 16 }, {
-				{Direction::up,		{0, 0, 16, 16}, "line",1,1},
-				{Direction::down,	{0, 16, 16, 0}, "line",1,1},
+				{Direction::up,		{0, 0, 16, 16}, "line",1,1,0},
+				{Direction::down,	{0, 16, 16, 0}, "line",1,1,0},
+
+				{Direction::up,		{0, 0, 16, 16}, "overlay",1,1},
+				{Direction::down,	{0, 16, 16, 0}, "overlay",1,1},
 		});
 }
 
 UnbakedModel BlockModels::RedstoneDustSide()
 {
 	return UnbakedModel({ 0, 0.25, 0 }, { 16, 0.25, 8 }, {
-				{Direction::up,		{0, 0, 16, 8}, "line",1,1},
-				{Direction::down,	{0, 8, 16, 0}, "line",1,1},
+				{Direction::up,		{0, 0, 16, 8}, "line",1,1, 0},
+				{Direction::down,	{0, 8, 16, 0}, "line",1,1, 0},
+
+				{Direction::up,		{0, 0, 16, 8}, "overlay",1,1},
+				{Direction::down,	{0, 8, 16, 0}, "overlay",1,1},
 		});
 }
 
@@ -392,7 +417,10 @@ UnbakedModel BlockModels::RedstoneDustSideAlt()
 UnbakedModel BlockModels::RedstoneDustUp()
 {
 	return UnbakedModel({ 0, 0, 0.25 }, { 16, 16, 0.25 }, {
-				{Direction::south,		{0, 0, 16, 16}, "line",1,1},
-				{Direction::north,	{16, 0, 0, 16}, "line",1,1},
+				{Direction::south,	{0, 0, 16, 16}, "line",1,1, 0},
+				{Direction::north,	{16, 0, 0, 16}, "line",1,1, 0},
+
+				{Direction::south,	{0, 0, 16, 16}, "overlay",1,1},
+				{Direction::north,	{16, 0, 0, 16}, "overlay",1,1},
 		});
 }

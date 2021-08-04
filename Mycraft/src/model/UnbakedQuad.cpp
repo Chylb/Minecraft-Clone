@@ -4,7 +4,7 @@
 
 #include "../Resources.h"
 
-UnbakedQuad::UnbakedQuad(glm::vec3 v1, glm::vec2 uv1, glm::vec3 v2, glm::vec2 uv2, glm::vec3 v3, glm::vec2 uv3, glm::vec3 v4, glm::vec2 uv4, std::string texture, Direction dir)
+UnbakedQuad::UnbakedQuad(glm::vec3 v1, glm::vec2 uv1, glm::vec3 v2, glm::vec2 uv2, glm::vec3 v3, glm::vec2 uv3, glm::vec3 v4, glm::vec2 uv4, std::string texture, Direction dir, int tint_ix)
 {
 	m_vertices[0] = glm::vec4(v1, 1.0);
 	m_vertices[1] = glm::vec4(v2, 1.0);
@@ -17,6 +17,7 @@ UnbakedQuad::UnbakedQuad(glm::vec3 v1, glm::vec2 uv1, glm::vec3 v2, glm::vec2 uv
 
 	this->m_texture = texture;
 	this->m_direction = dir;
+	this->m_tint_ix = tint_ix;
 
 	glm::vec3 vec1 = v2 - v1;
 	glm::vec3 vec2 = v3 - v1;
@@ -24,7 +25,7 @@ UnbakedQuad::UnbakedQuad(glm::vec3 v1, glm::vec2 uv1, glm::vec3 v2, glm::vec2 uv
 	m_normal = glm::vec4(glm::cross(vec1, vec2), 1.0);
 }
 
-UnbakedQuad::UnbakedQuad(Direction dir, glm::vec4 uv, std::string texture, bool flip_y, bool clear_direction)
+UnbakedQuad::UnbakedQuad(Direction dir, glm::vec4 uv, std::string texture, bool flip_y, bool clear_direction, int tint_ix)
 {
 	if (flip_y) //minecraft textures have flipped y axis 
 	{
@@ -38,7 +39,7 @@ UnbakedQuad::UnbakedQuad(Direction dir, glm::vec4 uv, std::string texture, bool 
 		{0,0,0},{uv.z,uv.y},
 		{0,1,0},{uv.z,uv.w},
 		{1,1,0},{uv.x,uv.w},
-		texture, Direction::north };
+		texture, Direction::north, tint_ix };
 	north = north.Scale({ 16,16,16 });
 
 	if (clear_direction)
@@ -144,7 +145,7 @@ BakedQuad UnbakedQuad::Bake()
 	int texture_ix = Resources::GetTextureIx(m_texture);
 
 	std::vector<float> buf;
-	buf.reserve(36);
+	buf.reserve(54);
 	WriteVertex(buf, 0, texture_ix);
 	WriteVertex(buf, 1, texture_ix);
 	WriteVertex(buf, 2, texture_ix);
@@ -153,7 +154,8 @@ BakedQuad UnbakedQuad::Bake()
 	WriteVertex(buf, 0, texture_ix);
 
 	BakedQuad result{};
-	std::memcpy(result.data, buf.data(), sizeof(float) * 36);
+	std::memcpy(result.data, buf.data(), sizeof(float) * 54);
+	result.tintIx = m_tint_ix;
 	return result;
 }
 
@@ -164,6 +166,9 @@ void UnbakedQuad::WriteVertex(std::vector<float>& target, int vertex_ix, int tex
 	target.push_back(m_uvs[vertex_ix].x / 16.0);
 	target.push_back(m_uvs[vertex_ix].y / 16.0);
 	target.push_back(texture_ix);
+	target.push_back(1.0f);
+	target.push_back(1.0f);
+	target.push_back(1.0f);
 }
 
 std::ostream& operator<<(std::ostream& os, const UnbakedQuad& quad)
