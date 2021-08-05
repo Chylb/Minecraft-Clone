@@ -51,7 +51,7 @@ int main()
 	if (Renderer::Init() != 0)
 		return -1;
 
-	g_mesh.reserve(90000);
+	g_mesh.reserve(193860);
 
 	Gui::Init(Renderer::window);
 	Resources::LoadTextures();
@@ -74,7 +74,9 @@ int main()
 
 		processInput(Renderer::window, dt);
 
-		glm::mat4 projection = glm::perspective(glm::radians(g_camera.zoom), (float)Renderer::SCR_WIDTH / (float)Renderer::SCR_HEIGHT, 0.1f, 3000.0f);
+		int width, height;
+		glfwGetWindowSize(Renderer::window, &width, &height);
+		glm::mat4 projection = glm::perspective(glm::radians(g_camera.zoom), (float)width / (float)height, 0.1f, 3000.0f);
 		basicShader.setMat4("projection", projection);
 
 		glm::mat4 view = g_camera.GetViewMatrix();
