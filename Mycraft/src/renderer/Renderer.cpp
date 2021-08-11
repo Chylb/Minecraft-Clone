@@ -10,7 +10,7 @@ int Renderer::Init()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Mycraft", NULL, NULL);
+	window = glfwCreateWindow(window_width, window_height, "Mycraft", NULL, NULL);
 	if (window == NULL) {
 		std::cout << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
@@ -43,6 +43,8 @@ void Renderer::Terminate()
 
 float Renderer::BeginRendering()
 {
+	glfwGetWindowSize(window, &window_width, &window_height);
+
 	static float dt;
 	static float lastFrame;
 
@@ -70,7 +72,7 @@ void Renderer::mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	s_mouseLastX = xpos;
 	s_mouseLastY = ypos;
 
-	if (Gui::cursorCaptured)
+	if (!Gui::IsCursorCaptured())
 		g_camera.ProcessMouseMovement(Xoffset, Yoffset);
 }
 

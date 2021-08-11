@@ -19,10 +19,15 @@ Block* BlockRegistry::Register(Block* block)
 
 BlockState* BlockRegistry::GetBlockState(uint16_t id)
 {
-	return s_blockStates[id];
+	return s_blockStates.at(id);
 }
 
 int BlockRegistry::GetBlockStateCount()
 {
 	return s_blockStates.size();
+}
+
+const std::vector<Block*>& BlockRegistry::GetBlocks()
+{
+	return s_blocks;
 }

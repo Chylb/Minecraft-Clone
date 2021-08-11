@@ -35,7 +35,6 @@
 
 //Camera g_camera(glm::vec3(0, 2000, 40), 0, -90);
 Camera g_camera(glm::vec3(0, 100, 40));
-Block* placedBlock;
 int g_renderDistance = 8;
 World* world;
 thread_local std::vector<float> g_mesh;
@@ -45,6 +44,9 @@ void processInput(GLFWwindow* window, float deltaTime);
 
 unsigned int g_polygons = 0;
 
+const Block* g_items[9];
+size_t g_selectedItemIx = 0;
+
 int main()
 {
 	srand(time(NULL));
@@ -53,14 +55,23 @@ int main()
 
 	g_mesh.reserve(193860);
 
-	Gui::Init(Renderer::window);
-	Resources::LoadTextures();
+	Resources::Initialize();
 	Blocks::Initialize();
 	BlockModelRegistry::Resize(BlockRegistry::GetBlockStateCount());
 	BlockModels::Initialize();
 	BlockColors::Initialize();
 
-	placedBlock = Blocks::cobblestone;
+	Gui::Init(Renderer::window);
+
+	g_items[0] = Blocks::cobblestone;
+	g_items[1] = Blocks::dirt;
+	g_items[2] = Blocks::grass;
+	g_items[3] = Blocks::wood;
+	g_items[4] = Blocks::slab;
+	g_items[5] = Blocks::door;
+	g_items[6] = Blocks::powerSensor;
+	g_items[7] = Blocks::redstoneWallTorch;
+	g_items[8] = Blocks::redstoneWire;
 
 	world = new World();
 
@@ -108,10 +119,6 @@ int main()
 
 void processInput(GLFWwindow* window, float deltaTime)
 {
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-		Gui::cursorCaptured = false;
-	}
 	g_camera.sprint = (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS);
 
 	static bool prevC;
@@ -151,8 +158,8 @@ void processInput(GLFWwindow* window, float deltaTime)
 				}
 				else
 				{
-					auto useContext = BlockItemUseContext(world, rayTraceResult, *placedBlock, g_camera.facingDirection);
-					if (useContext.Place(*placedBlock))
+					auto useContext = BlockItemUseContext(world, rayTraceResult, *g_items[g_selectedItemIx], g_camera.facingDirection);
+					if (useContext.Place(*g_items[g_selectedItemIx]))
 						justEditedWorld = true;
 				}
 			}
@@ -172,16 +179,15 @@ void processInput(GLFWwindow* window, float deltaTime)
 	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
 		g_camera.ProcessMovement(CameraMovement::down, deltaTime);
 
-	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) placedBlock = Blocks::cobblestone;
-	if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) placedBlock = Blocks::stone;
-	if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) placedBlock = Blocks::dirt;
-	if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS) placedBlock = Blocks::grass;
-	if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS) placedBlock = Blocks::wood;
-	if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS) placedBlock = Blocks::slab;
-	if (glfwGetKey(window, GLFW_KEY_7) == GLFW_PRESS) placedBlock = Blocks::door;
-	if (glfwGetKey(window, GLFW_KEY_8) == GLFW_PRESS) placedBlock = Blocks::powerSensor;
-	if (glfwGetKey(window, GLFW_KEY_9) == GLFW_PRESS) placedBlock = Blocks::redstoneWallTorch;
-	if (glfwGetKey(window, GLFW_KEY_0) == GLFW_PRESS) placedBlock = Blocks::redstoneWire;
+	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) g_selectedItemIx = 0;
+	if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) g_selectedItemIx = 1;
+	if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) g_selectedItemIx = 2;
+	if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS) g_selectedItemIx = 3;
+	if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS) g_selectedItemIx = 4;
+	if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS) g_selectedItemIx = 5;
+	if (glfwGetKey(window, GLFW_KEY_7) == GLFW_PRESS) g_selectedItemIx = 6;
+	if (glfwGetKey(window, GLFW_KEY_8) == GLFW_PRESS) g_selectedItemIx = 7;
+	if (glfwGetKey(window, GLFW_KEY_9) == GLFW_PRESS) g_selectedItemIx = 8;
 }
 
 

@@ -1591,9 +1591,4 @@
     <None Include="res\basic.fs" />
     <None Include="res\basic.vs" />
   </ItemGroup>
-  <ItemGroup>
-    <Image Include="..\..\..\..\Dump\minecraftComp\textures\block\grass_block_side_overlay.png">
-      <Filter>Resource Files</Filter>
-    </Image>
-  </ItemGroup>
 </Project>

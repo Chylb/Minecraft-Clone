@@ -702,9 +702,6 @@
     <None Include="src\vendor\glm\gtx\vector_query.inl" />
     <None Include="src\vendor\glm\gtx\wrap.inl" />
   </ItemGroup>
-  <ItemGroup>
-    <Image Include="..\..\..\..\Dump\minecraftComp\textures\block\grass_block_side_overlay.png" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

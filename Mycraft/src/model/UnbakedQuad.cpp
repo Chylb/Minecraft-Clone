@@ -142,7 +142,7 @@ UnbakedQuad UnbakedQuad::SetDirection(Direction dir)
 
 BakedQuad UnbakedQuad::Bake()
 {
-	int texture_ix = Resources::GetTextureIx(m_texture);
+	int texture_ix = Resources::GetBlockTextureIx(m_texture);
 
 	std::vector<float> buf;
 	buf.reserve(54);

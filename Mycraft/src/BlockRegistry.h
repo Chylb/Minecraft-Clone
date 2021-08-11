@@ -11,6 +11,7 @@ public:
 	static Block* Register(Block* block);
 	static BlockState* GetBlockState(uint16_t id);
 	static int GetBlockStateCount();
+	static const std::vector<Block*>& GetBlocks();
 
 private:
 	inline static std::vector<Block*> s_blocks;

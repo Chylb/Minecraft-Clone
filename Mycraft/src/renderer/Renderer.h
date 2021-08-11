@@ -17,7 +17,7 @@ public:
 	static void EndRendering();
 
 	static inline GLFWwindow* window;
-	static const unsigned int SCR_WIDTH = 800, SCR_HEIGHT = 600;
+	static inline int window_width = 800, window_height = 600;
 
 private:
 	inline static double s_mouseLastX, s_mouseLastY;
