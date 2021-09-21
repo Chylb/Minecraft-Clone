@@ -45,7 +45,7 @@ void Gui::Terminate()
 	ImGui::DestroyContext();
 }
 
-void Gui::RenderWindow(GLFWwindow* window, glm::vec3 camPos, int occupiedChunks, int freeChunks, int jobs, int polygons, const std::array<int, 4>& chunksLoadingStates)
+void Gui::RenderWindow(GLFWwindow* window, glm::vec3 camPos, int occupiedChunks, int freeChunks, int jobs, int polygons, int renderedChunks, const std::array<int, 4>& chunksLoadingStates)
 {
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
@@ -66,7 +66,7 @@ void Gui::RenderWindow(GLFWwindow* window, glm::vec3 camPos, int occupiedChunks,
 	}
 
 	DrawCrosshair();
-	DrawInfo(camPos, occupiedChunks, freeChunks, jobs, polygons, chunksLoadingStates);
+	DrawInfo(camPos, occupiedChunks, freeChunks, jobs, polygons, renderedChunks, chunksLoadingStates);
 
 	if (s_showInventory)
 		DrawInventory();
@@ -107,7 +107,7 @@ void Gui::DrawCrosshair()
 }
 
 
-void Gui::DrawInfo(glm::vec3 camPos, int occupiedChunks, int freeChunks, int jobs, int polygons, const std::array<int, 4>& chunksLoadingStates)
+void Gui::DrawInfo(glm::vec3 camPos, int occupiedChunks, int freeChunks, int jobs, int polygons, int renderedChunks, const std::array<int, 4>& chunksLoadingStates)
 {
 	ImGui::SetNextWindowPos({ 0,0 });
 	ImGui::SetNextWindowSize({ 210,-1 });
@@ -128,6 +128,7 @@ void Gui::DrawInfo(glm::vec3 camPos, int occupiedChunks, int freeChunks, int job
 	ImGui::Text("XYZ: %.1f / %.1f / %.1f", camPos.x, camPos.y, camPos.z);
 	ImGui::Text("Chunks used %d / free %d", occupiedChunks, freeChunks);
 	ImGui::Text("Polygons %d Jobs %d ", polygons, jobs);
+	ImGui::Text("Rendered chunks %d", renderedChunks);
 
 	ImGui::SliderFloat("Gui size", &s_scale, 1, 4);
 

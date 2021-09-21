@@ -236,7 +236,7 @@ void World::Update()
 			chunksToUnload.push_back(chunk);
 	}
 	for (Chunk* chunk : chunksToUnload) {
-		g_polygons -= chunk->m_polygonCount;
+		g_polygons -= chunk->m_vertexCount;
 		chunk->loadingState = Chunk::LoadingState::loading_blocks;
 		UnloadChunk(*chunk);
 	}
@@ -284,21 +284,15 @@ void World::UpdateMeshes()
 {
 	for (Chunk* chunk : m_occupiedChunks) {
 		if (chunk->dirtyMesh && chunk->CanGenerateMesh()) {
-			g_polygons -= chunk->m_polygonCount;
+			g_polygons -= chunk->m_vertexCount / 3;
 			chunk->ClearMesh();
 			chunk->GenerateMesh();
 			chunk->InitializeBuffers();
 			chunk->dirtyMesh = false;
 			chunk->loadingState = Chunk::LoadingState::completed;
-			g_polygons += chunk->m_polygonCount;
+			g_polygons += chunk->m_vertexCount / 3;
 		}
 	}
-}
-
-void World::Render()
-{
-	for (const Chunk& chunk : m_chunks)
-		chunk.Render();
 }
 
 int World::FreeChunkCount()
@@ -309,6 +303,11 @@ int World::FreeChunkCount()
 int World::OccupiedChunkCount()
 {
 	return m_occupiedChunks.size();
+}
+
+const std::vector<Chunk>& World::GetChunks() const
+{
+	return m_chunks;
 }
 
 BlockRayTraceResult World::Clip(glm::vec3 from, glm::vec3 to)
@@ -374,7 +373,7 @@ void World::DEV_UnloadWorld()
 
 	for (Chunk* chunk : occupiedChunks) {
 		if (chunk->CanBeUnloaded()) {
-			g_polygons -= chunk->m_polygonCount;
+			g_polygons -= chunk->m_vertexCount;
 			UnloadChunk(*chunk);
 		}
 	}

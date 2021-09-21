@@ -18,7 +18,7 @@ class Gui
 public:
 	static void Init(GLFWwindow* window);
 	static void Terminate();
-	static void RenderWindow(GLFWwindow* window, glm::vec3 camPos, int occupiedChunks, int freeChunks, int jobs, int polygons, const std::array<int, 4>& chunksLoadingStates);
+	static void RenderWindow(GLFWwindow* window, glm::vec3 camPos, int occupiedChunks, int freeChunks, int jobs, int polygons, int renderedChunks, const std::array<int, 4>& chunksLoadingStates);
 	static bool IsCursorCaptured();
 
 private:
@@ -32,7 +32,7 @@ private:
 	inline static constexpr float c_itemSize = 16 * 0.75f;
 
 	static void DrawCrosshair();
-	static void DrawInfo(glm::vec3 camPos, int occupiedChunks, int freeChunks, int jobs, int polygons, const std::array<int, 4>& chunksLoadingStates);
+	static void DrawInfo(glm::vec3 camPos, int occupiedChunks, int freeChunks, int jobs, int polygons, int renderedChunks, const std::array<int, 4>& chunksLoadingStates);
 	static void DrawInventory();
 	static void DrawHotbar();
 };

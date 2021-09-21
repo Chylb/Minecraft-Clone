@@ -11,6 +11,7 @@
 #include <thread>
 #include <queue>
 #include <array>
+#include <numbers>
 
 #include "Gui.h"
 #include "Camera.h"
@@ -30,19 +31,21 @@
 #include "renderer/color/BlockColors.h"
 
 #include "utils/Timer.h"
-
-#include <time.h>
+#include "utils/MathUtils.h"
 
 //Camera g_camera(glm::vec3(0, 2000, 40), 0, -90);
 Camera g_camera(glm::vec3(0, 100, 40));
-int g_renderDistance = 8;
+//int g_renderDistance = 8;
+int g_renderDistance = 24;
 World* world;
 thread_local std::vector<float> g_mesh;
 int max_mesh_size = 0;
 
 void processInput(GLFWwindow* window, float deltaTime);
+void renderWorld(World* world, const glm::mat4& frustum);
 
 unsigned int g_polygons = 0;
+unsigned int g_renderedChunks = 0;
 
 const Block* g_items[9];
 size_t g_selectedItemIx = 0;
@@ -98,7 +101,9 @@ int main()
 		world->UpdateMeshes();
 		timer.finish();
 
-		world->Render();
+		glm::mat4 projectionView = projection * view;
+		renderWorld(world, projectionView);
+
 		/*if (g_mesh.size() > max_mesh_size)
 		{
 			max_mesh_size = g_mesh.size();
@@ -106,7 +111,7 @@ int main()
 		}*/
 
 		std::array<int, 4> chunksLoadingStates = world->DEV_ChunksLoadingStates();
-		Gui::RenderWindow(Renderer::window, g_camera.position, world->OccupiedChunkCount(), world->FreeChunkCount(), 0, g_polygons, chunksLoadingStates);
+		Gui::RenderWindow(Renderer::window, g_camera.position, world->OccupiedChunkCount(), world->FreeChunkCount(), 0, g_polygons, g_renderedChunks, chunksLoadingStates);
 
 		Renderer::EndRendering();
 	}
@@ -190,4 +195,43 @@ void processInput(GLFWwindow* window, float deltaTime)
 	if (glfwGetKey(window, GLFW_KEY_9) == GLFW_PRESS) g_selectedItemIx = 8;
 }
 
+void renderWorld(World* world, const glm::mat4& frustum)
+{
+	auto planes = MathUtils::extractFrustumPlanes(frustum);
+	constexpr float chunkRadius = std::numbers::sqrt3_v<float> / 2.0f * Chunk::CHUNK_WIDTH;
+	constexpr float minChunkY = chunkRadius;
+	constexpr float maxChunkY = Chunk::CHUNK_HEIGHT - chunkRadius;
+
+	g_renderedChunks = 0;
+	for (const Chunk& chunk : world->GetChunks()) {
+		if (chunk.loadingState < Chunk::LoadingState::completed)
+			continue;
+
+		const float chunkX = chunk.GetPos().x * Chunk::CHUNK_WIDTH + Chunk::CHUNK_WIDTH / 2;
+		const float chunkZ = chunk.GetPos().z * Chunk::CHUNK_WIDTH + Chunk::CHUNK_WIDTH / 2;
+
+		for (int i = 0; i < 4; i++)
+		{
+			glm::vec4& plane = planes[i];
+			float chunkY = -(plane.x * chunkX + plane.z * chunkZ + plane.w) / plane.y; //finds such y, that lies on a frustum plane
+			chunkY = MathUtils::clamp(chunkY, minChunkY, maxChunkY);
+
+			bool shouldDraw = true;
+			for (auto& checkedPlane : planes) {
+				float dis = checkedPlane.x * chunkX + checkedPlane.y * chunkY + checkedPlane.z * chunkZ + checkedPlane.w;
+				if (dis < -chunkRadius) {
+					shouldDraw = false;
+					break;
+				}
+			}
+
+			if (shouldDraw)
+			{
+				g_renderedChunks++;
+				chunk.Render();
+				break;
+			}
+		}
+	}
+}
 

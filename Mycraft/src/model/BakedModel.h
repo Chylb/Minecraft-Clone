@@ -12,6 +12,7 @@ struct BakedQuad {
 	int tintIx;
 
 	static constexpr size_t vertex_size = 9; //3 pos, 2 uv, 1 tex, 3 color
+	static constexpr size_t polygon_size = 3 * vertex_size;
 	static constexpr size_t quad_size = 6 * vertex_size;
 };
 

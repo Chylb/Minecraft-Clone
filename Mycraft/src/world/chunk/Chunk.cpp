@@ -105,7 +105,7 @@ void Chunk::GenerateMesh()
 
 void Chunk::InitializeBuffers()
 {
-	m_polygonCount = g_mesh.size() / 6;
+	m_vertexCount = g_mesh.size() / BakedQuad::vertex_size;
 
 	glGenVertexArrays(1, &m_VAO);
 	glGenBuffers(1, &m_VBO);
@@ -138,7 +138,7 @@ void Chunk::ClearMesh()
 	glDeleteBuffers(1, &m_VBO);
 	m_VAO = -1;
 	m_VBO = -1;
-	m_polygonCount = 0;
+	m_vertexCount = 0;
 
 	loadingState = LoadingState::generating_mesh;
 	dirtyMesh = false;
@@ -150,7 +150,7 @@ void Chunk::Clear()
 	glDeleteBuffers(1, &m_VBO);
 	m_VAO = -1;
 	m_VBO = -1;
-	m_polygonCount = 0;
+	m_vertexCount = 0;
 	dirtyMesh = false;
 
 	FOREACH_HORIZONTAL_DIRECTION(auto direction, {
@@ -164,7 +164,7 @@ void Chunk::Render() const
 {
 	if (loadingState == LoadingState::completed) {
 		glBindVertexArray(m_VAO);
-		glDrawArrays(GL_TRIANGLES, 0, m_polygonCount);
+		glDrawArrays(GL_TRIANGLES, 0, m_vertexCount);
 	}
 }
 

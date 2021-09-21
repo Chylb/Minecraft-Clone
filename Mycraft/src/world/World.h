@@ -41,10 +41,10 @@ public:
 
 	void Update();
 	void UpdateMeshes();
-	void Render();
 
 	int FreeChunkCount();
 	int OccupiedChunkCount();
+	const std::vector<Chunk>& GetChunks() const;
 
 	BlockRayTraceResult Clip(glm::vec3 from, glm::vec3 to);
 	BlockRayTraceResult TraverseBlocks(glm::vec3 from, glm::vec3 to, std::function<BlockRayTraceResult(glm::vec3 from, glm::vec3 rayDir, BlockPos pos)> hitFunction);
@@ -63,6 +63,4 @@ private:
 	WorldGenerator m_worldGenerator;
 
 	std::vector<ChunkPos> m_nearbyChunksPositions;
-
-
 };

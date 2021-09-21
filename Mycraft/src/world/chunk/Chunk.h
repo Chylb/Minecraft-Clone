@@ -47,7 +47,7 @@ public:
 
 	LoadingState loadingState;
 	Chunk* adjacentChunks[4];
-	unsigned int m_polygonCount;
+	unsigned int m_vertexCount;
 
 	bool dirtyMesh;
 	int highestBlock = 0;
