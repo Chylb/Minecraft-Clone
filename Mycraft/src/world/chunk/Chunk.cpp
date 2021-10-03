@@ -4,7 +4,7 @@
 #include "../../model/BlockModelRegistry.h"
 #include "../../utils/Direction.h"
 
-extern thread_local std::vector<float> g_mesh;
+extern thread_local std::vector<float> g_mesh[RenderType::count];
 
 Chunk::Chunk()
 {
@@ -13,8 +13,12 @@ Chunk::Chunk()
 
 Chunk::~Chunk()
 {
-	glDeleteVertexArrays(1, &m_VAO);
-	glDeleteBuffers(1, &m_VBO);
+	for (auto vao : m_VAO) {
+		glDeleteVertexArrays(1, &vao);
+	}
+	for (auto vbo : m_VBO) {
+		glDeleteBuffers(1, &vbo);
+	}
 }
 
 const BlockState* Chunk::RawGetBlockState(BlockPos pos) const
@@ -86,7 +90,8 @@ bool Chunk::CanGenerateMesh()
 
 void Chunk::GenerateMesh()
 {
-	g_mesh.clear();
+	g_mesh[RenderType::solid].clear();
+	g_mesh[RenderType::translucent].clear();
 
 	int h = std::max({ highestBlock, adjacentChunks[0]->highestBlock, adjacentChunks[1]->highestBlock, adjacentChunks[2]->highestBlock, adjacentChunks[3]->highestBlock }) + 1;
 
@@ -105,26 +110,32 @@ void Chunk::GenerateMesh()
 
 void Chunk::InitializeBuffers()
 {
-	m_vertexCount = g_mesh.size() / BakedQuad::vertex_size;
+	for (auto renderType = 0; renderType < RenderType::count; renderType++) {
+		auto& mesh = g_mesh[renderType];
+		if (mesh.size() == 0)
+			continue;
 
-	glGenVertexArrays(1, &m_VAO);
-	glGenBuffers(1, &m_VBO);
-	glBindVertexArray(m_VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+		m_vertexCount[renderType] = mesh.size() / BakedQuad::vertex_size;
 
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * g_mesh.size(), g_mesh.data(), GL_STATIC_DRAW);
+		glGenVertexArrays(1, &m_VAO[renderType]);
+		glGenBuffers(1, &m_VBO[renderType]);
+		glBindVertexArray(m_VAO[renderType]);
+		glBindBuffer(GL_ARRAY_BUFFER, m_VBO[renderType]);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * mesh.size(), mesh.data(), GL_STATIC_DRAW);
 
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(5 * sizeof(float)));
-	glEnableVertexAttribArray(2);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(3 * sizeof(float)));
+		glEnableVertexAttribArray(1);
 
-	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(6 * sizeof(float)));
-	glEnableVertexAttribArray(3);
+		glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(5 * sizeof(float)));
+		glEnableVertexAttribArray(2);
+
+		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(6 * sizeof(float)));
+		glEnableVertexAttribArray(3);
+	}
 }
 
 bool Chunk::CanBeUnloaded()
@@ -134,11 +145,16 @@ bool Chunk::CanBeUnloaded()
 
 void Chunk::ClearMesh()
 {
-	glDeleteVertexArrays(1, &m_VAO);
-	glDeleteBuffers(1, &m_VBO);
-	m_VAO = -1;
-	m_VBO = -1;
-	m_vertexCount = 0;
+	for (auto renderType = 0; renderType < RenderType::count; renderType++) {
+		if (m_VAO[renderType] == -1)
+			continue;
+
+		glDeleteVertexArrays(1, &m_VAO[renderType]);
+		glDeleteBuffers(1, &m_VBO[renderType]);
+		m_VAO[renderType] = -1;
+		m_VBO[renderType] = -1;
+		m_vertexCount[renderType] = 0;
+	}
 
 	loadingState = LoadingState::generating_mesh;
 	dirtyMesh = false;
@@ -146,12 +162,7 @@ void Chunk::ClearMesh()
 
 void Chunk::Clear()
 {
-	glDeleteVertexArrays(1, &m_VAO);
-	glDeleteBuffers(1, &m_VBO);
-	m_VAO = -1;
-	m_VBO = -1;
-	m_vertexCount = 0;
-	dirtyMesh = false;
+	ClearMesh();
 
 	FOREACH_HORIZONTAL_DIRECTION(auto direction, {
 		adjacentChunks[direction] = nullptr;
@@ -160,12 +171,25 @@ void Chunk::Clear()
 	loadingState = LoadingState::loading_blocks;
 }
 
-void Chunk::Render() const
+void Chunk::Render(RenderType renderType) const
 {
 	if (loadingState == LoadingState::completed) {
-		glBindVertexArray(m_VAO);
-		glDrawArrays(GL_TRIANGLES, 0, m_vertexCount);
+		if (m_VAO[renderType] == -1)
+			return;
+
+		glBindVertexArray(m_VAO[renderType]);
+		glDrawArrays(GL_TRIANGLES, 0, m_vertexCount[renderType]);
 	}
+}
+
+unsigned int Chunk::VertexCount() const
+{
+	unsigned int sum = 0;
+	for(int renderType = 0; renderType < RenderType::count; renderType++)
+	{
+		sum += m_vertexCount[renderType];
+	}
+	return sum;
 }
 
 void Chunk::Tick()
@@ -189,7 +213,7 @@ inline void Chunk::GenerateColumnMesh(int x, int z, int h)
 
 		[[unlikely]]
 		if (state->GetModel().HasFace(Direction::none))
-			state->GetModel().WriteFace(g_mesh, *state, pos, Direction::none);
+			state->GetModel().WriteFace(g_mesh[state->GetRenderType()], *state, pos, Direction::none);
 
 		if (state->OccludesAllFaces())
 			continue;
@@ -201,8 +225,11 @@ inline void Chunk::GenerateColumnMesh(int x, int z, int h)
 
 				const BlockState* neighbour = RawGetBlockState(pos.Adjacent<direction>());
 
+				if (state->GetRenderType() == translucent && state == neighbour)
+					continue;
+
 				if (neighbour->GetModel().HasFace(direction.GetOpposite()))
-					neighbour->GetModel().WriteFace(g_mesh, *neighbour, pos.Adjacent<direction>(), direction.GetOpposite());
+					neighbour->GetModel().WriteFace(g_mesh[neighbour->GetRenderType()], *neighbour, pos.Adjacent<direction>(), direction.GetOpposite());
 			})
 	}
 }
@@ -215,7 +242,7 @@ inline void Chunk::GenerateBorderColumnMesh(int x, int z, int h)
 
 		[[unlikely]]
 		if (state->GetModel().HasFace(Direction::none))
-			state->GetModel().WriteFace(g_mesh, *state, pos, Direction::none);
+			state->GetModel().WriteFace(g_mesh[state->GetRenderType()], *state, pos, Direction::none);
 
 		if (state->OccludesAllFaces())
 			continue;
@@ -231,8 +258,11 @@ inline void Chunk::GenerateBorderColumnMesh(int x, int z, int h)
 				else
 					neighbour = RawGetBlockState(pos.Adjacent<direction>());
 
+				if (state->GetRenderType() == translucent && state == neighbour)
+					continue;
+
 				if (neighbour->GetModel().HasFace(direction.GetOpposite()))
-					neighbour->GetModel().WriteFace(g_mesh, *neighbour, pos.Adjacent<direction>(), direction.GetOpposite());
+					neighbour->GetModel().WriteFace(g_mesh[neighbour->GetRenderType()], *neighbour, pos.Adjacent<direction>(), direction.GetOpposite());
 			})
 	}
 }

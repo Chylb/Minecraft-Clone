@@ -28,9 +28,16 @@ void WorldGenerator::GenerateChunk(Chunk& chunk) const
 
 			chunk.SetBlock({ x,h,z }, Blocks::grass->DefaultBlockState());
 
-			for (int y = h + 1; y < Chunk::CHUNK_HEIGHT; y++) {
+			for (int y = h + 1; y < 90; y++) {
+				chunk.SetBlock({ x,y,z }, Blocks::water->DefaultBlockState());
+			}
+			for (int y = std::max(90, h + 1); y < Chunk::CHUNK_HEIGHT; y++) {
 				chunk.SetBlock({ x,y,z }, Blocks::air->DefaultBlockState());
 			}
+
+			/*for (int y = h + 1; y < Chunk::CHUNK_HEIGHT; y++) {
+				chunk.SetBlock({ x,y,z }, Blocks::air->DefaultBlockState());
+			}*/
 		}
 
 	//addAllBlockStates(chunk);

@@ -16,6 +16,7 @@ void BlockModels::Initialize()
 	Register(Blocks::flower, Cross().SetTexture("cross", "poppy"));
 	Register(Blocks::debugBlock, CubeAll().Scale({ 0.5,0.5,0.5 }).Translate({ 4,4,4 }).SetTexture("all", "debug"));
 	Register(Blocks::grass, Grass().SetTexture("top", "grass_block_top").SetTexture("side", "grass_block_side").SetTexture("bottom", "dirt").SetTexture("overlay", "grass_block_side_overlay"));
+	Register(Blocks::water, CubeAll().SetTexture("all", "water"));
 
 	RegisterTorch(Blocks::torch,
 		[](const BlockState& state) {return "torch"; },

@@ -74,6 +74,11 @@ bool Block::OccludesFace(Direction dir, const BlockState& state) const
 	return true;
 }
 
+RenderType Block::GetRenderType(const BlockState& state) const
+{
+	return RenderType::solid;
+}
+
 bool Block::CanSurvive(const BlockState& state, const World& world, BlockPos pos) const
 {
 	return true;

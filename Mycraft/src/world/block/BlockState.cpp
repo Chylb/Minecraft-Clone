@@ -122,6 +122,11 @@ bool BlockState::OccludesAllFaces() const
 	return m_occludesAllFaces;
 }
 
+RenderType BlockState::GetRenderType() const
+{
+	return m_renderType;
+}
+
 const BakedModel& BlockState::GetModel() const
 {
 	return *m_model;
@@ -139,4 +144,6 @@ void BlockState::FillCacheFields()
 			occludesAll = false;
 	}
 	m_occludesAllFaces = occludesAll;
+
+	m_renderType = m_owner->GetRenderType(*this);
 }

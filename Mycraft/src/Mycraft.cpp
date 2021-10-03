@@ -35,10 +35,10 @@
 
 //Camera g_camera(glm::vec3(0, 2000, 40), 0, -90);
 Camera g_camera(glm::vec3(0, 100, 40));
-//int g_renderDistance = 8;
-int g_renderDistance = 24;
+int g_renderDistance = 8;
+//int g_renderDistance = 24;
 World* world;
-thread_local std::vector<float> g_mesh;
+thread_local std::vector<float> g_mesh[RenderType::count];
 int max_mesh_size = 0;
 
 void processInput(GLFWwindow* window, float deltaTime);
@@ -56,7 +56,9 @@ int main()
 	if (Renderer::Init() != 0)
 		return -1;
 
-	g_mesh.reserve(193860);
+	for (auto& mesh : g_mesh) {
+		mesh.reserve(193860);
+	}
 
 	Resources::Initialize();
 	Blocks::Initialize();
@@ -203,6 +205,9 @@ void renderWorld(World* world, const glm::mat4& frustum)
 	constexpr float maxChunkY = Chunk::CHUNK_HEIGHT - chunkRadius;
 
 	g_renderedChunks = 0;
+	static std::vector<const Chunk*> chunksToRender;
+	chunksToRender.clear();
+
 	for (const Chunk& chunk : world->GetChunks()) {
 		if (chunk.loadingState < Chunk::LoadingState::completed)
 			continue;
@@ -227,11 +232,19 @@ void renderWorld(World* world, const glm::mat4& frustum)
 
 			if (shouldDraw)
 			{
-				g_renderedChunks++;
-				chunk.Render();
+				chunksToRender.push_back(&chunk);
 				break;
 			}
 		}
+	}
+	g_renderedChunks = chunksToRender.size();
+	for (auto chunk : chunksToRender)
+	{
+		chunk->Render(RenderType::solid);
+	}
+	for (auto chunk : chunksToRender)
+	{
+		chunk->Render(RenderType::translucent);
 	}
 }
 

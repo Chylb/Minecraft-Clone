@@ -8,6 +8,7 @@
 #include "../block/Blocks.h"
 #include "../block/BlockPos.h"
 #include "../chunk/ChunkPos.h"
+#include "../../renderer/RenderType.h"
 class World;
 
 class Chunk
@@ -41,13 +42,14 @@ public:
 	bool CanBeUnloaded();
 	void ClearMesh();
 	void Clear();
-	void Render() const;
+	void Render(RenderType renderType) const;
+	unsigned int VertexCount() const;
 
 	void Tick();
 
 	LoadingState loadingState;
 	Chunk* adjacentChunks[4];
-	unsigned int m_vertexCount;
+	unsigned int m_vertexCount[RenderType::count];
 
 	bool dirtyMesh;
 	int highestBlock = 0;
@@ -65,7 +67,8 @@ private:
 
 	uint16_t m_data[CHUNK_WIDTH][CHUNK_WIDTH][CHUNK_HEIGHT];
 
-	GLuint m_VBO, m_VAO;
+	GLuint m_VBO[RenderType::count];
+	GLuint m_VAO[RenderType::count];
 };
 
 

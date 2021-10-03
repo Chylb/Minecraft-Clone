@@ -200,6 +200,7 @@
     <ClCompile Include="src\world\block\Torch.cpp" />
     <ClCompile Include="src\world\block\TrapDoor.cpp" />
     <ClCompile Include="src\world\block\WallTorch.cpp" />
+    <ClCompile Include="src\world\block\Water.cpp" />
     <ClCompile Include="src\world\chunk\Chunk.cpp" />
     <ClCompile Include="src\Gui.cpp" />
     <ClCompile Include="src\Mycraft.cpp" />
@@ -221,6 +222,7 @@
   <ItemGroup>
     <ClInclude Include="src\item\BlockItemUseContext.h" />
     <ClInclude Include="src\renderer\color\BlockColors.h" />
+    <ClInclude Include="src\renderer\RenderType.h" />
     <ClInclude Include="src\world\block\DebugBlock.h" />
     <ClInclude Include="src\world\block\Door.h" />
     <ClInclude Include="src\world\block\Flower.h" />
@@ -257,6 +259,7 @@
     <ClInclude Include="src\world\block\Torch.h" />
     <ClInclude Include="src\world\block\TrapDoor.h" />
     <ClInclude Include="src\world\block\WallTorch.h" />
+    <ClInclude Include="src\world\block\Water.h" />
     <ClInclude Include="src\world\chunk\Chunk.h" />
     <ClInclude Include="src\world\chunk\ChunkPos.h" />
     <ClInclude Include="src\Gui.h" />
@@ -701,6 +704,9 @@
     <None Include="src\vendor\glm\gtx\vector_angle.inl" />
     <None Include="src\vendor\glm\gtx\vector_query.inl" />
     <None Include="src\vendor\glm\gtx\wrap.inl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\textures\block\water.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

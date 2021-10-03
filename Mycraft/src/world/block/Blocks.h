@@ -28,4 +28,5 @@ public:
 	inline static Block* redstoneTorch;
 	inline static Block* redstoneWallTorch;
 	inline static Block* powerSensor;
+	inline static Block* water;
 };

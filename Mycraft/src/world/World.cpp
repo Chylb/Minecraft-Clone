@@ -224,9 +224,9 @@ void World::Update()
 {
 	std::vector<Chunk*> chunksToUnload;
 	for (Chunk* chunk : m_occupiedChunks) {
-		if (chunk->loadingState == Chunk::LoadingState::completed) {
+		/*if (chunk->loadingState == Chunk::LoadingState::completed) {
 			chunk->Tick();
-		}
+		}*/
 
 		if (!chunk->CanBeUnloaded())
 			continue;
@@ -236,7 +236,7 @@ void World::Update()
 			chunksToUnload.push_back(chunk);
 	}
 	for (Chunk* chunk : chunksToUnload) {
-		g_polygons -= chunk->m_vertexCount;
+		g_polygons -= chunk->VertexCount() / 3;
 		chunk->loadingState = Chunk::LoadingState::loading_blocks;
 		UnloadChunk(*chunk);
 	}
@@ -284,13 +284,13 @@ void World::UpdateMeshes()
 {
 	for (Chunk* chunk : m_occupiedChunks) {
 		if (chunk->dirtyMesh && chunk->CanGenerateMesh()) {
-			g_polygons -= chunk->m_vertexCount / 3;
+			g_polygons -= chunk->VertexCount() / 3;
 			chunk->ClearMesh();
 			chunk->GenerateMesh();
 			chunk->InitializeBuffers();
 			chunk->dirtyMesh = false;
 			chunk->loadingState = Chunk::LoadingState::completed;
-			g_polygons += chunk->m_vertexCount / 3;
+			g_polygons += chunk->VertexCount() / 3;
 		}
 	}
 }
@@ -373,7 +373,7 @@ void World::DEV_UnloadWorld()
 
 	for (Chunk* chunk : occupiedChunks) {
 		if (chunk->CanBeUnloaded()) {
-			g_polygons -= chunk->m_vertexCount;
+			g_polygons -= chunk->VertexCount() / 3;
 			UnloadChunk(*chunk);
 		}
 	}

@@ -35,6 +35,7 @@ public:
 	virtual bool CanBeReplaced(const BlockState& state, const BlockItemUseContext& useContext) const;
 	virtual bool Use(const BlockState& state, World& world, BlockPos pos, BlockRayTraceResult hitResult) const;
 	virtual bool OccludesFace(Direction dir, const BlockState& state) const;
+	virtual RenderType GetRenderType(const BlockState& state) const;
 	virtual bool CanSurvive(const BlockState& state, const World& world, BlockPos pos) const;
 	virtual void SetPlacedBy(World& world, BlockPos pos, const BlockState& state) const;
 	virtual void UpdateIndirectNeighbourShapes(const BlockState& state, World& world, BlockPos pos, int flags) const;

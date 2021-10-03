@@ -14,6 +14,7 @@
 #include "DebugBlock.h"
 #include "PowerSensor.h"
 #include "RedstoneWallTorch.h"
+#include "Water.h"
 
 void Blocks::Initialize()
 {
@@ -36,6 +37,7 @@ void Blocks::Initialize()
 	redstoneTorch = BlockRegistry::Register(new RedstoneTorch());
 	redstoneWallTorch = BlockRegistry::Register(new RedstoneWallTorch());
 	powerSensor = BlockRegistry::Register(new PowerSensor());
+	water = BlockRegistry::Register(new Water());
 }
 
 BlockState* Blocks::GetBlockState(uint16_t id)

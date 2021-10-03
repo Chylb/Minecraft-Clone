@@ -1,8 +1,8 @@
 #pragma once
 
 #include "../../state/StateHolder.h"
-
 #include "../../utils/Direction.h"
+#include "../../renderer/RenderType.h"
 
 class BlockItemUseContext;
 struct BlockPos;
@@ -43,6 +43,7 @@ public:
 
 	bool OccludesFace(Direction dir) const;
 	bool OccludesAllFaces() const;
+	RenderType GetRenderType() const;
 
 	const BakedModel& GetModel() const;
 
@@ -51,6 +52,7 @@ private:
 
 	bool m_occludesFace[6];
 	bool m_occludesAllFaces;
+	RenderType m_renderType;
 	const BakedModel* m_model;
 
 	void FillCacheFields();
