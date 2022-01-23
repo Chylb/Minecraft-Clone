@@ -2,8 +2,6 @@
 
 #include <glm/gtx/euler_angles.hpp>
 
-#include "../Resources.h"
-
 UnbakedQuad::UnbakedQuad(glm::vec3 v1, glm::vec2 uv1, glm::vec3 v2, glm::vec2 uv2, glm::vec3 v3, glm::vec2 uv3, glm::vec3 v4, glm::vec2 uv4, std::string texture, Direction dir, int tint_ix)
 {
 	m_vertices[0] = glm::vec4(v1, 1.0);
@@ -142,30 +140,29 @@ UnbakedQuad UnbakedQuad::SetDirection(Direction dir)
 
 BakedQuad UnbakedQuad::Bake()
 {
-	int texture_ix = Resources::GetBlockTextureIx(m_texture);
-
 	std::vector<float> buf;
-	buf.reserve(54);
-	WriteVertex(buf, 0, texture_ix);
-	WriteVertex(buf, 1, texture_ix);
-	WriteVertex(buf, 2, texture_ix);
-	WriteVertex(buf, 2, texture_ix);
-	WriteVertex(buf, 3, texture_ix);
-	WriteVertex(buf, 0, texture_ix);
+	buf.reserve(BakedQuad::quad_size);
+
+	auto& sprite = Resources::GetBlockTextureAtlas().GetSprite(m_texture.c_str());
+	WriteVertex(buf, 0, sprite);
+	WriteVertex(buf, 1, sprite);
+	WriteVertex(buf, 2, sprite);
+	WriteVertex(buf, 2, sprite);
+	WriteVertex(buf, 3, sprite);
+	WriteVertex(buf, 0, sprite);
 
 	BakedQuad result{};
-	std::memcpy(result.data, buf.data(), sizeof(float) * 54);
+	std::memcpy(result.data, buf.data(), sizeof(float) * BakedQuad::quad_size);
 	result.tintIx = m_tint_ix;
 	return result;
 }
 
-void UnbakedQuad::WriteVertex(std::vector<float>& target, int vertex_ix, int texture_ix) {
+void UnbakedQuad::WriteVertex(std::vector<float>& target, int vertex_ix, const TextureAtlasSprite& sprite) {
 	target.push_back(m_vertices[vertex_ix].x / 16.0);
 	target.push_back(m_vertices[vertex_ix].y / 16.0);
 	target.push_back(m_vertices[vertex_ix].z / 16.0);
-	target.push_back(m_uvs[vertex_ix].x / 16.0);
-	target.push_back(m_uvs[vertex_ix].y / 16.0);
-	target.push_back(texture_ix);
+	target.push_back(sprite.uv0.x + (sprite.uv1.x - sprite.uv0.x) * m_uvs[vertex_ix].x / 16.0);
+	target.push_back(sprite.uv0.y + (sprite.uv1.y - sprite.uv0.y) * m_uvs[vertex_ix].y / 16.0);
 	target.push_back(1.0f);
 	target.push_back(1.0f);
 	target.push_back(1.0f);
@@ -180,3 +177,6 @@ std::ostream& operator<<(std::ostream& os, const UnbakedQuad& quad)
 	os << "}";
 	return os;
 }
+
+
+

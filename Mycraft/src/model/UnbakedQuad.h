@@ -3,6 +3,7 @@
 
 #include "BakedModel.h"
 #include "../utils/Direction.h"
+#include "../Resources.h"
 
 struct UnbakedQuad {
 	UnbakedQuad(glm::vec3 v1, glm::vec2 uv1, glm::vec3 v2, glm::vec2 uv2, glm::vec3 v3, glm::vec2 uv3, glm::vec3 v4, glm::vec2 uv4,
@@ -27,7 +28,7 @@ private:
 	glm::vec2 m_uvs[4];
 	int m_tint_ix;
 
-	void WriteVertex(std::vector<float>& target, int vertex_ix, int texture_ix);
+	void WriteVertex(std::vector<float>& target, int vertex_ix, const TextureAtlasSprite& sprite);
 
 	friend class UnbakedModel;
 	friend std::ostream& operator<<(std::ostream& os, const UnbakedQuad& quad);

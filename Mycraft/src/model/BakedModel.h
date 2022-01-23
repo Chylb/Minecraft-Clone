@@ -8,12 +8,12 @@
 #include "../world/block/BlockState.h"
 
 struct BakedQuad {
-	float data[54];
-	int tintIx;
-
-	static constexpr size_t vertex_size = 9; //3 pos, 2 uv, 1 tex, 3 color
+	static constexpr size_t vertex_size = 8; //3 pos, 2 uv, 3 color
 	static constexpr size_t polygon_size = 3 * vertex_size;
 	static constexpr size_t quad_size = 6 * vertex_size;
+
+	float data[quad_size];
+	int tintIx;
 };
 
 class BakedModel {

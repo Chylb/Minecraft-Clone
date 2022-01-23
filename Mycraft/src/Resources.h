@@ -6,18 +6,18 @@
 #include <filesystem>
 #include <unordered_map>
 
+#include "renderer/TextureAtlas.h"
+
 class Resources
 {
 public:
 	static void Initialize();
-	static GLuint GetBlockTextureIx(const std::string& name);
+	static const TextureAtlas& GetBlockTextureAtlas();
 	static GLuint GetTexture(const std::string& name);
 
 private:
-	inline static GLuint s_blockArrayTexture;
-	inline static std::unordered_map<std::string, GLuint> s_blockTextureMap;
+	inline static TextureAtlas s_blockTextureAtlas;
 	inline static std::unordered_map<std::string, GLuint> s_textureMap;
 
-	static void LoadBlockTextures();
 	static void LoadTextures();
 };

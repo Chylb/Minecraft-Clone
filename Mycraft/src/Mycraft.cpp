@@ -98,6 +98,9 @@ int main()
 		glm::mat4 view = g_camera.GetViewMatrix();
 		basicShader.setMat4("view", view);
 
+		glActiveTexture(GL_TEXTURE0);
+		Resources::GetBlockTextureAtlas().Bind();
+
 		timer.begin();
 		world->Update();
 		world->UpdateMeshes();

@@ -16,14 +16,15 @@ void BakedModel::WriteFace(std::vector<float>& target, const BlockState& state, 
 		if (face.tintIx != -1)
 		{
 			auto color = m_colorFunc(state, pos, face.tintIx);
+			constexpr auto color_offset = 5;
 
-			for (int i = 6; i < BakedQuad::quad_size; i += BakedQuad::vertex_size) {
+			for (int i = color_offset; i < BakedQuad::quad_size; i += BakedQuad::vertex_size) {
 				face.data[i] = color.x;
 			}
-			for (int i = 7; i < BakedQuad::quad_size; i += BakedQuad::vertex_size) {
+			for (int i = color_offset + 1; i < BakedQuad::quad_size; i += BakedQuad::vertex_size) {
 				face.data[i] = color.y;
 			}
-			for (int i = 8; i < BakedQuad::quad_size; i += BakedQuad::vertex_size) {
+			for (int i = color_offset + 2; i < BakedQuad::quad_size; i += BakedQuad::vertex_size) {
 				face.data[i] = color.z;
 			}
 		}
