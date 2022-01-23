@@ -20,7 +20,7 @@ BlockRayTraceResult VoxelShape::Clip(glm::vec3 from, glm::vec3 rayDir, BlockPos 
 			direction = dir;
 		}
 	}
-	if (t_min == NAN || t_min > 1)
+	if (t_min > 1.0)
 		return { .hit = false };
 
 	glm::vec3 location = from + rayDir * t_min;

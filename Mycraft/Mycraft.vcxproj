@@ -161,7 +161,7 @@
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <SmallerTypeCheck>false</SmallerTypeCheck>
-      <FloatingPointModel>Precise</FloatingPointModel>
+      <FloatingPointModel>Fast</FloatingPointModel>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
@@ -180,7 +180,6 @@
     <ClCompile Include="src\item\BlockItemUseContext.cpp" />
     <ClCompile Include="src\renderer\color\BlockColors.cpp" />
     <ClCompile Include="src\renderer\MipmapGenerator.cpp" />
-    <ClCompile Include="src\renderer\Texture.cpp" />
     <ClCompile Include="src\renderer\TextureAtlas.cpp" />
     <ClCompile Include="src\utils\Image.cpp" />
     <ClCompile Include="src\utils\MathUtils.cpp" />
@@ -235,7 +234,6 @@
     <ClInclude Include="src\renderer\color\BlockColors.h" />
     <ClInclude Include="src\renderer\MipmapGenerator.h" />
     <ClInclude Include="src\renderer\RenderType.h" />
-    <ClInclude Include="src\renderer\Texture.h" />
     <ClInclude Include="src\renderer\TextureAtlas.h" />
     <ClInclude Include="src\utils\Image.h" />
     <ClInclude Include="src\world\block\DebugBlock.h" />
