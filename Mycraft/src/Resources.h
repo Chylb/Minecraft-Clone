@@ -12,7 +12,7 @@ class Resources
 {
 public:
 	static void Initialize();
-	static const TextureAtlas& GetBlockTextureAtlas();
+	static TextureAtlas& GetBlockTextureAtlas();
 	static GLuint GetTexture(const std::string& name);
 
 private:

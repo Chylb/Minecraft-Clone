@@ -6,5 +6,5 @@
 
 namespace MipmapGenerator
 {
-	std::vector<Image*> GenerateMipLevels(Image* image, int levels);
+	std::vector<Image> GenerateMipLevels(const Image& image, int levels);
 }

@@ -1,20 +1,23 @@
 #pragma once
 
 #include <string>
-#include <glm/ext/vector_uint4_sized.hpp>
+#include <glm/fwd.hpp>
+//#include <glm/ext/vector_uint4_sized.hpp>
 
 class Image
 {
 public:
 	Image(const std::string& path);
 	Image(int width, int height);
-	Image(Image* image);
+	Image(const Image& image);
 
 	int GetWidth() const;
 	int GetHeight() const;
-	unsigned char* GetData();
-	glm::u8vec4& GetTexel(int x, int y);
-	void Put(Image* image, int x, int y);
+	unsigned char* GetData() const;
+	glm::u8vec4 GetTexel(int x, int y) const;
+	void SetTexel(int x, int y, glm::u8vec4 texel);
+	void Put(const Image& srcImage, glm::uvec2 dstPos);
+	void Put(const Image& srcImage, glm::uvec2 srcPos, glm::uvec2 dstPos, glm::uvec2 selectionSize);
 	void FlipX();
 	void FlipY();
 	~Image();

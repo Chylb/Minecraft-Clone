@@ -16,7 +16,7 @@ void BlockModels::Initialize()
 	Register(Blocks::flower, Cross().SetTexture("cross", "poppy"));
 	Register(Blocks::debugBlock, CubeAll().Scale({ 0.5,0.5,0.5 }).Translate({ 4,4,4 }).SetTexture("all", "debug"));
 	Register(Blocks::grass, Grass().SetTexture("top", "grass_block_top").SetTexture("side", "grass_block_side").SetTexture("bottom", "dirt").SetTexture("overlay", "grass_block_side_overlay"));
-	Register(Blocks::water, CubeAll().SetTexture("all", "water"));
+	Register(Blocks::water, Tinted().SetTexture("all", "water_still"));
 
 	RegisterTorch(Blocks::torch,
 		[](const BlockState& state) {return "torch"; },
@@ -425,3 +425,16 @@ UnbakedModel BlockModels::RedstoneDustUp()
 				{Direction::north,	{16, 0, 0, 16}, "overlay",1,1},
 		});
 }
+
+UnbakedModel BlockModels::Tinted()
+{
+	return UnbakedModel({ 0, 0, 0 }, { 16,16,16 }, {
+				{Direction::down,	{0,0,16,16}, "all",	1,0,0},
+				{Direction::up,		{0,0,16,16}, "all",	1,0,0},
+				{Direction::north,	{0,0,16,16}, "all",	1,0,0},
+				{Direction::south,	{0,0,16,16}, "all",	1,0,0},
+				{Direction::west,	{0,0,16,16}, "all",	1,0,0},
+				{Direction::east,	{0,0,16,16}, "all",	1,0,0},
+		});
+}
+

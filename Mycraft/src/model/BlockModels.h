@@ -35,4 +35,5 @@ namespace BlockModels {
 	UnbakedModel RedstoneDustSide();
 	UnbakedModel RedstoneDustSideAlt();
 	UnbakedModel RedstoneDustUp();
+	UnbakedModel Tinted();
 };

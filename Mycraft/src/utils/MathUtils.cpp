@@ -7,7 +7,7 @@ float MathUtils::frac(float x)
 	return x - floor(x);
 }
 
-int  MathUtils::signum(float x)
+int MathUtils::signum(float x)
 {
 	if (x == 0.0)
 		return 0;
@@ -15,9 +15,20 @@ int  MathUtils::signum(float x)
 		return x > 0.0 ? 1 : -1;
 }
 
-float  MathUtils::clamp(float x, float min, float max)
+float MathUtils::clamp(float x, float min, float max)
 {
 	return std::max(std::min(x, max), min);
+}
+
+int MathUtils::smallestEncompassingPowerOfTwo(int x)
+{
+	x -= 1;
+	x |= x >> 1;
+	x |= x >> 2;
+	x |= x >> 4;
+	x |= x >> 8;
+	x |= x >> 16;
+	return x + 1;
 }
 
 void MathUtils::normalizePlane(glm::vec4& plane)

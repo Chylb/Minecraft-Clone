@@ -720,7 +720,6 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\..\..\Downloads\201301031509_terrain.png" />
-    <Image Include="res\textures\block\water.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

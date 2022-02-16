@@ -50,6 +50,10 @@ unsigned int g_renderedChunks = 0;
 const Block* g_items[9];
 size_t g_selectedItemIx = 0;
 
+auto lastTickTime = std::chrono::high_resolution_clock::now();
+
+using namespace std::literals::chrono_literals;
+
 int main()
 {
 	srand(time(NULL));
@@ -98,6 +102,11 @@ int main()
 		glm::mat4 view = g_camera.GetViewMatrix();
 		basicShader.setMat4("view", view);
 
+		auto now = std::chrono::high_resolution_clock::now();
+		if (now - lastTickTime >= 50ms) {
+			Resources::GetBlockTextureAtlas().Tick();
+			lastTickTime = now;
+		}
 		glActiveTexture(GL_TEXTURE0);
 		Resources::GetBlockTextureAtlas().Bind();
 

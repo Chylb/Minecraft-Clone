@@ -3,12 +3,12 @@
 void Resources::Initialize()
 {
 	stbi_set_flip_vertically_on_load(true);
-	s_blockTextureAtlas.Load("res/textures/block", false);
+	s_blockTextureAtlas.Load("res/textures/block", true);
 	stbi_set_flip_vertically_on_load(false);
 	LoadTextures();
 }
 
-const TextureAtlas& Resources::GetBlockTextureAtlas()
+TextureAtlas& Resources::GetBlockTextureAtlas()
 {
 	return s_blockTextureAtlas;
 }

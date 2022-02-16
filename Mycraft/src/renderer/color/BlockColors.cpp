@@ -18,6 +18,11 @@ void BlockColors::Initialize()
 			return ((RedstoneWire*)Blocks::redstoneWire)->Color(state.GetValue(RedstoneWire::power));
 			//return glm::vec3{ 1,0,0 };
 		}, Blocks::redstoneWire);
+
+	Register([](const BlockState& state, BlockPos pos, int ix)
+		{
+			return glm::vec3{ 63 / 255.0, 118 / 255.0, 228 / 255.0 };
+		}, Blocks::water);
 }
 
 void BlockColors::Register(std::function<glm::vec3(const BlockState& state, BlockPos pos, int ix)> colorFunc, const Block* block)
