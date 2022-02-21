@@ -69,6 +69,7 @@ int main()
 	BlockModelRegistry::Resize(BlockRegistry::GetBlockStateCount());
 	BlockModels::Initialize();
 	BlockColors::Initialize();
+	Chunk::StaticInitialize();
 
 	Gui::Init(Renderer::window);
 

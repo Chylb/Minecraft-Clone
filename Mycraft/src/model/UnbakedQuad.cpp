@@ -147,9 +147,7 @@ BakedQuad UnbakedQuad::Bake()
 	WriteVertex(buf, 0, sprite);
 	WriteVertex(buf, 1, sprite);
 	WriteVertex(buf, 2, sprite);
-	WriteVertex(buf, 2, sprite);
 	WriteVertex(buf, 3, sprite);
-	WriteVertex(buf, 0, sprite);
 
 	BakedQuad result{};
 	std::memcpy(result.data, buf.data(), sizeof(float) * BakedQuad::quad_size);

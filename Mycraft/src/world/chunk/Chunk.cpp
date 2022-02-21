@@ -115,7 +115,7 @@ void Chunk::InitializeBuffers()
 		if (mesh.size() == 0)
 			continue;
 
-		m_vertexCount[renderType] = mesh.size() / BakedQuad::vertex_size;
+		m_polygonCount[renderType] = mesh.size() / BakedQuad::quad_size * 2;
 
 		glGenVertexArrays(1, &m_VAO[renderType]);
 		glGenBuffers(1, &m_VBO[renderType]);
@@ -124,6 +124,7 @@ void Chunk::InitializeBuffers()
 
 		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * mesh.size(), mesh.data(), GL_STATIC_DRAW);
 
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_EBO);
 
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 		glEnableVertexAttribArray(0);
@@ -151,7 +152,7 @@ void Chunk::ClearMesh()
 		glDeleteBuffers(1, &m_VBO[renderType]);
 		m_VAO[renderType] = -1;
 		m_VBO[renderType] = -1;
-		m_vertexCount[renderType] = 0;
+		m_polygonCount[renderType] = 0;
 	}
 
 	loadingState = LoadingState::generating_mesh;
@@ -176,16 +177,16 @@ void Chunk::Render(RenderType renderType) const
 			return;
 
 		glBindVertexArray(m_VAO[renderType]);
-		glDrawArrays(GL_TRIANGLES, 0, m_vertexCount[renderType]);
+		glDrawElements(GL_TRIANGLES, m_polygonCount[renderType] * 3, GL_UNSIGNED_INT, 0);
 	}
 }
 
-unsigned int Chunk::VertexCount() const
+unsigned int Chunk::PolygonCount() const
 {
 	unsigned int sum = 0;
-	for(int renderType = 0; renderType < RenderType::count; renderType++)
+	for (int renderType = 0; renderType < RenderType::count; renderType++)
 	{
-		sum += m_vertexCount[renderType];
+		sum += m_polygonCount[renderType];
 	}
 	return sum;
 }
@@ -201,6 +202,32 @@ void Chunk::Tick()
 		auto state = GetBlockState({ x,y,z });
 		state->RandomTick(*m_world, pos);
 	}
+}
+
+void Chunk::StaticInitialize()
+{
+	auto maxNumberOfQuads = CHUNK_WIDTH * CHUNK_WIDTH * CHUNK_HEIGHT;
+	unsigned int* eboData = new unsigned int[6 * maxNumberOfQuads];
+
+	auto vertex = 0;
+	for (auto quad = 0; quad < maxNumberOfQuads; quad++) {
+		auto i = 6 * quad; //6 indices per quad
+
+		eboData[i + 0] = vertex;
+		eboData[i + 1] = vertex + 1;
+		eboData[i + 2] = vertex + 2;
+		eboData[i + 3] = vertex + 2;
+		eboData[i + 4] = vertex + 3;
+		eboData[i + 5] = vertex;
+
+		vertex += 4; //4 vertices per quad
+	}
+
+	glGenBuffers(1, &s_EBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * 6 * maxNumberOfQuads, eboData, GL_STATIC_DRAW);
+
+	delete[] eboData;
 }
 
 inline void Chunk::GenerateColumnMesh(int x, int z, int h)

@@ -43,13 +43,15 @@ public:
 	void ClearMesh();
 	void Clear();
 	void Render(RenderType renderType) const;
-	unsigned int VertexCount() const;
+	unsigned int PolygonCount() const;
 
 	void Tick();
 
+	static void StaticInitialize();
+
 	LoadingState loadingState;
 	Chunk* adjacentChunks[4];
-	unsigned int m_vertexCount[RenderType::count];
+	unsigned int m_polygonCount[RenderType::count];
 
 	bool dirtyMesh;
 	int highestBlock = 0;
@@ -69,6 +71,8 @@ private:
 
 	GLuint m_VBO[RenderType::count];
 	GLuint m_VAO[RenderType::count];
+
+	inline static GLuint s_EBO; //only one EBO exists because we can reuse it in all VAOs
 };
 
 
